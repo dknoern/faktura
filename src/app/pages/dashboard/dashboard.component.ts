@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import Chart from 'chart.js';
+import { AuthService } from '../../services/auth.service';
 
 // core components
 import {
@@ -22,7 +23,7 @@ export class DashboardComponent implements OnInit {
   public clicked: boolean = true;
   public clicked1: boolean = false;
 
-  constructor() { }
+  constructor(public auth: AuthService) { }
 
   ngOnInit() {
 

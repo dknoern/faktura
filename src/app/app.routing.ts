@@ -11,7 +11,9 @@ const routes: Routes =[
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full',
-  }, {
+  },
+  
+  {
     path: '',
     component: AdminLayoutComponent,
     children: [
@@ -29,7 +31,8 @@ const routes: Routes =[
         loadChildren: './layouts/auth-layout/auth-layout.module#AuthLayoutModule'
       }
     ]
-  }, {
+  }
+  , {
     path: '**',
     redirectTo: 'dashboard'
   }
