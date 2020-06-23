@@ -13,6 +13,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppRoutingModule } from './app.routing';
 import { ComponentsModule } from './components/components.module';
 import {LocationStrategy, Location, PathLocationStrategy} from '@angular/common';
+import { ProductsComponent } from './pages/products/products.component';
 
 @NgModule({
   imports: [
@@ -27,7 +28,8 @@ import {LocationStrategy, Location, PathLocationStrategy} from '@angular/common'
   declarations: [
     AppComponent,
     AdminLayoutComponent,
-    AuthLayoutComponent
+    AuthLayoutComponent,
+    ProductsComponent
   ],
   providers: [Location, {provide: LocationStrategy, useClass: PathLocationStrategy}],
   bootstrap: [AppComponent]
