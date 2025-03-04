@@ -12,10 +12,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   basePath: "/auth",
   session: { strategy: "jwt" },
   callbacks: {
-    authorized({ request, auth }) {
-      const { pathname } = request.nextUrl
-      if (pathname === "/middleware-example") return !!auth
-      return true
+    authorized({ auth, request: { nextUrl } }) {
+
+      const isLoggedIn = !!auth?.user;
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+      if (isOnDashboard) {
+        if (isLoggedIn) return true;
+        return Response.redirect(new URL('/', nextUrl));
+      } else if (isLoggedIn) {
+        return Response.redirect(new URL('/dashboard', nextUrl));
+      }
+      return true;
+
     },
     jwt({ token, trigger, session, account }) {
       if (trigger === "update") token.name = session.user.name

@@ -23,44 +23,43 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
 
 const data = {
   navMain: [
     {
       title: "Products",
-      url: "/products",
+      url: "/dashboard/products",
       icon: ShoppingCart,
     },
     {
       title: "Customers",
-      url: "/customers",
+      url: "/dashboard/customers",
       icon: Users,
     },
     {
       title: "Invoices",
-      url: "/invoices",
+      url: "/dashboard/invoices",
       icon: FileText,
     },
 
     {
       title: "Returns",
-      url: "/returns",
+      url: "/dashboard/returns",
       icon: Repeat2,
     },
     {
       title: "Repairs",
-      url: "/repairs",
+      url: "/dashboard/repairs",
       icon: Wrench,
     },
     {
       title: "Log In Items",
-      url: "/loginitems",
+      url: "/dashboard/loginitems",
       icon: SquarePen,
     },
     {
       title: "Log Out Items",
-      url: "/logoutitems",
+      url: "/dashboard/logoutitems",
       icon: SquareArrowOutUpRight,
     },
     {
@@ -141,7 +140,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )
