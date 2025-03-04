@@ -1,0 +1,148 @@
+"use client"
+
+import * as React from "react"
+import {
+  ShoppingCart,
+  Watch,
+  Users,
+  FileText,
+  Repeat2,
+  Wrench,
+  SquarePen,
+  SquareArrowOutUpRight,
+  ChartColumn,
+} from "lucide-react"
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar"
+import { NavMain } from "@/components/nav-main"
+import { NavUser } from "@/components/nav-user"
+
+const data = {
+  navMain: [
+    {
+      title: "Products",
+      url: "/products",
+      icon: ShoppingCart,
+    },
+    {
+      title: "Customers",
+      url: "/customers",
+      icon: Users,
+    },
+    {
+      title: "Invoices",
+      url: "/invoices",
+      icon: FileText,
+    },
+
+    {
+      title: "Returns",
+      url: "/returns",
+      icon: Repeat2,
+    },
+    {
+      title: "Repairs",
+      url: "/repairs",
+      icon: Wrench,
+    },
+    {
+      title: "Log In Items",
+      url: "/loginitems",
+      icon: SquarePen,
+    },
+    {
+      title: "Log Out Items",
+      url: "/logoutitems",
+      icon: SquareArrowOutUpRight,
+    },
+    {
+      title: "Reports",
+      url: "#",
+      icon: ChartColumn,
+      items: [
+        {
+          title: "Outstanding repairs",
+          url: "#",
+        },
+        {
+          title: "Items on memo",
+          url: "#",
+        },
+        {
+          title: "Daily sales",
+          url: "#",
+        },
+        {
+          title: "Returns summary",
+          url: "#",
+        },
+        {
+          title: "Partnership items",
+          url: "#",
+        },
+        {
+          title: "Consignment items",
+          url: "#",
+        },
+        {
+          title: "Monthly sales",
+          url: "#",
+        },
+        {
+          title: "Out at show",
+          url: "#",
+        },
+        {
+          title: "Show report",
+          url: "#",
+        },
+        {
+          title: "In stock",
+          url: "#",
+        },
+        {
+          title: "Customers",
+          url: "#",
+        },
+      ],
+    },
+  ],
+}
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  return (
+    <Sidebar variant="inset" {...props}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <a href="#">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <Watch className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">Lager</span>
+                  <span className="truncate text-xs">Inventory</span>
+                </div>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+      </SidebarContent>
+      <SidebarFooter>
+        <NavUser />
+      </SidebarFooter>
+    </Sidebar>
+  )
+}
