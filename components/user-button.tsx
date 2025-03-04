@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import { Avatar, AvatarImage } from "./ui/avatar"
 import { Button } from "./ui/button"
 import { auth } from "@/auth"
 import {
@@ -14,7 +14,7 @@ export default async function UserButton() {
   const session = await auth()
   if (!session?.user) return <SignIn />
   return (
-    <div className="flex items-center gap-2" align="end">
+    <div className="flex items-center gap-2">
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

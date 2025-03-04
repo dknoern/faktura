@@ -1,12 +1,10 @@
 
 import { Button } from '@/components/ui/button';
 import { signIn, signOut } from "@/auth"
-import { auth } from "../auth"
 import Image from 'next/image'
 
-export default async function Page({...props}) {
+export default async function Page() {
 
-  const session = await auth()
   return (
     <main className="flex min-h-screen flex-col p-6">
 
