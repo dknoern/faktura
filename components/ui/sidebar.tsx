@@ -207,7 +207,6 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-             // added following per 
              <VisuallyHidden>
                <SheetHeader>
                  <SheetTitle>Sidebar</SheetTitle>
