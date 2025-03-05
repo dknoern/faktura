@@ -6,6 +6,12 @@ frontend:
         - npm ci
     build:
       commands:
+        - echo "AUTH_AUTH0_ID=$AUTH_AUTH0_ID" >> .env
+        - echo "AUTH_AUTH0_ISSUER=$AUTH_AUTH0_ISSUER" >> .env
+        - echo "AUTH_AUTH0_SECRET=$AUTH_AUTH0_SECRET" >> .env
+        - echo "AUTH_SECRET=$AUTH_SECRET" >> .env
+        - echo "AUTH_TRUST_HOST=true" >> .env
+        - echo "AUTH_URL=$AUTH_URL" >> .env
         - npm run build
   artifacts:
     baseDirectory: .next
