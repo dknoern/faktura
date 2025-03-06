@@ -20,9 +20,9 @@ export async function InvoicesTable() {
                     <TableHead>Invoice</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead>Item #</TableHead>
+                    <TableHead style={{ whiteSpace: 'nowrap' }}>Item #</TableHead>
                     <TableHead>Item</TableHead>
-                    <TableHead>Tracking #</TableHead>
+                    <TableHead style={{ whiteSpace: 'nowrap' }}>Tracking #</TableHead>
                     <TableHead style={{ textAlign: 'right' }}>Total</TableHead>
                     <TableHead>Type</TableHead>
                 </TableRow>
