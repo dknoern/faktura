@@ -34,7 +34,7 @@ export async function ProductsTable() {
                         <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
                         <TableCell>{product.modelNumber}</TableCell>
                         <TableCell style={{ whiteSpace: 'nowrap' }}>{product.status}</TableCell>
-                        <TableCell>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
+                        <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>

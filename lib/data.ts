@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import dbConnect from './dbConnect';
 import { Invoice } from './models/invoice';
 import { Product } from './models/product';
+import { Return } from './models/return';
+import { Repair } from './models/repair';
 const CustomerSchema = new mongoose.Schema({
     _id: Number,
     firstName: String,
@@ -65,6 +67,29 @@ export async function fetchInvoices() {
         return invoices;
     } catch (error) {
         console.error('Error fetching newest customers:', error);
+        throw error;
+    }
+}
+
+export async function fetchReturns() {
+    try {
+        await dbConnect();
+        const returns = await Return.find().sort({ _id: -1 }).limit(10);
+        return returns;
+    } catch (error) {
+        console.error('Error fetching returns:', error);
+        throw error;
+    }
+}
+
+
+export async function fetchRepairs() {
+    try {
+        await dbConnect();
+        const repairs = await Repair.find().sort({ _id: -1 }).limit(10);
+        return repairs;
+    } catch (error) {
+        console.error('Error fetching returns:', error);
         throw error;
     }
 }
