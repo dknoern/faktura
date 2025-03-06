@@ -1,6 +1,7 @@
 
 import mongoose from 'mongoose';
 import dbConnect from './dbConnect';
+import { Invoice } from './models/invoice';
 import { Product } from './models/product';
 const CustomerSchema = new mongoose.Schema({
     _id: Number,
@@ -46,12 +47,22 @@ export async function fetchNewestCustomers() {
     }
 }
 
-
 export async function fetchProducts() {
     try {
         await dbConnect();
         const products = await Product.find().sort({ lastUpdated: -1 }).limit(10);
         return products;
+    } catch (error) {
+        console.error('Error fetching newest customers:', error);
+        throw error;
+    }
+}
+
+export async function fetchInvoices() {
+    try {
+        await dbConnect();
+        const invoices = await Invoice.find().sort({ _id: -1 }).limit(10);
+        return invoices;
     } catch (error) {
         console.error('Error fetching newest customers:', error);
         throw error;
