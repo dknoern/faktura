@@ -1,7 +1,9 @@
+// lib/dbConnect.tsx
+
 import _mongoose, { connect } from "mongoose";
 
 declare global {
-  let mongoose: {
+  var mongoose: {
     promise: ReturnType<typeof connect> | null;
     conn: typeof _mongoose | null;
   };
@@ -26,7 +28,7 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
-export async function dbConnect() {
+async function dbConnect() {
   if (cached.conn) {
     return cached.conn;
   }
