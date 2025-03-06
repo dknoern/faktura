@@ -1,3 +1,14 @@
+"use client"
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
 export default function Page() {
-    return <p>Overview Page</p>;
-  }
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/dashboard/products');
+  }, [router]);
+
+  return <p>Redirecting...</p>;
+}
