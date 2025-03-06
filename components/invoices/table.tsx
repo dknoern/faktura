@@ -19,7 +19,7 @@ export async function InvoicesTable() {
                 <TableRow>
                     <TableHead>Invoice</TableHead>
                     <TableHead>Customer</TableHead>
-                    <TableHead>Date</TableHead>
+                    <TableHead style={{ whiteSpace: 'nowrap' }}>Date</TableHead>
                     <TableHead style={{ whiteSpace: 'nowrap' }}>Item #</TableHead>
                     <TableHead>Item</TableHead>
                     <TableHead style={{ whiteSpace: 'nowrap' }}>Tracking #</TableHead>
@@ -43,7 +43,7 @@ export async function InvoicesTable() {
                         <TableRow key={invoice._id}>
                             <TableCell> {invoice._id}</TableCell>
                             <TableCell> {invoice.customerFirstName + ' ' + invoice.customerLastName}</TableCell>
-                            <TableCell>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
                             <TableCell>
                                 {itemNumbers.split("<br/>").map((line, index, array) => (
                                     <React.Fragment key={index}>
