@@ -1,7 +1,7 @@
 import _mongoose, { connect } from "mongoose";
 
 declare global {
-  var mongoose: {
+  let mongoose: {
     promise: ReturnType<typeof connect> | null;
     conn: typeof _mongoose | null;
   };

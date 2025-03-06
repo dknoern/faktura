@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 import dbConnect from './dbConnect';
 import { Product } from './models/product';
-var CustomerSchema = new mongoose.Schema({
+const CustomerSchema = new mongoose.Schema({
     _id: Number,
     firstName: String,
     lastName: String,

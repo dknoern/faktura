@@ -1,4 +1,4 @@
-import { fetchNewestCustomers, fetchProducts } from "@/lib/data";
+import { fetchProducts } from "@/lib/data";
 
 import {
     Table,
