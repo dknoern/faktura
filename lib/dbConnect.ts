@@ -36,7 +36,7 @@ async function dbConnect() {
   // make a web request to ifconfig.me and output the result in the console
     const response = await fetch("https://ifconfig.me");
     const ip = await response.text();
-    console.log('\n\n\n--------> hey, my IP is : ip');
+    console.log('\n\n\n--------> hey, my IP is : ',ip);
 
   if (!cached.promise) {
     const opts = {
