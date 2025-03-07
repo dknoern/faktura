@@ -1,4 +1,4 @@
-import { fetchReturns } from "@/lib/data";
+import { fetchOuts } from "@/lib/data";
 
 import {
     Table,
@@ -12,53 +12,35 @@ import React from "react";
 
 export async function OutsTable() {
 
-    const returns = await fetchReturns();
+    const logs = await fetchOuts();
     return (
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead style={{ whiteSpace: 'nowrap' }}>Return</TableHead>
-                    <TableHead>Invoice</TableHead>
-                    <TableHead>Items</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead style={{ whiteSpace: 'nowrap' }}>Sales Person</TableHead>
-                    <TableHead>Total</TableHead>
+                    <TableHead style={{ whiteSpace: 'nowrap' }}>Sent To</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>By</TableHead>
+                    <TableHead>Comments</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {returns.map((ret) => {
+                {logs.map((log) => {
 
-                    let itemNumbers = ''
 
-                    if (ret.lineItems != null) {
-                        itemNumbers = ret.lineItems
-                            .filter((lineItem: { itemNumber: string; }) => lineItem.itemNumber.trim() !== '')
-                            .map((lineItem: { itemNumber: string; }) => lineItem.itemNumber)
-                            .join('<br/>');
-                    }
 
                     return (
-                        <TableRow key={ret._id}>
-                            <TableCell>{ret._id}</TableCell>
-                            <TableCell>{ret.invoiceId}</TableCell>
-                            <TableCell>
-                                {itemNumbers.split("<br/>").map((line, index, array) => (
-                                    <React.Fragment key={index}>
-                                        {line}
-                                        {index < array.length - 1 && <br />}
-                                    </React.Fragment>
-                                ))}
-                            </TableCell>
-                            <TableCell>{ret.returnDate ? new Date(ret.returnDate).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell>{ret.customerName}</TableCell>
-                            <TableCell> {ret.salesPerson}</TableCell>
-                            <TableCell>{ret.totalReturnAmount ? Math.ceil(ret.totalReturnAmount).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '') : ''}</TableCell>
+                        <TableRow key={log._id}>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{log.date ? new Date(log.date).toISOString().split('T')[0] : ''}</TableCell>
+                            <TableCell> {log.sentTo}</TableCell>
+                            <TableCell> {log.description}</TableCell>
+                            <TableCell> {log.user}</TableCell>
+                            <TableCell> {log.comments}</TableCell>
                         </TableRow>
                     )
                 }
                 )}
-            </TableBody>
+                </TableBody>
         </Table>
     )
 }
