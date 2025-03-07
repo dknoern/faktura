@@ -287,18 +287,6 @@ export async function getOutAtShow() {
 }
 
 
-export async function getStuff() {
-
-    try {
-        await dbConnect();
-
-    } catch (error) {
-        console.error('Error fetching report data:', error);
-        throw error;
-    }
-}
-
-
 export async function getInStock() {
 
     try {

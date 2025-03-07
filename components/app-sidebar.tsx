@@ -77,39 +77,39 @@ const data = {
         },
         {
           title: "Daily sales",
-          url: "#",
+          url: "/dashboard/reports/daily-sales",
         },
         {
           title: "Returns summary",
-          url: "#",
+          url: "/dashboard/reports/returns-summary",
         },
         {
           title: "Partnership items",
-          url: "#",
+          url: "/dashboard/reports/partnership-items",
         },
         {
           title: "Consignment items",
-          url: "#",
+          url: "/dashboard/reports/consignment-items",
         },
         {
           title: "Monthly sales",
-          url: "#",
+          url: "/dashboard/reports/monthly-sales",
         },
         {
           title: "Out at show",
-          url: "#",
+          url: "/dashboard/reports/out-at-show",
         },
         {
           title: "Show report",
-          url: "#",
+          url: "/dashboard/reports/show-report",
         },
         {
           title: "In stock",
-          url: "#",
+          url: "/dashboard/reports/in-stock",
         },
         {
           title: "Customers",
-          url: "#",
+          url: "/dashboard/reports/customers",
         },
       ],
     },
