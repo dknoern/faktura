@@ -86,7 +86,7 @@ export async function getOutstandingRepairs(vendor: string) {
 }
 
 
-export async function getProductsMemo() {
+export async function getItemsOnMemo() {
 
     try {
 

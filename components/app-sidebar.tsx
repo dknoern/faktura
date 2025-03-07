@@ -73,7 +73,7 @@ const data = {
         },
         {
           title: "Items on memo",
-          url: "#",
+          url: "/dashboard/reports/items-on-memo",
         },
         {
           title: "Daily sales",
