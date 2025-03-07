@@ -22,7 +22,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { NavMain } from "@/components/nav-main"
+import { NavMain } from "./nav-main"
 
 const data = {
   navMain: [
@@ -69,7 +69,7 @@ const data = {
       items: [
         {
           title: "Outstanding repairs",
-          url: "#",
+          url: "/dashboard/reports/outstanding-repairs",
         },
         {
           title: "Items on memo",

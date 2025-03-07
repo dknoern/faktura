@@ -26,9 +26,6 @@ export async function OutsTable() {
             </TableHeader>
             <TableBody>
                 {logs.map((log) => {
-
-
-
                     return (
                         <TableRow key={log._id}>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>{log.date ? new Date(log.date).toISOString().split('T')[0] : ''}</TableCell>
