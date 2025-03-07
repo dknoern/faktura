@@ -5,6 +5,8 @@ import { Invoice } from './models/invoice';
 import { Product } from './models/product';
 import { Return } from './models/return';
 import { Repair } from './models/repair';
+import { Log } from './models/log';
+import { Out } from './models/out';
 const CustomerSchema = new mongoose.Schema({
     _id: Number,
     firstName: String,
@@ -90,6 +92,30 @@ export async function fetchRepairs() {
         return repairs;
     } catch (error) {
         console.error('Error fetching returns:', error);
+        throw error;
+    }
+}
+
+
+
+export async function fetchLogs() {
+    try {
+        await dbConnect();
+        const logs = await Log.find().sort({ _id: -1 }).limit(10);
+        return logs;
+    } catch (error) {
+        console.error('Error fetching logs:', error);
+        throw error;
+    }
+}
+
+export async function fetchOuts() {
+    try {
+        await dbConnect();
+        const outs = await Out.find().sort({ _id: -1 }).limit(10);
+        return outs;
+    } catch (error) {
+        console.error('Error fetching outs:', error);
         throw error;
     }
 }
