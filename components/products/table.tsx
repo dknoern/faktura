@@ -29,8 +29,9 @@ export async function ProductsTable() {
             <TableBody>
                 {products.map((product) => (
 
+
                     <TableRow key={product.itemNumber}>
-                        <LinkTableCell href={`/products/${product._id}`}>
+                        <LinkTableCell href={`/dashboard/products/${product._id}/edit`}>
                             {product.itemNumber}</LinkTableCell>
                         <TableCell>{product.title}</TableCell>
                         <TableCell>{product.serialNo}</TableCell>

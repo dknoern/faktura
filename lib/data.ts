@@ -62,6 +62,22 @@ export async function fetchProducts() {
     }
 }
 
+
+export async function fetchProductById(id: string) {
+    try {
+        console.log('getting product by id:', id);
+        await dbConnect();
+
+        const product = await Product.findOne({_id: id}, '_id title status');
+        console.log('product:', product);
+        return product;
+    } catch (error) {
+        console.error('Error fetching product:', error);
+        throw error;
+    }
+}
+
+
 export async function fetchInvoices() {
     try {
         await dbConnect();
