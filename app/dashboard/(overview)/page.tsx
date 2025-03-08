@@ -10,5 +10,5 @@ export default function Page() {
     router.push('/dashboard/products');
   }, [router]);
 
-  return <p>Redirecting...</p>;
+  return <p>Loading...</p>;
 }

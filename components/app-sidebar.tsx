@@ -96,7 +96,7 @@ const data = {
           url: "/dashboard/reports/monthly-sales",
         },
         {
-          title: "Out at show",
+          title: "Out at Show",
           url: "/dashboard/reports/out-at-show",
         },
         {

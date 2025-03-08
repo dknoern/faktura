@@ -1,12 +1,16 @@
 import { MonthlySalesTable } from "@/components/reports/monthlySalesTable";
+import { SkeletonTable } from "@/components/skeletons";
+import { Suspense } from "react";
 export default async function Page() {
   return (
     <div>
       <div>
-      <h2 className='text-2xl font-bold tracking-tight pl-1.5'>Daily Sales</h2>
+        <h2 className='text-2xl font-bold tracking-tight pl-1.5'>Daily Sales</h2>
       </div>
       <div>
-      <MonthlySalesTable />
+        <Suspense fallback={<SkeletonTable />}>
+          <MonthlySalesTable />
+        </Suspense>
       </div>
     </div>
   );
