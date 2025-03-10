@@ -136,3 +136,16 @@ export async function fetchOuts() {
         throw error;
     }
 }
+
+export async function getRepairsForItem(productId: string) {
+    try {
+        await dbConnect();
+        const repairs = await Repair.find({itemId:productId});
+        return repairs;
+    } catch (error) {
+        console.error('Error fetching outs:', error);
+        throw error;
+    }
+}
+
+

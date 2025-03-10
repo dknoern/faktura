@@ -28,7 +28,7 @@ import { useEffect } from "react"
 import { Textarea } from "../ui/textarea"
 import { Checkbox } from "../ui/checkbox"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../ui/card"
+import { Card, CardContent, CardFooter } from "../ui/card"
 import Link from "next/link"
 import { Table, TableHeader, TableRow, TableBody, TableCell } from "../ui/table"
 
@@ -143,8 +143,7 @@ const formSchema = z.object({
     })),
 })
 
-
-export default function ProductEditForm({ product, foo }: { product: z.infer<typeof formSchema>, foo: string }) {
+export default function ProductEditForm({ product, repairs }: { product: z.infer<typeof formSchema>, repairs: Array<{ _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }> }) {
 
     // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
@@ -201,7 +200,6 @@ export default function ProductEditForm({ product, foo }: { product: z.infer<typ
         }
         fetchProduct()
     }, [form, product])
-
 
     return (
         <div>
@@ -728,15 +726,30 @@ export default function ProductEditForm({ product, foo }: { product: z.infer<typ
 
                                 <TabsContent value="repairs">
                                     <Card>
-                                        <CardHeader>
-                                            <CardTitle>Repairs</CardTitle>
-                                            <CardDescription>
-                                                Repair info here.
-                                            </CardDescription>
-                                        </CardHeader>
                                         <CardContent className="space-y-2">
-                                            foo: {foo}
 
+                                            <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            <TableCell>Date Out</TableCell>
+                                                            <TableCell>Returned</TableCell>
+                                                            <TableCell>Noteds</TableCell>
+                                                            <TableCell>Vendor</TableCell>
+                                                            <TableCell>Cost</TableCell>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                            {repairs.map((repair: { _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }) => (
+                                                            <TableRow key={repair._id}>
+                                                                <TableCell className="font-medium">{repair.returnDate ? new Date(repair.dateOut).toISOString().split('T')[0] : ''}</TableCell>
+                                                                <TableCell>{repair.returnDate ? new Date(repair.returnDate).toISOString().split('T')[0] : ''}</TableCell>
+                                                                <TableCell>{repair.repairNotes}</TableCell>
+                                                                <TableCell>{repair.vendor}</TableCell>
+                                                                <TableCell>{repair.repairCost}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
                                         </CardContent>
                                         <CardFooter />
                                     </Card>
