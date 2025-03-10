@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const ProductSchema = new mongoose.Schema({
+export const ProductSchema = new mongoose.Schema({
     itemNumber: String,
     productType: String,
     manufacturer: String,
@@ -60,3 +60,12 @@ ProductSchema.virtual('statusDisplay').get(function (this: mongoose.Document & {
 });
 
 export const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
+
+export type ProductForm = {
+    id: string;
+    customer_id: string;
+    amount: number;
+    status: 'pending' | 'paid';
+  };
+  
+

@@ -68,8 +68,9 @@ export async function fetchProductById(id: string) {
         console.log('getting product by id:', id);
         await dbConnect();
 
-        const product = await Product.findOne({_id: id}, '_id title status');
+        const product = await Product.findOne({_id: id});
         console.log('product:', product);
+
         return product;
     } catch (error) {
         console.error('Error fetching product:', error);
