@@ -213,7 +213,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                 name="productType"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Product Type</FormLabel>
+                                        <FormLabel>Product Type <span className="text-red-500">*</span></FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={product.productType}>
                                             <FormControl>
                                                 <SelectTrigger>
@@ -238,7 +238,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                 name="title"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Title</FormLabel>
+                                        <FormLabel>Title <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input placeholder="Enter product title" {...field} />
                                         </FormControl>
@@ -306,7 +306,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                 name="itemNumber"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Item Number</FormLabel>
+                                        <FormLabel>Item Number <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input placeholder="" {...field} />
                                         </FormControl>
@@ -490,7 +490,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                 name="sellerType"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Seller Type</FormLabel>
+                                        <FormLabel>Seller Type <span className="text-red-500">*</span></FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={product.sellerType}>
                                             <FormControl>
                                                 <SelectTrigger>
@@ -516,7 +516,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                 name="seller"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Seller</FormLabel>
+                                        <FormLabel>Seller <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input placeholder="Seller" {...field} value={field.value || ""} />
 
@@ -525,21 +525,6 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                     </FormItem>
                                 )}
 
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="seller"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Seller</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Seller" {...field} value={field.value || ""} />
-
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
                             />
 
                             <FormField
