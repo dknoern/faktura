@@ -1,5 +1,3 @@
-
-import mongoose from 'mongoose';
 import dbConnect from './dbConnect';
 import { Invoice } from './models/invoice';
 import { Product } from './models/product';
@@ -7,43 +5,14 @@ import { Return } from './models/return';
 import { Repair } from './models/repair';
 import { Log } from './models/log';
 import { Out } from './models/out';
-const CustomerSchema = new mongoose.Schema({
-    _id: Number,
-    firstName: String,
-    lastName: String,
-    company: String,
-    email: String,
-    phone: String,
-    cell: String,
-    address1: String,
-    address2: String,
-    address3: String,
-    city: String,
-    state: String,
-    zip: String,
-    country: String,
-    billingAddress1: String,
-    billingAddress2: String,
-    billingAddress3: String,
-    billingCity: String,
-    billingState: String,
-    billingZip: String,
-    billingCountry: String,
-    lastUpdated: Date,
-    search: String,
-    copyAddress: Boolean,
-    customerType: String,
-    status: String
-});
+import { customerModel } from './models/customer';
 
-const Customer = mongoose.models.Customer || mongoose.model('Customer', CustomerSchema);
 
-export default Customer
 export async function fetchNewestCustomers() {
     try {
 
         await dbConnect();
-        const customers = await Customer.find().sort({ lastUpdated: -1 }).limit(10);
+        const customers = await customerModel.find().sort({ lastUpdated: -1 }).limit(10);
         return customers;
     } catch (error) {
         console.error('Error fetching newest customers:', error);

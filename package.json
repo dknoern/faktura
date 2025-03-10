@@ -28,6 +28,7 @@
     "@simplewebauthn/server": "^9.0.3",
     "@typegoose/typegoose": "^12.13.0",
     "@vercel/kv": "^1.0.1",
+    "@zodyac/zod-mongoose": "^3.2.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-format": "^4.0.14",
