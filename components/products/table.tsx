@@ -9,6 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { LinkTableCell } from "../LinkTableCell";
+import { Badge } from "../ui/badge";
 
 export async function ProductsTable() {
 
@@ -37,7 +38,11 @@ export async function ProductsTable() {
                         <TableCell>{product.serialNo}</TableCell>
                         <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
                         <TableCell>{product.modelNumber}</TableCell>
-                        <TableCell style={{ whiteSpace: 'nowrap' }}>{product.status}</TableCell>
+                        <TableCell style={{ whiteSpace: 'nowrap' }}>
+                            <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : 'yellow' }}>
+                                {product.status}
+                            </Badge>
+                        </TableCell>
                         <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
                     </TableRow>
 
