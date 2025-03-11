@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { extendZod } from "@zodyac/zod-mongoose";
 import { zodSchema } from "@zodyac/zod-mongoose";
-import { model } from "mongoose";
+import mongoose, { model } from "mongoose";
 
 extendZod(z);
 
 const customer = z.object({
+    _id: z.number(),
   firstName: z.string().min(3).max(255),
   lastName: z.string().min(3).max(255),
   company: z.string().min(3).max(255),
@@ -33,5 +34,6 @@ const customer = z.object({
   status:  z.string().min(3).max(255),
 });
 
-export const customerSchema = zodSchema(customer);
-export const customerModel = model("Customer", customerSchema);
+
+const customerZodSchema = zodSchema(customer);
+export const customerModel = mongoose.models.customer || model("customer", customerZodSchema);

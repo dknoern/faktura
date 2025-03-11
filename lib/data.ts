@@ -1,6 +1,6 @@
 import dbConnect from './dbConnect';
 import { Invoice } from './models/invoice';
-import { Product } from './models/product';
+import { productModel } from './models/product';
 import { Return } from './models/return';
 import { Repair } from './models/repair';
 import { Log } from './models/log';
@@ -23,7 +23,7 @@ export async function fetchNewestCustomers() {
 export async function fetchProducts() {
     try {
         await dbConnect();
-        const products = await Product.find().sort({ lastUpdated: -1 }).limit(10);
+        const products = await productModel.find().sort({ lastUpdated: -1 }).limit(10);
         return products;
     } catch (error) {
         console.error('Error fetching newest customers:', error);
@@ -37,7 +37,7 @@ export async function fetchProductById(id: string) {
         console.log('getting product by id:', id);
         await dbConnect();
 
-        const product = await Product.findOne({_id: id});
+        const product = await productModel.findOne({_id: id});
         console.log('product:', product);
 
         return product;

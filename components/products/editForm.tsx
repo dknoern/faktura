@@ -31,123 +31,14 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardFooter } from "../ui/card"
 import Link from "next/link"
 import { Table, TableHeader, TableRow, TableBody, TableCell } from "../ui/table"
+import { productSchema } from "../../lib/models/product"
 
-const formSchema = z.object({
-    productType: z.string().min(2, {
-        message: "Please select a product type.",
-    }),
 
-    title: z.string().min(2, {
-        message: "Title must be at least 2 characters.",
-    }),
-
-    itemNumber: z.string().min(2, {
-        message: "Item number must be at least 2 characters.",
-    }),
-
-    manufacturer: z.string().min(2, {
-        message: "Manufacturer must be at least 2 characters.",
-    }),
-
-    model: z.string().min(2, {
-        message: "Model must be at least 2 characters.",
-    }),
-
-    modelNumber: z.string().min(2, {
-        message: "Model number must be at least 2 characters.",
-    }),
-
-    condition: z.string().min(2, {
-        message: "Condition must be at least 2 characters.",
-    }),
-
-    gender: z.string().min(2, {
-        message: "Gender must be at least 2 characters.",
-    }),
-
-    features: z.string().min(2, {
-        message: "Features must be at least 2 characters.",
-    }),
-
-    case: z.string().min(2, {
-        message: "Case must be at least 2 characters.",
-    }),
-
-    dial: z.string().min(2, {
-        message: "Dial must be at least 2 characters.",
-    }),
-
-    bracelet: z.string().min(2, {
-        message: "Bracelet must be at least 2 characters.",
-    }),
-
-    serialNo: z.string().min(2, {
-        message: "Serial number be at least 2 characters.",
-    }),
-
-    longDesc: z.string().min(2, {
-        message: "Long description must be at least 2 characters.",
-    }),
-
-    sellerType: z.string().min(2, {
-        message: "Seller type must be at least 2 characters.",
-    }),
-
-    seller: z.string().min(2, {
-        message: "Seller must be at least 2 characters.",
-    }),
-
-    comments:
-        z.string().min(2, {
-            message: "Box and papers must be at least 2 characters.",
-        }),
-
-    ourPrice: z.number().min(0, {
-        message: "Our price must be at least 0.",
-    }),
-
-    sellingPrice: z.number().min(0, {
-        message: "Selling price must be at least 0.",
-    }),
-
-    listPrice: z.number().min(0, {
-        message: "List price must be at least 0.",
-    }),
-
-    cost: z.number().min(0, {
-        message: "Cost must be at least 0.",
-    }),
-
-    repairCost: z.number().min(0, {
-        message: "Repair cost must be at least 0.",
-    }),
-
-    totalCost:
-        z.number().min(0, {
-            message: "Total cost must be at least 0.",
-        }),
-
-    isEbay: z.boolean(),
-
-    isInventory: z.boolean(),
-
-    status: z.string().min(2, {
-        message: "Status.",
-    }),
-
-    history: z.array(z.object({
-        _id: z.string(),
-        user: z.string(),
-        action: z.string(),
-        date: z.string(),
-    })),
-})
-
-export default function ProductEditForm({ product, repairs }: { product: z.infer<typeof formSchema>, repairs: Array<{ _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }> }) {
+export default function ProductEditForm({ product, repairs }: { product: z.infer<typeof productSchema>, repairs: Array<{ _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }> }) {
 
     // 1. Define your form.
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof productSchema>>({
+        resolver: zodResolver(productSchema),
         defaultValues: {
             productType: "",
             title: "",
@@ -156,7 +47,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
     })
 
     // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: z.infer<typeof productSchema>) {
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
         console.log(values)
@@ -186,14 +77,15 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                     seller: product.seller || "",
                     comments: product.comments || "",
                     sellingPrice: product.sellingPrice || 0,
-                    ourPrice: product.ourPrice || 0,
+                    //ourPrice: product.ourPrice || 0,
                     listPrice: product.listPrice || 0,
                     cost: product.cost || 0,
-                    repairCost: product.repairCost || 0,
-                    totalCost: product.totalCost || 0,
+                    //repairCost: product.repairCost || 0,
+                    //totalCost: product.totalCost || 0,
+                    totalRepairCost: product.totalRepairCost || 0,
                     status: product.status || "",
-                    isEbay: product.isEbay || false,
-                    isInventory: product.isInventory || false,
+                    ebayNoReserve: product.ebayNoReserve || false,
+                    inventoryItem: product.inventoryItem || false,
                     history: product.history || [],
                 })
             }
@@ -529,7 +421,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
                             <FormField
                                 control={form.control}
-                                name="isEbay"
+                                name="ebayNoReserve"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-2">
                                         <FormControl>
@@ -546,7 +438,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
                             <FormField
                                 control={form.control}
-                                name="isInventory"
+                                name="inventoryItem"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-2">
                                         <FormControl>
@@ -649,7 +541,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
                                             <FormField
                                                 control={form.control}
-                                                name="repairCost"
+                                                name="totalRepairCost"
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Repair Cost</FormLabel>
@@ -660,7 +552,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
-                                            />
+                                            /> 
 
 
                                             <FormField

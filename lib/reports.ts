@@ -1,7 +1,7 @@
 import dbConnect from "./dbConnect";
 
-import Customer from "./data";
-import { Product } from "./models/product";
+import { customerModel } from "./models/customer";
+import { productModel } from "./models/product";
 import { Repair } from "./models/repair";
 import { Return } from "./models/return";
 import { Invoice } from "./models/invoice";
@@ -10,7 +10,7 @@ export async function getBySellerType(sellerType: string) {
     try {
 
         await dbConnect();
-        const products = await Product.find({ "sellerType": sellerType }).sort({
+        const products = await productModel.find({ "sellerType": sellerType }).sort({
             lastUpdated: -1
         }).select({
             seller: 1,
@@ -92,7 +92,7 @@ export async function getItemsOnMemo() {
 
         await dbConnect();
 
-        const products = await Product.find({
+        const products = await productModel.find({
             'status': 'Memo'
         }).sort({
             lastUpdated: -1
@@ -147,7 +147,7 @@ export async function getLogItems(year: number, month: number, day: number) {
     try {
         await dbConnect();
 
-        const products = await Product.find({
+        const products = await productModel.find({
             "received": {
                 $gte: new Date(year, month - 1, day),
                 $lt: new Date(year, month - 1, day + 1)
@@ -204,7 +204,7 @@ export async function getProductsForSellerType(sellerType: string) {
     try {
         await dbConnect();
 
-        const products = await Product.find({
+        const products = await productModel.find({
             "sellerType": sellerType
         }).sort({
             lastUpdated: -1
@@ -267,7 +267,7 @@ export async function getOutAtShow() {
     try {
         await dbConnect();
 
-        const products = await Product.find({
+        const products = await productModel.find({
             'status': 'At Show'
         }).sort({
             lastUpdated: -1
@@ -292,7 +292,7 @@ export async function getInStock() {
     try {
         await dbConnect();
 
-        const products = await Product.find({
+        const products = await productModel.find({
             $and: [{
                 status: { $in: ["In Stock", "Partnership", "Consignment"] }
             },
@@ -322,7 +322,7 @@ export async function getShowReport() {
 
     try {
         await dbConnect();
-        const products = await Product.find({
+        const products = await productModel.find({
             'status': 'At Show'
         }).sort({
             lastUpdated: -1
@@ -393,7 +393,7 @@ export async function getCustomers() {
     try {
         await dbConnect();
 
-        const customers = await Customer.find({
+        const customers = await customerModel.find({
         }).sort({
             _id: -1
         }).select({
