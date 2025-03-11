@@ -61,7 +61,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                 form.reset({
                     productType: product.productType || "",
                     title: product.title || "",
-                    itemNumber: product.itemNumber || "bro",
+                    itemNumber: product.itemNumber || "",
                     manufacturer: product.manufacturer || "",
                     model: product.model || "",
                     modelNumber: product.modelNumber || "",
@@ -249,7 +249,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="Pre-owned">Pro-owned</SelectItem>
+                                                <SelectItem value="Pre-owned">Pre-owned</SelectItem>
                                                 <SelectItem value="Unused">Unused</SelectItem>
                                             </SelectContent>
                                         </Select>
