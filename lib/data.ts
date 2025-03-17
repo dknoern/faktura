@@ -1,4 +1,5 @@
 import dbConnect from './dbConnect';
+import mongoose from 'mongoose';
 import { Invoice } from './models/invoice';
 import { productModel } from './models/product';
 import { Return } from './models/return';
@@ -34,10 +35,11 @@ export async function fetchProducts() {
 
 export async function fetchProductById(id: string) {
     try {
-        console.log('getting product by id:', id);
+        console.log('getting product by id----:', id);
         await dbConnect();
-
-        const product = await productModel.findOne({_id: id});
+        var _id = new mongoose.Types.ObjectId(id);
+        const product = await productModel.findOne({_id: _id});
+        product.id = id;
         console.log('product:', product);
 
         return product;

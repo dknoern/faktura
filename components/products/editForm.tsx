@@ -59,6 +59,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
             if (product) {
                 form.reset({
+                    id: product.id || "",
                     productType: product.productType || "",
                     title: product.title || "",
                     itemNumber: product.itemNumber || "",
@@ -95,11 +96,14 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
     return (
         <div>
+            <div>ID: {product.id}</div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
                     <div className='grid gap-4 sm:grid-cols-1 lg:grid-cols-2'>
                         <div className='space-y-3'>
+
+                            <input name="id" type="hidden" value={product.id} />
                             <FormField
                                 control={form.control}
                                 name="productType"
@@ -200,7 +204,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                     <FormItem>
                                         <FormLabel>Item Number <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="" {...field} />
+                                            <Input placeholder="" {...field} value={field.value || ""} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -373,7 +377,6 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                     </FormItem>
                                 )}
                             />
-
                         </div>
 
                         <div className='space-y-3'>
@@ -416,7 +419,6 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                         <FormMessage />
                                     </FormItem>
                                 )}
-
                             />
 
                             <FormField
@@ -546,13 +548,12 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                     <FormItem>
                                                         <FormLabel>Repair Cost</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="" {...field} value={field.value || ""} />
-
+                                                            <Input placeholder="" {...field} value={field.value || ""} disabled />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
-                                            /> 
+                                            />
 
 
                                             <FormField
@@ -562,7 +563,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                     <FormItem>
                                                         <FormLabel>Total Cost</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="" {...field} value={field.value || ""} />
+                                                            <Input placeholder="" {...field} value={(product.cost || 0) + (product.totalRepairCost || 0)} disabled />
 
                                                         </FormControl>
                                                         <FormMessage />
@@ -587,7 +588,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {product.history.map((historyEvent) => (
+                                                    {(product.history || []).map((historyEvent) => (
                                                         <TableRow key={historyEvent._id}>
                                                             <TableCell className="font-medium">{historyEvent.user}</TableCell>
                                                             <TableCell>{historyEvent.user}</TableCell>
@@ -606,27 +607,27 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                         <CardContent className="space-y-2">
 
                                             <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableCell>Date Out</TableCell>
-                                                            <TableCell>Returned</TableCell>
-                                                            <TableCell>Noteds</TableCell>
-                                                            <TableCell>Vendor</TableCell>
-                                                            <TableCell>Cost</TableCell>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableCell>Date Out</TableCell>
+                                                        <TableCell>Returned</TableCell>
+                                                        <TableCell>Noteds</TableCell>
+                                                        <TableCell>Vendor</TableCell>
+                                                        <TableCell>Cost</TableCell>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {repairs.map((repair: { _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }) => (
+                                                        <TableRow key={repair._id}>
+                                                            <TableCell className="font-medium">{repair.returnDate ? new Date(repair.dateOut).toISOString().split('T')[0] : ''}</TableCell>
+                                                            <TableCell>{repair.returnDate ? new Date(repair.returnDate).toISOString().split('T')[0] : ''}</TableCell>
+                                                            <TableCell>{repair.repairNotes}</TableCell>
+                                                            <TableCell>{repair.vendor}</TableCell>
+                                                            <TableCell>{repair.repairCost}</TableCell>
                                                         </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                            {repairs.map((repair: { _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }) => (
-                                                            <TableRow key={repair._id}>
-                                                                <TableCell className="font-medium">{repair.returnDate ? new Date(repair.dateOut).toISOString().split('T')[0] : ''}</TableCell>
-                                                                <TableCell>{repair.returnDate ? new Date(repair.returnDate).toISOString().split('T')[0] : ''}</TableCell>
-                                                                <TableCell>{repair.repairNotes}</TableCell>
-                                                                <TableCell>{repair.vendor}</TableCell>
-                                                                <TableCell>{repair.repairCost}</TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
                                         </CardContent>
                                         <CardFooter />
                                     </Card>
@@ -642,8 +643,6 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
                 </form>
             </Form>
-
-
         </div>
     )
 }
