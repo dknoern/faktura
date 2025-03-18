@@ -1,14 +1,26 @@
 import { CustomerForm } from "@/components/customers/form";
+import { fetchCustomerById } from "@/lib/data";
+import { notFound } from 'next/navigation';
+export default async function EditCustomerPage(props: { params: Promise<{ id: number }> }) {
 
-export default function EditCustomerPage() {
-  return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold tracking-tight">Edit Customer</h2>
-      </div>
-      <div className="bg-white rounded-lg shadow p-6">
-        <CustomerForm />
-      </div>
-    </div>
-  );
-} 
+    const params = await props.params;
+    const id = params.id;
+    const [customer] = await Promise.all([
+        fetchCustomerById(id)
+    ]);
+
+    if (!customer) {
+        notFound();
+    }
+    return (
+        <div>
+            <div>
+                <h2 className='text-2xl font-bold tracking-tight'>Customer</h2>
+            </div>
+            <div>
+                <CustomerForm customer={JSON.parse(JSON.stringify(customer))} />
+            </div>
+        </div>
+    );
+}
+

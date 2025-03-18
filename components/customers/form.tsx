@@ -91,10 +91,15 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
       router.push("/dashboard/customers");
       router.refresh();
     } catch (error) {
+      console.error('Error creating customer:', error);
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if(customer){
+    form.reset(customer);
   }
 
   return (
