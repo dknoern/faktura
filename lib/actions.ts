@@ -53,7 +53,17 @@ export async function updateProduct(state: State, formData: FormData): Promise<S
             inventoryItem: formData.get('inventoryItem') === 'true',
         });
 
-        console.log('Form validation successful:', validatedFields);
+        console.log('validatedFields:', validatedFields);
+
+        if (!validatedFields.success) {
+          console.log('Form validation failed:', validatedFields);
+          return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Create or Update Product.',
+          };
+        }
+
+        console.log('Form validation successful:', JSON.stringify(validatedFields));
 
         // TODO: Add database update logic here
         // await productModel.findByIdAndUpdate(validatedFields.id, validatedFields);

@@ -50,6 +50,19 @@ export async function fetchProductById(id: string) {
 }
 
 
+export async function fetchCustomerById(id: number) {
+    try {
+        console.log('getting customer by id----:', id);
+        await dbConnect();
+        const customer = await productModel.findOne({_id: id});
+        return customer;
+    } catch (error) {
+        console.error('Error fetching customer:', error);
+        throw error;
+    }
+}
+
+
 export async function fetchInvoices() {
     try {
         await dbConnect();

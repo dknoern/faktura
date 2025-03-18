@@ -16,6 +16,7 @@ export async function CustomersTable() {
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead>Number</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>City</TableHead>
                     <TableHead>Email</TableHead>
@@ -26,6 +27,7 @@ export async function CustomersTable() {
             <TableBody>
                 {latestCustomers.map((customer) => (
                     <TableRow key={customer._id}>
+                        <TableCell>{customer._id}</TableCell>
                         <TableCell> {customer.firstName + ' ' + customer.lastName}</TableCell>
                         <TableCell>{customer.city}</TableCell>
                         <TableCell>{customer.email}</TableCell>
