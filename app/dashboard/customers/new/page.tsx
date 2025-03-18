@@ -7,7 +7,12 @@ export default function NewCustomerPage() {
         <h2 className="text-2xl font-bold tracking-tight">New Customer</h2>
       </div>
       <div className="bg-white rounded-lg shadow p-6">
-        <CustomerForm />
+        <CustomerForm customer={{
+          _id: 0,
+          firstName: "",
+          lastName: "",
+          lastUpdated: new Date(),
+        }} />
       </div>
     </div>
   );

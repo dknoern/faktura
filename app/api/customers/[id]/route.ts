@@ -3,14 +3,22 @@ import dbConnect from "@/lib/dbConnect";
 import { customerModel } from "@/lib/models/customer";
 import { NextRequest } from "next/server";
 
+
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: number }> }
 ): Promise<NextResponse> {
+
+
+ const params = await context.params;
+ const customerId = params.id;
+
+
   try {
     await dbConnect();
     const body = await request.json();
-    const customerId = parseInt(params.id);
+
 
     if (!customerId) {
       return NextResponse.json(
