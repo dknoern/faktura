@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const customerFormSchema = z.object({
@@ -39,7 +39,6 @@ const customerFormSchema = z.object({
 });
 
 type CustomerFormValues = z.infer<typeof customerFormSchema>;
-
 
 export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema>}) {
   const router = useRouter();
@@ -73,8 +72,14 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
       setError(null);
       setIsSubmitting(true);
 
-      const response = await fetch("/api/customers", {
-        method: "POST",
+      const url = customer?._id 
+        ? `/api/customers/${customer._id}`
+        : "/api/customers";
+      
+      const method = customer?._id ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -84,23 +89,47 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error || "Failed to create customer. Please try again.");
+        setError(result.error || `Failed to ${customer?._id ? 'update' : 'create'} customer. Please try again.`);
         return;
       }
 
       router.push("/dashboard/customers");
       router.refresh();
     } catch (error) {
-      console.error('Error creating customer:', error);
+      console.error('Error saving customer:', error);
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  if(customer){
-    form.reset(customer);
-  }
+  useEffect(() => {
+    async function fetchRecord() {
+      if (customer) {
+        form.reset({
+          firstName: customer.firstName || "",
+          lastName: customer.lastName || "",
+          company: customer.company || "",
+          email: customer.email || "",
+          phone: customer.phone || "",
+          cell: customer.cell || "",
+          address1: customer.address1 || "",
+          address2: customer.address2 || "",
+          address3: customer.address3 || "",
+          city: customer.city || "",
+          state: customer.state || "",
+          zip: customer.zip || "",
+          country: customer.country || "",
+          copyAddress: customer.copyAddress || false,
+          customerType: customer.customerType || "Regular",
+          status: customer.status || "Active",
+        })
+      }
+    }
+    fetchRecord()
+  }, [form, customer])
+
+
 
   return (
     <Form {...form}>
@@ -330,7 +359,9 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Customer"}
+            {isSubmitting 
+              ? (customer?._id ? "Updating..." : "Creating...") 
+              : (customer?._id ? "Update Customer" : "Create Customer")}
           </Button>
         </div>
       </form>

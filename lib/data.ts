@@ -54,7 +54,7 @@ export async function fetchCustomerById(id: number) {
     try {
         console.log('getting customer by id----:', id);
         await dbConnect();
-        const customer = await productModel.findOne({_id: id});
+        const customer = await customerModel.findOne({_id: id});
         return customer;
     } catch (error) {
         console.error('Error fetching customer:', error);

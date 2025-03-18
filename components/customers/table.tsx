@@ -8,6 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { LinkTableCell } from "../LinkTableCell";
 
 export async function CustomersTable() {
 
@@ -27,7 +28,7 @@ export async function CustomersTable() {
             <TableBody>
                 {latestCustomers.map((customer) => (
                     <TableRow key={customer._id}>
-                        <TableCell>{customer._id}</TableCell>
+                        <LinkTableCell href={`/dashboard/customers/${customer._id}/edit`}>{customer._id}</LinkTableCell>
                         <TableCell> {customer.firstName + ' ' + customer.lastName}</TableCell>
                         <TableCell>{customer.city}</TableCell>
                         <TableCell>{customer.email}</TableCell>
