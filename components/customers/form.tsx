@@ -40,6 +40,13 @@ const customerFormSchema = z.object({
   state: z.string().optional(),
   zip: z.string().optional(),
   country: z.string().optional(),
+  billingAddress1: z.string().optional(),
+  billingAddress2: z.string().optional(),
+  billingAddress3: z.string().optional(),
+  billingCity: z.string().optional(),
+  billingState: z.string().optional(),
+  billingZip: z.string().optional(),
+  billingCountry: z.string().optional(),
   copyAddress: z.boolean().optional(),
   customerType: z.enum(["Direct", "Dealer"], {
     required_error: "Please select a customer type",
@@ -49,7 +56,7 @@ const customerFormSchema = z.object({
 
 type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
-export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema>}) {
+export function CustomerForm({ customer }: { customer: z.infer<typeof customerSchema> }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,6 +77,13 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
       state: "",
       zip: "",
       country: "",
+      billingAddress1: "",
+      billingAddress2: "",
+      billingAddress3: "",
+      billingCity: "",
+      billingState: "",
+      billingZip: "",
+      billingCountry: "",
       copyAddress: false,
       customerType: "Direct",
       status: "Active",
@@ -81,10 +95,10 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
       setError(null);
       setIsSubmitting(true);
 
-      const url = customer?._id 
+      const url = customer?._id
         ? `/api/customers/${customer._id}`
         : "/api/customers";
-      
+
       const method = customer?._id ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -115,10 +129,10 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
   useEffect(() => {
     async function fetchRecord() {
       if (customer) {
-        const customerType = customer.customerType === "Direct" || customer.customerType === "Dealer" 
-          ? customer.customerType 
+        const customerType = customer.customerType === "Direct" || customer.customerType === "Dealer"
+          ? customer.customerType
           : "Direct";
-        
+
         form.reset({
           firstName: customer.firstName || "",
           lastName: customer.lastName || "",
@@ -133,6 +147,13 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
           state: customer.state || "",
           zip: customer.zip || "",
           country: customer.country || "",
+          billingAddress1: customer.billingAddress1 || "",
+          billingAddress2: customer.billingAddress2 || "",
+          billingAddress3: customer.billingAddress3 || "",
+          billingCity: customer.billingCity || "",
+          billingState: customer.billingState || "",
+          billingZip: customer.billingZip || "",
+          billingCountry: customer.billingCountry || "",
           copyAddress: customer.copyAddress || false,
           customerType: customerType as "Direct" | "Dealer",
           status: customer.status || "Active",
@@ -143,7 +164,6 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
   }, [form, customer])
 
 
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -152,29 +172,8 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="customerType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Customer Type <span className="text-red-500">*</span></FormLabel>
-                <Select onValueChange={field.onChange} value={customer.customerType || "Direct"} defaultValue={customer.customerType}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select customer type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Direct">Direct</SelectItem>
-                    <SelectItem value="Dealer">Dealer</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <FormField
             control={form.control}
@@ -209,7 +208,7 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
             name="company"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Company</FormLabel>
                 <FormControl>
                   <Input placeholder="ACME Inc." {...field} />
                 </FormControl>
@@ -223,7 +222,7 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input type="email" placeholder="john@example.com" {...field} />
                 </FormControl>
@@ -237,7 +236,7 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Phone</FormLabel>
                 <FormControl>
                   <Input placeholder="(555) 555-5555" {...field} />
                 </FormControl>
@@ -251,7 +250,7 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
             name="cell"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cell <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Cell</FormLabel>
                 <FormControl>
                   <Input placeholder="(555) 555-5555" {...field} />
                 </FormControl>
@@ -259,130 +258,278 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
               </FormItem>
             )}
           />
+
+<FormField
+            control={form.control}
+            name="customerType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Customer Type <span className="text-red-500">*</span></FormLabel>
+                <Select onValueChange={field.onChange} value={customer.customerType || "Direct"} defaultValue={customer.customerType}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select customer type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Direct">Direct</SelectItem>
+                    <SelectItem value="Dealer">Dealer</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Address</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="address1"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Address Line 1 <span className="text-red-500">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="123 Main St" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <FormField
-              control={form.control}
-              name="address2"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Address Line 2</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Apt 4B" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <div>
+            <div className="flex items-center space-x-4">
+              <h3 className="text-lg font-medium">Shipping Address</h3>
+            </div>
 
-            <FormField
-              control={form.control}
-              name="address3"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Address Line 3</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Suite 100" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>City <span className="text-red-500">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="New York" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="address1"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Address Line 1</FormLabel>
+                      <FormControl>
+                        <Input placeholder="123 Main St" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>State <span className="text-red-500">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="NY" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="address2"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Address Line 2</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Apt 4B" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="zip"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ZIP <span className="text-red-500">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="10001" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="address3"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Address Line 3</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Suite 100" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <FormControl>
+                        <Input placeholder="New York" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>State</FormLabel>
+                      <FormControl>
+                        <Input placeholder="NY" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="zip"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ZIP</FormLabel>
+                      <FormControl>
+                        <Input placeholder="10001" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Country</FormLabel>
+                      <FormControl>
+                        <Input placeholder="United States" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+          </div>
+
+          <div>
+            <div className="flex items-center space-x-4">
+              <h3 className="text-lg font-medium">Billing Address</h3>
+
+              <FormField
+                control={form.control}
+                name="copyAddress"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          if (checked) {
+                            form.setValue('billingAddress1', form.getValues('address1'));
+                            form.setValue('billingAddress2', form.getValues('address2'));
+                            form.setValue('billingAddress3', form.getValues('address3'));
+                            form.setValue('billingCity', form.getValues('city'));
+                            form.setValue('billingState', form.getValues('state'));
+                            form.setValue('billingZip', form.getValues('zip'));
+                            form.setValue('billingCountry', form.getValues('country'));
+                          } else {
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        (Use shipping)
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-4">
             <FormField
-              control={form.control}
-              name="country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Country <span className="text-red-500">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="United States" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                control={form.control}
+                name="billingAddress1"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Address Line 1</FormLabel>
+                    <FormControl>
+                      <Input placeholder="123 Main St" {...field} disabled={form.watch('copyAddress')} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="billingAddress2"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Address Line 2</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Apt 4B" {...field} disabled={form.watch('copyAddress')} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="billingAddress3"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Address Line 3</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Suite 100" {...field} disabled={form.watch('copyAddress')} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="billingCity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City</FormLabel>
+                    <FormControl>
+                      <Input placeholder="New York" {...field} disabled={form.watch('copyAddress')} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="billingState"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State</FormLabel>
+                    <FormControl>
+                      <Input placeholder="NY" {...field} disabled={form.watch('copyAddress')} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="billingZip"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ZIP</FormLabel>
+                    <FormControl>
+                      <Input placeholder="10001" {...field} disabled={form.watch('copyAddress')} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="billingCountry"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country</FormLabel>
+                    <FormControl>
+                      <Input placeholder="United States" {...field} disabled={form.watch('copyAddress')} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
         </div>
-
-        <FormField
-          control={form.control}
-          name="copyAddress"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>
-                  Copy shipping address to billing address
-                </FormLabel>
-              </div>
-            </FormItem>
-          )}
-        />
 
         <div className="flex justify-end space-x-4">
           <Button
@@ -394,8 +541,8 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting 
-              ? (customer?._id ? "Updating..." : "Creating...") 
+            {isSubmitting
+              ? (customer?._id ? "Updating..." : "Creating...")
               : (customer?._id ? "Update Customer" : "Create Customer")}
           </Button>
         </div>
