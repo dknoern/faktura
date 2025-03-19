@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createCustomer, updateCustomer } from "@/app/actions/customers";
 
 const customerFormSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -95,29 +96,16 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
       setError(null);
       setIsSubmitting(true);
 
-      const url = customer?._id
-        ? `/api/customers/${customer._id}`
-        : "/api/customers";
+      const result = customer?._id
+        ? await updateCustomer(customer._id, data)
+        : await createCustomer(data);
 
-      const method = customer?._id ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
+      if (!result.success) {
         setError(result.error || `Failed to ${customer?._id ? 'update' : 'create'} customer. Please try again.`);
         return;
       }
 
       router.push("/dashboard/customers");
-      router.refresh();
     } catch (error) {
       console.error('Error saving customer:', error);
       setError("An unexpected error occurred. Please try again.");
@@ -182,7 +170,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
               <FormItem>
                 <FormLabel>First Name <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <Input placeholder="John" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -196,7 +184,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
               <FormItem>
                 <FormLabel>Last Name <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <Input placeholder="Doe" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -210,7 +198,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
               <FormItem>
                 <FormLabel>Company</FormLabel>
                 <FormControl>
-                  <Input placeholder="ACME Inc." {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -224,7 +212,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="john@example.com" {...field} />
+                  <Input type="email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -238,7 +226,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(555) 555-5555" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -252,14 +240,14 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
               <FormItem>
                 <FormLabel>Cell</FormLabel>
                 <FormControl>
-                  <Input placeholder="(555) 555-5555" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-<FormField
+          <FormField
             control={form.control}
             name="customerType"
             render={({ field }) => (
@@ -291,104 +279,104 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
 
 
             <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="address1"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Address Line 1</FormLabel>
-                      <FormControl>
-                        <Input placeholder="123 Main St" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="address1"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Address Line 1</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="address2"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Address Line 2</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Apt 4B" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="address2"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Address Line 2</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="address3"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Address Line 3</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Suite 100" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="address3"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Address Line 3</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <Input placeholder="New York" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>State</FormLabel>
-                      <FormControl>
-                        <Input placeholder="NY" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="zip"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ZIP</FormLabel>
-                      <FormControl>
-                        <Input placeholder="10001" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="zip"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ZIP</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Country</FormLabel>
-                      <FormControl>
-                        <Input placeholder="United States" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
           </div>
 
@@ -430,14 +418,14 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
             </div>
 
             <div className="space-y-4">
-            <FormField
+              <FormField
                 control={form.control}
                 name="billingAddress1"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
                     <FormLabel>Address Line 1</FormLabel>
                     <FormControl>
-                      <Input placeholder="123 Main St" {...field} disabled={form.watch('copyAddress')} />
+                      <Input {...field} disabled={form.watch('copyAddress')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -451,7 +439,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
                   <FormItem className="md:col-span-2">
                     <FormLabel>Address Line 2</FormLabel>
                     <FormControl>
-                      <Input placeholder="Apt 4B" {...field} disabled={form.watch('copyAddress')} />
+                      <Input {...field} disabled={form.watch('copyAddress')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -465,7 +453,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
                   <FormItem className="md:col-span-2">
                     <FormLabel>Address Line 3</FormLabel>
                     <FormControl>
-                      <Input placeholder="Suite 100" {...field} disabled={form.watch('copyAddress')} />
+                      <Input {...field} disabled={form.watch('copyAddress')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -479,7 +467,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
                   <FormItem>
                     <FormLabel>City</FormLabel>
                     <FormControl>
-                      <Input placeholder="New York" {...field} disabled={form.watch('copyAddress')} />
+                      <Input {...field} disabled={form.watch('copyAddress')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -493,7 +481,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
                   <FormItem>
                     <FormLabel>State</FormLabel>
                     <FormControl>
-                      <Input placeholder="NY" {...field} disabled={form.watch('copyAddress')} />
+                      <Input {...field} disabled={form.watch('copyAddress')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -507,7 +495,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
                   <FormItem>
                     <FormLabel>ZIP</FormLabel>
                     <FormControl>
-                      <Input placeholder="10001" {...field} disabled={form.watch('copyAddress')} />
+                      <Input {...field} disabled={form.watch('copyAddress')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -521,7 +509,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
                   <FormItem>
                     <FormLabel>Country</FormLabel>
                     <FormControl>
-                      <Input placeholder="United States" {...field} disabled={form.watch('copyAddress')} />
+                      <Input {...field} disabled={form.watch('copyAddress')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
