@@ -18,6 +18,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const customerFormSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -34,7 +41,9 @@ const customerFormSchema = z.object({
   zip: z.string().optional(),
   country: z.string().optional(),
   copyAddress: z.boolean().optional(),
-  customerType: z.string().optional(),
+  customerType: z.enum(["Direct", "Dealer"], {
+    required_error: "Please select a customer type",
+  }),
   status: z.string().optional(),
 });
 
@@ -62,7 +71,7 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
       zip: "",
       country: "",
       copyAddress: false,
-      customerType: "Regular",
+      customerType: "Direct",
       status: "Active",
     },
   });
@@ -106,6 +115,10 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
   useEffect(() => {
     async function fetchRecord() {
       if (customer) {
+        const customerType = customer.customerType === "Direct" || customer.customerType === "Dealer" 
+          ? customer.customerType 
+          : "Direct";
+        
         form.reset({
           firstName: customer.firstName || "",
           lastName: customer.lastName || "",
@@ -121,7 +134,7 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
           zip: customer.zip || "",
           country: customer.country || "",
           copyAddress: customer.copyAddress || false,
-          customerType: customer.customerType || "Regular",
+          customerType: customerType as "Direct" | "Dealer",
           status: customer.status || "Active",
         })
       }
@@ -141,6 +154,28 @@ export function CustomerForm({customer}:{customer: z.infer<typeof customerSchema
         )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="customerType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Customer Type <span className="text-red-500">*</span></FormLabel>
+                <Select onValueChange={field.onChange} value={customer.customerType || "Direct"} defaultValue={customer.customerType}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select customer type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Direct">Direct</SelectItem>
+                    <SelectItem value="Dealer">Dealer</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="firstName"
