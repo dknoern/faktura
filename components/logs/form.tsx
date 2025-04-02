@@ -44,9 +44,16 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
       setError(null);
       setIsSubmitting(true);
 
+      // Ensure date is a proper Date object and include id if it exists
+      const formData = {
+        ...data,
+        date: new Date(data.date),
+        id: log?.id // Include the id if it exists
+      };
+
       const result = log?.id
-        ? await updateLog(log.id, data)
-        : await createLog(data);
+        ? await updateLog(log.id, formData)
+        : await createLog(formData);
 
       if (!result.success) {
         setError(result.error || `Failed to ${log?.id ? 'update' : 'create'} log item. Please try again.`);
@@ -65,7 +72,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
   useEffect(() => {
     if (log) {
       form.reset({
-        date: log.date,
+        date: new Date(log.date),
         receivedFrom: log.receivedFrom || "",
         comments: log.comments || "",
         user: log.user || "",
@@ -84,7 +91,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
           <FormField
             control={form.control}
             name="date"
@@ -92,7 +99,27 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
               <FormItem>
                 <FormLabel>Date <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} />
+                  <Input 
+                    type="datetime-local" 
+                    {...field} 
+                    value={field.value instanceof Date 
+                      ? field.value.toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        }).split('/').reverse().join('-') + 'T' + 
+                        field.value.toLocaleTimeString('en-GB', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false
+                        })
+                      : ''} 
+                    onChange={(e) => {
+                      const date = e.target.value ? new Date(e.target.value) : new Date();
+                      field.onChange(date);
+                    }}
+                    disabled={!!log?.id}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -132,7 +159,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
             name="user"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>User</FormLabel>
+                <FormLabel>Received By</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -147,7 +174,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
           name="comments"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Comments</FormLabel>
+              <FormLabel>Note/Comment</FormLabel>
               <FormControl>
                 <Textarea {...field} />
               </FormControl>

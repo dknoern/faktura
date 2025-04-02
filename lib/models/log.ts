@@ -19,7 +19,7 @@ export const logSchema = z.object({
   receivedFrom: z.string().min(1, "Received from is required"),
   comments: z.string().optional(),
   user: z.string().optional(),
-  customerName: z.string().min(1, "Customer name is required"),
+  customerName: z.string().optional(),
   search: z.string().optional(),
   lineItems: z.array(lineItemSchema).optional(),
 });

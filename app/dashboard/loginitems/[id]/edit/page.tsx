@@ -6,18 +6,16 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  console.log('loading logitem', id);
   const logitem = await fetchLogItemById(id);
 
   if (!logitem) {
-    console.log('llogitem', id, 'not found');
     notFound();
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-1">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold tracking-tight">Edit Log Item</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Log</h2>
       </div>
 
       <LogForm log={JSON.parse(JSON.stringify(logitem))} />

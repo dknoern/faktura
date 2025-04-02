@@ -65,7 +65,7 @@ export async function fetchInvoices() {
     try {
         await dbConnect();
         const invoices = await Invoice.find().sort({ _id: -1 }).limit(10);
-        return invoices;
+        return JSON.parse(JSON.stringify(invoices));
     } catch (error) {
         console.error('Error fetching newest customers:', error);
         throw error;

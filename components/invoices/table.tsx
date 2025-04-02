@@ -1,4 +1,4 @@
-import { fetchInvoices } from "@/lib/data";
+"use client"
 
 import {
     Table,
@@ -10,13 +10,17 @@ import {
 } from "@/components/ui/table"
 import React from "react";
 
-export async function InvoicesTable() {
+export function InvoicesTable({ invoices }: { invoices: any[] }) {    // Ensure invoices is an array before mapping
 
-    const invoices = await fetchInvoices();
+    const invoiceList = Array.isArray(invoices) ? invoices : [];
+
     return (
         <Table>
             <TableHeader>
-                <TableRow>
+                <TableRow onClick={() => {
+                    alert('hi')
+                    console.log('hi')
+                }}>
                     <TableHead>Invoice</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead style={{ whiteSpace: 'nowrap' }}>Date</TableHead>
@@ -40,8 +44,10 @@ export async function InvoicesTable() {
                     }
 
                     return (
-                        <TableRow key={invoice._id}>
-                            <TableCell> {invoice._id}</TableCell>
+                        <TableRow key={invoice._id} onClick={() => {
+                            alert('selected invoice: ' + invoice._id)   
+                        }}>
+                            <TableCell>{invoice._id}</TableCell>
                             <TableCell> {invoice.customerFirstName + ' ' + invoice.customerLastName}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
                             <TableCell>
@@ -67,7 +73,7 @@ export async function InvoicesTable() {
                     )
                 }
                 )}
-                </TableBody>
+            </TableBody>
         </Table>
     )
 }

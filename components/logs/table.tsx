@@ -50,7 +50,17 @@ export async function LogsTable() {
 
 
 
-                            <LinkTableCell  style={{ whiteSpace: 'nowrap' }} href={`/dashboard/loginitems/${log._id}/edit`}>{log.date ? new Date(log.date).toISOString().split('T')[0] : ''}</LinkTableCell>
+                            <LinkTableCell  style={{ whiteSpace: 'nowrap' }} href={`/dashboard/loginitems/${log._id}/edit`}>
+                                {log.date ? new Date(log.date).toLocaleDateString('en-US', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                }) + ' ' + new Date(log.date).toLocaleTimeString('en-US', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: false
+                                }) : ''}
+                            </LinkTableCell>
                             <TableCell> {log.receivedFrom}</TableCell>
                             <TableCell> {log.customerName}</TableCell>
 

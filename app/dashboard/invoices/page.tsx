@@ -1,7 +1,13 @@
 import { InvoicesTable } from "@/components/invoices/table";
 import { SkeletonTable } from "@/components/skeletons";
+import { fetchInvoices } from "@/lib/data";
 import { Suspense } from "react";
 export default async function Page() {
+
+
+
+  const invoices: any[] = await fetchInvoices();
+  
   return (
     <div>
       <div>
@@ -9,7 +15,7 @@ export default async function Page() {
       </div>
       <div>
         <Suspense fallback={<SkeletonTable />}>
-          <InvoicesTable />
+          <InvoicesTable invoices={invoices} />
         </Suspense>
       </div>
     </div>
