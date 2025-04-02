@@ -4,10 +4,8 @@ import { Invoice } from './models/invoice';
 import { productModel } from './models/product';
 import { Return } from './models/return';
 import { Repair } from './models/repair';
-import { Log } from './models/log';
 import { Out } from './models/out';
-import { customerModel } from './models/customer';
-
+import { customerModel } from './models/customer';import { logModel } from './models/log';
 
 export async function fetchNewestCustomers() {
     try {
@@ -102,7 +100,7 @@ export async function fetchRepairs() {
 export async function fetchLogs() {
     try {
         await dbConnect();
-        const logs = await Log.find().sort({ _id: -1 }).limit(10);
+        const logs = await logModel.find().sort({ _id: -1 }).limit(10);
         return logs;
     } catch (error) {
         console.error('Error fetching logs:', error);
@@ -128,6 +126,32 @@ export async function getRepairsForItem(productId: string) {
         return repairs;
     } catch (error) {
         console.error('Error fetching outs:', error);
+        throw error;
+    }
+}
+
+export async function fetchLogItemById(id: string) {
+    try {
+        await dbConnect();
+        console.log('Database connected, attempting to fetch log with id:', id);
+
+        // Get the raw collection and convert to ObjectId
+        const collection = logModel.collection;
+        const _id = new mongoose.Types.ObjectId(id);
+        
+        // Use raw MongoDB query that we know works
+        const log = await collection.findOne({ _id });
+        
+        if (!log) {
+            console.log('No document found with ID:', id);
+            return null;
+        }
+        log.id = id;
+
+        console.log('Found document:', log);
+        return log;
+    } catch (error) {
+        console.error('Error fetching log item:', error);
         throw error;
     }
 }

@@ -7,7 +7,9 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+
 } from "@/components/ui/table"
+import { LinkTableCell } from "../LinkTableCell";
 import React from "react";
 
 export async function LogsTable() {
@@ -43,7 +45,12 @@ export async function LogsTable() {
 
                     return (
                         <TableRow key={log._id}>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{log.date ? new Date(log.date).toISOString().split('T')[0] : ''}</TableCell>
+
+
+
+
+
+                            <LinkTableCell  style={{ whiteSpace: 'nowrap' }} href={`/dashboard/loginitems/${log._id}/edit`}>{log.date ? new Date(log.date).toISOString().split('T')[0] : ''}</LinkTableCell>
                             <TableCell> {log.receivedFrom}</TableCell>
                             <TableCell> {log.customerName}</TableCell>
 
