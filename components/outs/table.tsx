@@ -1,5 +1,4 @@
-import { fetchOuts } from "@/lib/data";
-
+"use client"
 import {
     Table,
     TableBody,
@@ -9,11 +8,32 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import React from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
-export async function OutsTable() {
+interface PaginationProps {
+    total: number;
+    pages: number;
+    currentPage: number;
+    limit: number;
+}
+export function OutsTable({outs, pagination}: {outs: any, pagination: PaginationProps}) {
 
-    const logs = await fetchOuts();
+    const outsList = Array.isArray(outs) ? outs : [];
+
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const handlePageChange = (newPage: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', newPage.toString());
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+
     return (
+        <div>
         <Table>
             <TableHeader>
                 <TableRow>
@@ -25,19 +45,44 @@ export async function OutsTable() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {logs.map((log) => {
+                {outsList.map((out: any) => {
                     return (
-                        <TableRow key={log._id}>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{log.date ? new Date(log.date).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell> {log.sentTo}</TableCell>
-                            <TableCell> {log.description}</TableCell>
-                            <TableCell> {log.user}</TableCell>
-                            <TableCell> {log.comments}</TableCell>
+                        <TableRow key={out._id}>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{out.date ? new Date(out.date).toISOString().split('T')[0] : ''}</TableCell>
+                            <TableCell> {out.sentTo}</TableCell>
+                            <TableCell> {out.description}</TableCell>
+                            <TableCell> {out.user}</TableCell>
+                            <TableCell> {out.comments}</TableCell>
                         </TableRow>
                     )
                 }
                 )}
                 </TableBody>
         </Table>
+            <div className="flex items-center justify-between mt-4">
+                <div className="text-sm text-gray-500">
+                    Showing {outsList.length} of {pagination.total} logs
+                </div>
+                <div className="flex space-x-2">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => handlePageChange(pagination.currentPage - 1)}
+                        disabled={pagination.currentPage <= 1}
+                    >
+                        Previous
+                    </Button>
+                    <div className="flex items-center">
+                        <span className="px-2">Page {pagination.currentPage} of {pagination.pages}</span>
+                    </div>
+                    <Button 
+                        variant="outline" 
+                        onClick={() => handlePageChange(pagination.currentPage + 1)}
+                        disabled={pagination.currentPage >= pagination.pages}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        </div>
     )
 }

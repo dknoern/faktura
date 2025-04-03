@@ -96,7 +96,6 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
     return (
         <div>
-            <div>ID: {product.id}</div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 

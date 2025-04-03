@@ -1,4 +1,4 @@
-import { fetchProducts } from "@/lib/data";
+"use client";
 
 import {
     Table,
@@ -10,11 +10,31 @@ import {
 } from "@/components/ui/table"
 import { LinkTableCell } from "../LinkTableCell";
 import { Badge } from "../ui/badge";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
-export async function ProductsTable() {
+interface PaginationProps {
+    total: number;
+    pages: number;
+    currentPage: number;
+    limit: number;
+}
 
-    const products = await fetchProducts();
+export function ProductsTable({products, pagination}: {products: any[], pagination: PaginationProps}) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const productsList = Array.isArray(products) ? products : [];
+
+    const handlePageChange = (newPage: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', newPage.toString());
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
     return (
+        <div>
         <Table>
             <TableHeader>
                 <TableRow>
@@ -28,12 +48,11 @@ export async function ProductsTable() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {products.map((product) => (
-
-
-                    <TableRow key={product.itemNumber}>
-                        <LinkTableCell href={`/dashboard/products/${product._id}/edit`}>
-                            {product.itemNumber}</LinkTableCell>
+                {productsList.map((product) => (
+                    <TableRow key={product.itemNumber} onClick={() => {
+                        router.push(`/dashboard/products/${product._id}/edit`)
+                    }} className="cursor-pointer">
+                        <TableCell>{product.itemNumber}</TableCell>
                         <TableCell>{product.title}</TableCell>
                         <TableCell>{product.serialNo}</TableCell>
                         <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
@@ -45,9 +64,35 @@ export async function ProductsTable() {
                         </TableCell>
                         <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
                     </TableRow>
-
                 ))}
             </TableBody>
         </Table>
+                
+        <div className="flex items-center justify-between mt-4">
+                <div className="text-sm text-gray-500">
+                    Showing {products.length} of {pagination.total} invoices
+                </div>
+                <div className="flex space-x-2">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => handlePageChange(pagination.currentPage - 1)}
+                        disabled={pagination.currentPage <= 1}
+                    >
+                        Previous
+                    </Button>
+                    <div className="flex items-center">
+                        <span className="px-2">Page {pagination.currentPage} of {pagination.pages}</span>
+                    </div>
+                    <Button 
+                        variant="outline" 
+                        onClick={() => handlePageChange(pagination.currentPage + 1)}
+                        disabled={pagination.currentPage >= pagination.pages}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        </div>
+
     )
 }

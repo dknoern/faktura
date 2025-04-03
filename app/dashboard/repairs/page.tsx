@@ -1,7 +1,15 @@
 import { RepairsTable } from "@/components/repairs/table";
 import { SkeletonTable } from "@/components/skeletons";
+import { fetchRepairs } from "@/lib/data";
 import { Suspense } from "react";
-export default async function Page() {
+export default async function Page({searchParams}: {searchParams: {page: string}}) {
+
+  const params = await searchParams;
+  const page = params.page ? parseInt(params.page) : 1;
+  const limit = 10;
+
+  const { repairs, pagination } = await fetchRepairs(page, limit);
+
   return (
     <div>
       <div>
@@ -9,7 +17,7 @@ export default async function Page() {
       </div>
       <div>
         <Suspense fallback={<SkeletonTable />}>
-      <RepairsTable />
+      <RepairsTable repairs={repairs} pagination={pagination}/>
       </Suspense>
       </div>
     </div>

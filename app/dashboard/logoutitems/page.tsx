@@ -1,7 +1,17 @@
 import { OutsTable } from "@/components/outs/table";
 import { SkeletonTable } from "@/components/skeletons";
+import { fetchOuts } from "@/lib/data";
 import { Suspense } from "react";
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { page?: string };
+}) {
+  const params = await searchParams;
+  const page = params.page ? parseInt(params.page) : 1;
+  const limit = 10;
+  const { outs, pagination } = await fetchOuts(page, limit);
+
   return (
     <div>
       <div>
@@ -9,7 +19,7 @@ export default async function Page() {
       </div>
       <div>
         <Suspense fallback={<SkeletonTable />}>
-          <OutsTable />
+          <OutsTable outs={outs} pagination={pagination}/>
         </Suspense>
       </div>
     </div>

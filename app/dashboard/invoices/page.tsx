@@ -2,11 +2,16 @@ import { InvoicesTable } from "@/components/invoices/table";
 import { SkeletonTable } from "@/components/skeletons";
 import { fetchInvoices } from "@/lib/data";
 import { Suspense } from "react";
-export default async function Page() {
 
-
-
-  const invoices: any[] = await fetchInvoices();
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { page?: string };
+}) {
+  const params = await searchParams;
+  const page = params.page ? parseInt(params.page) : 1;
+  const limit = 10;
+  const { invoices, pagination } = await fetchInvoices(page, limit);
   
   return (
     <div>
@@ -15,7 +20,7 @@ export default async function Page() {
       </div>
       <div>
         <Suspense fallback={<SkeletonTable />}>
-          <InvoicesTable invoices={invoices} />
+          <InvoicesTable invoices={invoices} pagination={pagination} />
         </Suspense>
       </div>
     </div>

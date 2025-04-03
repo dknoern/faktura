@@ -7,25 +7,54 @@ import { Repair } from './models/repair';
 import { Out } from './models/out';
 import { customerModel } from './models/customer';import { logModel } from './models/log';
 
-export async function fetchNewestCustomers() {
+export async function fetchCustomers(page = 1, limit = 10) {
     try {
 
         await dbConnect();
-        const customers = await customerModel.find().sort({ lastUpdated: -1 }).limit(10);
-        return customers;
+        const skip = (page - 1) * limit;
+            const customers = await customerModel.find()
+            .sort({ lastUpdated: -1 })
+            .skip(skip)
+            .limit(limit);
+        
+        const totalCount = await customerModel.countDocuments();
+        return {
+            customers: JSON.parse(JSON.stringify(customers)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
     } catch (error) {
-        console.error('Error fetching newest customers:', error);
+        console.error('Error fetching customers:', error);
         throw error;
     }
 }
 
-export async function fetchProducts() {
+
+export async function fetchProducts(page = 1, limit = 10) {
     try {
         await dbConnect();
-        const products = await productModel.find().sort({ lastUpdated: -1 }).limit(10);
-        return products;
+        const skip = (page - 1) * limit;
+        const products = await productModel.find()
+            .sort({ lastUpdated: -1 })
+            .skip(skip)
+            .limit(limit);
+        
+        const totalCount = await productModel.countDocuments();
+        return {
+            products: JSON.parse(JSON.stringify(products)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
     } catch (error) {
-        console.error('Error fetching newest customers:', error);
+        console.error('Error fetching products:', error);
         throw error;
     }
 }
@@ -61,22 +90,53 @@ export async function fetchCustomerById(id: number) {
 }
 
 
-export async function fetchInvoices() {
+export async function fetchInvoices(page = 1, limit = 10) {
     try {
         await dbConnect();
-        const invoices = await Invoice.find().sort({ _id: -1 }).limit(10);
-        return JSON.parse(JSON.stringify(invoices));
+        const skip = (page - 1) * limit;
+        const invoices = await Invoice.find()
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+        
+        // Get total count for pagination
+        const totalCount = await Invoice.countDocuments();
+        
+        return {
+            invoices: JSON.parse(JSON.stringify(invoices)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
     } catch (error) {
-        console.error('Error fetching newest customers:', error);
+        console.error('Error fetching invoices:', error);
         throw error;
     }
 }
 
-export async function fetchReturns() {
+
+export async function fetchReturns(page = 1, limit = 10) {
     try {
         await dbConnect();
-        const returns = await Return.find().sort({ _id: -1 }).limit(10);
-        return returns;
+        const skip = (page - 1) * limit;
+        const returns = await Return.find()
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+        
+        const totalCount = await Return.countDocuments();
+        return {
+            returns: JSON.parse(JSON.stringify(returns)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
     } catch (error) {
         console.error('Error fetching returns:', error);
         throw error;
@@ -84,11 +144,25 @@ export async function fetchReturns() {
 }
 
 
-export async function fetchRepairs() {
+export async function fetchRepairs(page = 1, limit = 10 ) {
     try {
         await dbConnect();
-        const repairs = await Repair.find().sort({ _id: -1 }).limit(10);
-        return repairs;
+        const skip = (page - 1) * limit;
+        const repairs = await Repair.find()
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+        
+            const totalCount = await Repair.countDocuments();
+        return {
+            repairs: JSON.parse(JSON.stringify(repairs)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
     } catch (error) {
         console.error('Error fetching returns:', error);
         throw error;
@@ -96,28 +170,57 @@ export async function fetchRepairs() {
 }
 
 
-
-export async function fetchLogs() {
+export async function fetchLogs(page = 1, limit = 10) {
     try {
         await dbConnect();
-        const logs = await logModel.find().sort({ _id: -1 }).limit(10);
-        return logs;
+        const skip = (page - 1) * limit;
+        const logs = await logModel.find()
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+        
+        const totalCount = await logModel.countDocuments();
+        return {
+            logs: JSON.parse(JSON.stringify(logs)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
     } catch (error) {
         console.error('Error fetching logs:', error);
         throw error;
     }
 }
 
-export async function fetchOuts() {
+
+export async function fetchOuts(page = 1, limit = 10    ) {
     try {
         await dbConnect();
-        const outs = await Out.find().sort({ _id: -1 }).limit(10);
-        return outs;
+        const skip = (page - 1) * limit;
+        const outs = await Out.find()
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+        
+        const totalCount = await Out.countDocuments();
+        return {
+            outs: JSON.parse(JSON.stringify(outs)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
     } catch (error) {
         console.error('Error fetching outs:', error);
         throw error;
     }
 }
+
 
 export async function getRepairsForItem(productId: string) {
     try {
@@ -129,6 +232,7 @@ export async function getRepairsForItem(productId: string) {
         throw error;
     }
 }
+
 
 export async function fetchLogItemById(id: string) {
     try {
@@ -155,5 +259,3 @@ export async function fetchLogItemById(id: string) {
         throw error;
     }
 }
-
-

@@ -1,5 +1,4 @@
-import { fetchLogs } from "@/lib/data";
-
+"use client"
 import {
     Table,
     TableBody,
@@ -11,11 +10,32 @@ import {
 } from "@/components/ui/table"
 import { LinkTableCell } from "../LinkTableCell";
 import React from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
-export async function LogsTable() {
+interface PaginationProps {
+    total: number;
+    pages: number;
+    currentPage: number;
+    limit: number;
+}
 
-    const logs = await fetchLogs();
+export function LogsTable({logs, pagination}: {logs: any, pagination: any}) {
+
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const handlePageChange = (newPage: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', newPage.toString());
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+
+    const logsList = Array.isArray(logs) ? logs : [];
     return (
+        <div>
         <Table>
             <TableHeader>
                 <TableRow>
@@ -30,7 +50,7 @@ export async function LogsTable() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {logs.map((log) => {
+                    {logsList.map((log: any) => {
 
                     let itemNumbers = ''
                     let itemNames = ''
@@ -97,5 +117,30 @@ export async function LogsTable() {
                 )}
                 </TableBody>
         </Table>
+            <div className="flex items-center justify-between mt-4">
+                <div className="text-sm text-gray-500">
+                    Showing {logsList.length} of {pagination.total} logs
+                </div>
+                <div className="flex space-x-2">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => handlePageChange(pagination.currentPage - 1)}
+                        disabled={pagination.currentPage <= 1}
+                    >
+                        Previous
+                    </Button>
+                    <div className="flex items-center">
+                        <span className="px-2">Page {pagination.currentPage} of {pagination.pages}</span>
+                    </div>
+                    <Button 
+                        variant="outline" 
+                        onClick={() => handlePageChange(pagination.currentPage + 1)}
+                        disabled={pagination.currentPage >= pagination.pages}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        </div>
     )
 }

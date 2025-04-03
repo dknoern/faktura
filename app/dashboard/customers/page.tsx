@@ -4,8 +4,17 @@ import { Suspense } from "react";
 import { Plus } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button"
 import Link from "next/link";
+import { fetchCustomers } from "@/lib/data";
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { page?: string };
+}) {
+  const params = await searchParams;
+  const page = params.page ? parseInt(params.page) : 1;
+  const limit = 10;
+  const { customers, pagination } = await fetchCustomers(page, limit);
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -20,7 +29,7 @@ export default async function Page() {
       </div>
       <div>
         <Suspense fallback={<SkeletonTable />}>
-          <CustomersTable />
+          <CustomersTable customers={customers} pagination={pagination} />
         </Suspense>
       </div>
     </div>
