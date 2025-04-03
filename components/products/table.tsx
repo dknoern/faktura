@@ -14,6 +14,8 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { productSchema } from "@/lib/models/product";
 import { z } from "zod";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 interface PaginationProps {
     total: number;
@@ -22,10 +24,11 @@ interface PaginationProps {
     limit: number;
 }
 
-export function ProductsTable({products, pagination}: {products: (z.infer<typeof productSchema> & { _id: string })[], pagination: PaginationProps}) {
+export function ProductsTable({ products, pagination }: { products: (z.infer<typeof productSchema> & { _id: string })[], pagination: PaginationProps }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
     const productsList = Array.isArray(products) ? products : [];
 
@@ -35,48 +38,70 @@ export function ProductsTable({products, pagination}: {products: (z.infer<typeof
         router.push(`${pathname}?${params.toString()}`);
     };
 
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) {
+            params.set('search', value);
+            params.set('page', '1'); // Reset to first page when searching
+        } else {
+            params.delete('search');
+        }
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
     return (
         <div>
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead style={{ whiteSpace: 'nowrap' }}>Item No</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Serial No</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Model No</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Updated</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {productsList.map((product) => (
-                    <TableRow key={product.itemNumber} onClick={() => {
-                        router.push(`/dashboard/products/${product._id}/edit`)
-                    }} className="cursor-pointer">
-                        <TableCell>{product.itemNumber}</TableCell>
-                        <TableCell>{product.title}</TableCell>
-                        <TableCell>{product.serialNo}</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}>{product.cost ? Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','') : ''}</TableCell>
-                        <TableCell>{product.modelNumber}</TableCell>
-                        <TableCell style={{ whiteSpace: 'nowrap' }}>
-                            <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : 'yellow' }}>
-                                {product.status}
-                            </Badge>
-                        </TableCell>
-                        <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
+            <div className="mb-4">
+                <Input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    className="max-w-sm"
+                />
+            </div>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead style={{ whiteSpace: 'nowrap' }}>Item No</TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Serial No</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Model No</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Updated</TableHead>
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-                
-        <div className="flex items-center justify-between mt-4">
+                </TableHeader>
+                <TableBody>
+                    {productsList.map((product) => (
+                        <TableRow key={product.itemNumber} onClick={() => {
+                            router.push(`/dashboard/products/${product._id}/edit`)
+                        }} className="cursor-pointer">
+                            <TableCell>{product.itemNumber}</TableCell>
+                            <TableCell>{product.title}</TableCell>
+                            <TableCell>{product.serialNo}</TableCell>
+                            <TableCell style={{ textAlign: 'right' }}>{product.cost ? Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '') : ''}</TableCell>
+                            <TableCell>{product.modelNumber}</TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>
+                                <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : 'yellow' }}>
+                                    {product.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+
+            <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
                     Showing {products.length} of {pagination.total} invoices
                 </div>
                 <div className="flex space-x-2">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                         disabled={pagination.currentPage <= 1}
                     >
@@ -85,8 +110,8 @@ export function ProductsTable({products, pagination}: {products: (z.infer<typeof
                     <div className="flex items-center">
                         <span className="px-2">Page {pagination.currentPage} of {pagination.pages}</span>
                     </div>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                         disabled={pagination.currentPage >= pagination.pages}
                     >

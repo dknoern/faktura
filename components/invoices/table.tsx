@@ -12,6 +12,9 @@ import React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+
 interface PaginationProps {
     total: number;
     pages: number;
@@ -35,16 +38,17 @@ interface Invoice {
     invoiceType: string;
 }
 
-export function InvoicesTable({ 
-    invoices, 
-    pagination 
-}: { 
+export function InvoicesTable({
+    invoices,
+    pagination
+}: {
     invoices: Invoice[],
     pagination: PaginationProps
 }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
     const invoiceList = Array.isArray(invoices) ? invoices : [];
 
@@ -53,9 +57,29 @@ export function InvoicesTable({
         params.set('page', newPage.toString());
         router.push(`${pathname}?${params.toString()}`);
     };
-
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) {
+            params.set('search', value);
+            params.set('page', '1'); // Reset to first page when searching
+        } else {
+            params.delete('search');
+        }
+        router.push(`${pathname}?${params.toString()}`);
+    };
     return (
         <div>
+            <div className="mb-4">
+                <Input
+                    type="text"
+                    placeholder="Search invoices..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    className="max-w-sm"
+                />
+            </div>
             <Table>
                 <TableHeader>
                     <TableRow onClick={() => {
@@ -86,7 +110,7 @@ export function InvoicesTable({
 
                         return (
                             <TableRow key={invoice._id} onClick={() => {
-                                alert('selected invoice: ' + invoice._id)   
+                                alert('selected invoice: ' + invoice._id)
                             }} className="cursor-pointer">
                                 <TableCell>{invoice._id}</TableCell>
                                 <TableCell> {invoice.customerFirstName + ' ' + invoice.customerLastName}</TableCell>
@@ -108,7 +132,7 @@ export function InvoicesTable({
                                     ))}
                                 </TableCell>
                                 <TableCell> {invoice.trackingNumber}</TableCell>
-                                <TableCell style={{ textAlign: 'right' }}>{Math.ceil(invoice.total).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
+                                <TableCell style={{ textAlign: 'right' }}>{Math.ceil(invoice.total).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '')}</TableCell>
                                 <TableCell> {invoice.invoiceType}</TableCell>
                             </TableRow>
                         )
@@ -116,14 +140,14 @@ export function InvoicesTable({
                     )}
                 </TableBody>
             </Table>
-            
+
             <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
                     Showing {invoiceList.length} of {pagination.total} invoices
                 </div>
                 <div className="flex space-x-2">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                         disabled={pagination.currentPage <= 1}
                     >
@@ -132,8 +156,8 @@ export function InvoicesTable({
                     <div className="flex items-center">
                         <span className="px-2">Page {pagination.currentPage} of {pagination.pages}</span>
                     </div>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                         disabled={pagination.currentPage >= pagination.pages}
                     >

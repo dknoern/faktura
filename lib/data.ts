@@ -7,17 +7,23 @@ import { Repair } from './models/repair';
 import { Out } from './models/out';
 import { customerModel } from './models/customer';import { logModel } from './models/log';
 
-export async function fetchCustomers(page = 1, limit = 10) {
+export async function fetchCustomers(page = 1, limit = 10, search = '') {
     try {
 
         await dbConnect();
         const skip = (page - 1) * limit;
-            const customers = await customerModel.find()
+
+        let query = {}; // Define an empty query object
+        if (search) {
+            query = { search: { $regex: search, $options: 'i' } };
+        }
+
+        const customers = await customerModel.find(query)
             .sort({ lastUpdated: -1 })
             .skip(skip)
             .limit(limit);
         
-        const totalCount = await customerModel.countDocuments();
+        const totalCount = await customerModel.countDocuments(query );
         return {
             customers: JSON.parse(JSON.stringify(customers)),
             pagination: {
@@ -34,16 +40,22 @@ export async function fetchCustomers(page = 1, limit = 10) {
 }
 
 
-export async function fetchProducts(page = 1, limit = 10) {
+export async function fetchProducts(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
-        const products = await productModel.find()
+        
+        let query = {};
+        if (search) {
+            query = { search: { $regex: search, $options: 'i' } };
+        }
+        
+        const products = await productModel.find(query)
             .sort({ lastUpdated: -1 })
             .skip(skip)
             .limit(limit);
-        
-        const totalCount = await productModel.countDocuments();
+
+        const totalCount = await productModel.countDocuments(query);
         return {
             products: JSON.parse(JSON.stringify(products)),
             pagination: {
@@ -90,17 +102,23 @@ export async function fetchCustomerById(id: number) {
 }
 
 
-export async function fetchInvoices(page = 1, limit = 10) {
+export async function fetchInvoices(page = 1, limit = 10, search = ''   ) {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
-        const invoices = await Invoice.find()
+
+        let query = {};
+        if (search) {
+            query = { search: { $regex: search, $options: 'i' } };
+        }
+
+        const invoices = await Invoice.find(query)
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit);
         
         // Get total count for pagination
-        const totalCount = await Invoice.countDocuments();
+        const totalCount = await Invoice.countDocuments(query);
         
         return {
             invoices: JSON.parse(JSON.stringify(invoices)),
@@ -118,16 +136,22 @@ export async function fetchInvoices(page = 1, limit = 10) {
 }
 
 
-export async function fetchReturns(page = 1, limit = 10) {
+export async function fetchReturns(page = 1, limit = 10, search = ''    ) {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
-        const returns = await Return.find()
+
+        let query = {};
+        if (search) {
+            query = { search: { $regex: search, $options: 'i' } };
+        }
+
+        const returns = await Return.find(query)
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit);
         
-        const totalCount = await Return.countDocuments();
+        const totalCount = await Return.countDocuments(query);
         return {
             returns: JSON.parse(JSON.stringify(returns)),
             pagination: {
@@ -144,16 +168,22 @@ export async function fetchReturns(page = 1, limit = 10) {
 }
 
 
-export async function fetchRepairs(page = 1, limit = 10 ) {
+export async function fetchRepairs(page = 1, limit = 10, search = ''    ) {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
-        const repairs = await Repair.find()
+
+        let query = {};
+        if (search) {
+            query = { search: { $regex: search, $options: 'i' } };
+        }
+
+        const repairs = await Repair.find(query)
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit);
         
-            const totalCount = await Repair.countDocuments();
+        const totalCount = await Repair.countDocuments(query);
         return {
             repairs: JSON.parse(JSON.stringify(repairs)),
             pagination: {
@@ -170,16 +200,22 @@ export async function fetchRepairs(page = 1, limit = 10 ) {
 }
 
 
-export async function fetchLogs(page = 1, limit = 10) {
+export async function fetchLogs(page = 1, limit = 10, search = ''   ) {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
-        const logs = await logModel.find()
+
+        let query = {};
+        if (search) {
+            query = { search: { $regex: search, $options: 'i' } };
+        }
+
+        const logs = await logModel.find(query)
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit);
         
-        const totalCount = await logModel.countDocuments();
+        const totalCount = await logModel.countDocuments(query);
         return {
             logs: JSON.parse(JSON.stringify(logs)),
             pagination: {
@@ -196,11 +232,17 @@ export async function fetchLogs(page = 1, limit = 10) {
 }
 
 
-export async function fetchOuts(page = 1, limit = 10    ) {
+export async function fetchOuts(page = 1, limit = 10, search  = '') {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
-        const outs = await Out.find()
+
+        let query = {};
+        if (search) {
+            query = { search: { $regex: search, $options: 'i' } };
+        }
+
+        const outs = await Out.find(query)
             .sort({ _id: -1 })
             .skip(skip)
             .limit(limit);

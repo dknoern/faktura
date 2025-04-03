@@ -11,6 +11,9 @@ import React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+
 interface PaginationProps {
     total: number;
     pages: number;
@@ -31,55 +34,76 @@ interface Out {
     signatureUser?: string;
 }
 
-export function OutsTable({outs, pagination}: {outs: Out[], pagination: PaginationProps}) {
+export function OutsTable({ outs, pagination }: { outs: Out[], pagination: PaginationProps }) {
 
     const outsList = Array.isArray(outs) ? outs : [];
 
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
     const handlePageChange = (newPage: number) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set('page', newPage.toString());
         router.push(`${pathname}?${params.toString()}`);
     };
-
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) {
+            params.set('search', value);
+            params.set('page', '1'); // Reset to first page when searching
+        } else {
+            params.delete('search');
+        }
+        router.push(`${pathname}?${params.toString()}`);
+    };
 
     return (
         <div>
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead style={{ whiteSpace: 'nowrap' }}>Sent To</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>By</TableHead>
-                    <TableHead>Comments</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {outsList.map((out: Out) => {
-                    return (
-                        <TableRow key={out._id}>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{out.date ? new Date(out.date).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell> {out.sentTo}</TableCell>
-                            <TableCell> {out.description}</TableCell>
-                            <TableCell> {out.user}</TableCell>
-                            <TableCell> {out.comments}</TableCell>
-                        </TableRow>
-                    )
-                }
-                )}
+            <div className="mb-4">
+                <Input
+                    type="text"
+                    placeholder="Search log outs..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    className="max-w-sm"
+                />
+            </div>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead style={{ whiteSpace: 'nowrap' }}>Sent To</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>By</TableHead>
+                        <TableHead>Comments</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {outsList.map((out: Out) => {
+                        return (
+                            <TableRow key={out._id}>
+                                <TableCell style={{ whiteSpace: 'nowrap' }}>{out.date ? new Date(out.date).toISOString().split('T')[0] : ''}</TableCell>
+                                <TableCell> {out.sentTo}</TableCell>
+                                <TableCell> {out.description}</TableCell>
+                                <TableCell> {out.user}</TableCell>
+                                <TableCell> {out.comments}</TableCell>
+                            </TableRow>
+                        )
+                    }
+                    )}
                 </TableBody>
-        </Table>
+            </Table>
             <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
                     Showing {outsList.length} of {pagination.total} logs
                 </div>
                 <div className="flex space-x-2">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                         disabled={pagination.currentPage <= 1}
                     >
@@ -88,8 +112,8 @@ export function OutsTable({outs, pagination}: {outs: Out[], pagination: Paginati
                     <div className="flex items-center">
                         <span className="px-2">Page {pagination.currentPage} of {pagination.pages}</span>
                     </div>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                         disabled={pagination.currentPage >= pagination.pages}
                     >

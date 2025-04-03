@@ -14,6 +14,9 @@ import { useSearchParams } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+
 interface PaginationProps {
     total: number;
     pages: number;
@@ -35,13 +38,14 @@ interface Return {
     totalReturnAmount: number | null;
 }
 
-export function ReturnsTable({returns, pagination}: {returns: Return[], pagination: PaginationProps}) {
+export function ReturnsTable({ returns, pagination }: { returns: Return[], pagination: PaginationProps }) {
     const returnsList = Array.isArray(returns) ? returns : [];
 
 
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
 
     const handlePageChange = (newPage: number) => {
@@ -49,66 +53,86 @@ export function ReturnsTable({returns, pagination}: {returns: Return[], paginati
         params.set('page', newPage.toString());
         router.push(`${pathname}?${params.toString()}`);
     };
-
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) {
+            params.set('search', value);
+            params.set('page', '1'); // Reset to first page when searching
+        } else {
+            params.delete('search');
+        }
+        router.push(`${pathname}?${params.toString()}`);
+    };
 
     return (
 
         <div>
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead style={{ whiteSpace: 'nowrap' }}>Return</TableHead>
-                    <TableHead>Invoice</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead style={{ whiteSpace: 'nowrap' }}>Sales Person</TableHead>
-                    <TableHead>Total</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {returns.map((ret: Return) => {
+            <div className="mb-4">
+                <Input
+                    type="text"
+                    placeholder="Search returns..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    className="max-w-sm"
+                />
+            </div>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead style={{ whiteSpace: 'nowrap' }}>Return</TableHead>
+                        <TableHead>Invoice</TableHead>
+                        <TableHead>Items</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead style={{ whiteSpace: 'nowrap' }}>Sales Person</TableHead>
+                        <TableHead>Total</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {returns.map((ret: Return) => {
 
-                    let itemNumbers = ''
+                        let itemNumbers = ''
 
-                    if (ret.lineItems != null) {
-                        itemNumbers = ret.lineItems
-                            .filter((lineItem: { itemNumber: string; }) => lineItem.itemNumber.trim() !== '')
-                            .map((lineItem: { itemNumber: string; }) => lineItem.itemNumber)
-                            .join('<br/>');
+                        if (ret.lineItems != null) {
+                            itemNumbers = ret.lineItems
+                                .filter((lineItem: { itemNumber: string; }) => lineItem.itemNumber !== '')
+                                .map((lineItem: { itemNumber: string; }) => lineItem.itemNumber)
+                                .join('<br/>');
+                        }
+
+                        return (
+                            <TableRow key={ret._id}>
+                                <TableCell>{ret._id}</TableCell>
+                                <TableCell>{ret.invoiceId}</TableCell>
+                                <TableCell>
+                                    {itemNumbers.split("<br/>").map((line, index, array) => (
+                                        <React.Fragment key={index}>
+                                            {line}
+                                            {index < array.length - 1 && <br />}
+                                        </React.Fragment>
+                                    ))}
+                                </TableCell>
+                                <TableCell>{ret.returnDate ? new Date(ret.returnDate).toISOString().split('T')[0] : ''}</TableCell>
+                                <TableCell>{ret.customerName}</TableCell>
+                                <TableCell> {ret.salesPerson}</TableCell>
+                                <TableCell>{ret.totalReturnAmount ? Math.ceil(ret.totalReturnAmount).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '') : ''}</TableCell>
+                            </TableRow>
+                        )
                     }
-
-                    return (
-                        <TableRow key={ret._id}>
-                            <TableCell>{ret._id}</TableCell>
-                            <TableCell>{ret.invoiceId}</TableCell>
-                            <TableCell>
-                                {itemNumbers.split("<br/>").map((line, index, array) => (
-                                    <React.Fragment key={index}>
-                                        {line}
-                                        {index < array.length - 1 && <br />}
-                                    </React.Fragment>
-                                ))}
-                            </TableCell>
-                            <TableCell>{ret.returnDate ? new Date(ret.returnDate).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell>{ret.customerName}</TableCell>
-                            <TableCell> {ret.salesPerson}</TableCell>
-                            <TableCell>{ret.totalReturnAmount ? Math.ceil(ret.totalReturnAmount).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '') : ''}</TableCell>
-                        </TableRow>
-                    )
-                }
-                )}
-            </TableBody>
-        </Table>
+                    )}
+                </TableBody>
+            </Table>
 
 
-        <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
                     Showing {returnsList.length} of {pagination.total} invoices
                 </div>
                 <div className="flex space-x-2">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                         disabled={pagination.currentPage <= 1}
                     >
@@ -117,8 +141,8 @@ export function ReturnsTable({returns, pagination}: {returns: Return[], paginati
                     <div className="flex items-center">
                         <span className="px-2">Page {pagination.currentPage} of {pagination.pages}</span>
                     </div>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                         disabled={pagination.currentPage >= pagination.pages}
                     >
