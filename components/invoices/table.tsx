@@ -19,11 +19,27 @@ interface PaginationProps {
     limit: number;
 }
 
+interface LineItem {
+    itemNumber: string;
+    name: string;
+}
+
+interface Invoice {
+    _id: string;
+    customerFirstName: string;
+    customerLastName: string;
+    date: string;
+    lineItems: LineItem[];
+    trackingNumber: string;
+    total: number;
+    invoiceType: string;
+}
+
 export function InvoicesTable({ 
     invoices, 
     pagination 
 }: { 
-    invoices: any[],
+    invoices: Invoice[],
     pagination: PaginationProps
 }) {
     const router = useRouter();

@@ -2,18 +2,19 @@ import { CustomersTable } from "@/components/customers/table";
 import { SkeletonTable } from "@/components/skeletons";
 import { Suspense } from "react";
 import { Plus } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button"
-import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+
 import { fetchCustomers } from "@/lib/data";
 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: { page?: string };
-}) {
+import { Link } from "lucide-react";
+type SearchParams = Promise<{page: string}>
+
+export default async function Page({searchParams}: {searchParams:SearchParams}) {
+
   const params = await searchParams;
   const page = params.page ? parseInt(params.page) : 1;
   const limit = 10;
+
   const { customers, pagination } = await fetchCustomers(page, limit);
   return (
     <div>

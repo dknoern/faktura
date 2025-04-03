@@ -17,7 +17,21 @@ interface PaginationProps {
     currentPage: number;
     limit: number;
 }
-export function OutsTable({outs, pagination}: {outs: any, pagination: PaginationProps}) {
+
+interface Out {
+    _id: string;
+    date: string | null;
+    sentTo: string;
+    description: string;
+    comments: string;
+    user: string;
+    search?: string;
+    signature?: string;
+    signatureDate?: string | null;
+    signatureUser?: string;
+}
+
+export function OutsTable({outs, pagination}: {outs: Out[], pagination: PaginationProps}) {
 
     const outsList = Array.isArray(outs) ? outs : [];
 
@@ -45,7 +59,7 @@ export function OutsTable({outs, pagination}: {outs: any, pagination: Pagination
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {outsList.map((out: any) => {
+                {outsList.map((out: Out) => {
                     return (
                         <TableRow key={out._id}>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>{out.date ? new Date(out.date).toISOString().split('T')[0] : ''}</TableCell>

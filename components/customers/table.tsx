@@ -7,7 +7,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { LinkTableCell } from "../LinkTableCell";
+import { customerSchema } from "@/lib/models/customer";
+import { z } from "zod";
 
 interface PaginationProps {
     total: number;
@@ -15,9 +16,12 @@ interface PaginationProps {
     currentPage: number;
     limit: number;
 }
+
+type Customer = z.infer<typeof customerSchema>;
+
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-export function CustomersTable({ customers, pagination }: { customers: any[], pagination: PaginationProps }) {
+export function CustomersTable({ customers, pagination }: { customers: Customer[], pagination: PaginationProps }) {
 
     const router = useRouter();
     const pathname = usePathname();
@@ -45,7 +49,7 @@ export function CustomersTable({ customers, pagination }: { customers: any[], pa
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {customersList.map((customer: any) => (
+                {customersList.map((customer: Customer) => (
                     <TableRow key={customer._id} className="cursor-pointer" onClick={() => {
                         router.push(`/dashboard/customers/${customer._id}/edit`);
                     }}> 

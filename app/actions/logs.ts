@@ -1,11 +1,14 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { logModel } from '@/lib/models/log';
+import { logModel, logSchema } from '@/lib/models/log';
 import dbConnect from '@/lib/dbConnect';
 import { Types } from 'mongoose';
+import { z } from 'zod';
 
-export async function createLog(data: any) {
+type LogData = z.infer<typeof logSchema>;
+
+export async function createLog(data: LogData) {
   try {
     await dbConnect();
     
@@ -19,7 +22,7 @@ export async function createLog(data: any) {
   }
 }
 
-export async function updateLog(id: string, data: any) {
+export async function updateLog(id: string, data: LogData) {
   try {
     await dbConnect();
 

@@ -8,10 +8,12 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { LinkTableCell } from "../LinkTableCell";
+
 import { Badge } from "../ui/badge";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { productSchema } from "@/lib/models/product";
+import { z } from "zod";
 
 interface PaginationProps {
     total: number;
@@ -20,7 +22,7 @@ interface PaginationProps {
     limit: number;
 }
 
-export function ProductsTable({products, pagination}: {products: any[], pagination: PaginationProps}) {
+export function ProductsTable({products, pagination}: {products: (z.infer<typeof productSchema> & { _id: string })[], pagination: PaginationProps}) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -55,7 +57,7 @@ export function ProductsTable({products, pagination}: {products: any[], paginati
                         <TableCell>{product.itemNumber}</TableCell>
                         <TableCell>{product.title}</TableCell>
                         <TableCell>{product.serialNo}</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>{product.cost ? Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','') : ''}</TableCell>
                         <TableCell>{product.modelNumber}</TableCell>
                         <TableCell style={{ whiteSpace: 'nowrap' }}>
                             <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : 'yellow' }}>

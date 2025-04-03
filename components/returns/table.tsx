@@ -1,7 +1,5 @@
 "use client"
 
-import { fetchReturns } from "@/lib/data";
-
 import {
     Table,
     TableBody,
@@ -22,7 +20,22 @@ interface PaginationProps {
     currentPage: number;
     limit: number;
 }
-export function ReturnsTable({returns, pagination}: {returns: any, pagination: PaginationProps}) {
+
+interface LineItem {
+    itemNumber: string;
+}
+
+interface Return {
+    _id: string;
+    invoiceId: string;
+    lineItems: LineItem[];
+    returnDate: string | null;
+    customerName: string;
+    salesPerson: string;
+    totalReturnAmount: number | null;
+}
+
+export function ReturnsTable({returns, pagination}: {returns: Return[], pagination: PaginationProps}) {
     const returnsList = Array.isArray(returns) ? returns : [];
 
 
@@ -54,7 +67,7 @@ export function ReturnsTable({returns, pagination}: {returns: any, pagination: P
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {returns.map((ret: any) => {
+                {returns.map((ret: Return) => {
 
                     let itemNumbers = ''
 

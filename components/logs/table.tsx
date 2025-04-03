@@ -6,21 +6,39 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-
 } from "@/components/ui/table"
 import { LinkTableCell } from "../LinkTableCell";
 import React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-interface PaginationProps {
+interface LineItem {
+    itemNumber?: string;
+    name?: string;
+    repairNumber?: string;
+    repairCost?: number;
+    productId?: string;
+    repairId?: string;
+}
+
+interface Log {
+    _id: string;
+    date: Date;
+    receivedFrom: string;
+    comments?: string;
+    user?: string;
+    customerName?: string;
+    lineItems?: LineItem[];
+}
+
+interface Pagination {
     total: number;
     pages: number;
     currentPage: number;
     limit: number;
 }
 
-export function LogsTable({logs, pagination}: {logs: any, pagination: any}) {
+export function LogsTable({logs, pagination}: {logs: Log[], pagination: Pagination}) {
 
     const router = useRouter();
     const pathname = usePathname();
@@ -32,8 +50,6 @@ export function LogsTable({logs, pagination}: {logs: any, pagination: any}) {
         router.push(`${pathname}?${params.toString()}`);
     };
 
-
-    const logsList = Array.isArray(logs) ? logs : [];
     return (
         <div>
         <Table>
@@ -50,16 +66,16 @@ export function LogsTable({logs, pagination}: {logs: any, pagination: any}) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                    {logsList.map((log: any) => {
+                    {logs.map((log: Log) => {
 
                     let itemNumbers = ''
                     let itemNames = ''
                     let repairNumbers = ''
                     if (log.lineItems != null) {
 
-                        itemNumbers = log.lineItems.map((lineItem: { itemNumber: string; }) => lineItem.itemNumber).join('<br/>')
-                        itemNames = log.lineItems.map((lineItem: { name: string; }) => lineItem.name).join('<br/>')
-                        repairNumbers = log.lineItems.map((lineItem: { repairNumber: string; }) => lineItem.repairNumber).join('<br/>')
+                        itemNumbers = log.lineItems.map((lineItem: LineItem) => lineItem.itemNumber || '').join('<br/>')
+                        itemNames = log.lineItems.map((lineItem: LineItem) => lineItem.name || '').join('<br/>')
+                        repairNumbers = log.lineItems.map((lineItem: LineItem) => lineItem.repairNumber || '').join('<br/>')
 
                     }
 
@@ -119,7 +135,7 @@ export function LogsTable({logs, pagination}: {logs: any, pagination: any}) {
         </Table>
             <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                    Showing {logsList.length} of {pagination.total} logs
+                    Showing {logs.length} of {pagination.total} logs
                 </div>
                 <div className="flex space-x-2">
                     <Button 

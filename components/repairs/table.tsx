@@ -19,9 +19,22 @@ interface PaginationProps {
     currentPage: number;
     limit: number;
 }
-    export function RepairsTable({repairs, pagination}: {repairs: any, pagination: PaginationProps}) {
 
-        const repairsList = Array.isArray(repairs) ? repairs : [];
+interface Repair {
+    repairNumber: string;
+    itemNumber: string;
+    description: string;
+    dateOut: string | null;
+    customerApprovedDate: string | null;
+    returnDate: string | null;
+    customerFirstName: string;
+    customerLastName: string;
+    vendor: string;
+    repairCost: number;
+}
+
+export function RepairsTable({repairs, pagination}: {repairs: Repair[], pagination: PaginationProps}) {
+    const repairsList = Array.isArray(repairs) ? repairs : [];
 
     const router = useRouter();
     const pathname = usePathname();
@@ -50,7 +63,7 @@ interface PaginationProps {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {repairsList.map((repair: any) => (
+                {repairsList.map((repair: Repair) => (
                     <TableRow key={repair.repairNumber}>
                         <TableCell>{repair.repairNumber}</TableCell>
                         <TableCell>{repair.itemNumber}</TableCell>
