@@ -3,10 +3,10 @@ import { SkeletonTable } from "@/components/skeletons";
 import { Suspense } from "react";
 import { Plus } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import Link from "next/link";
 
 import { fetchCustomers } from "@/lib/data";
 
-import { Link } from "lucide-react";
 type SearchParams = Promise<{ page: string, search?: string }>
 
 export default async function Page({ searchParams }: { searchParams: SearchParams }) {
