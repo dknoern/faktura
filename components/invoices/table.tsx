@@ -71,7 +71,8 @@ export function InvoicesTable({
     };
     return (
         <div>
-            <div className="mb-4">
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex-1">
                 <Input
                     type="text"
                     placeholder="Search invoices..."
@@ -79,6 +80,13 @@ export function InvoicesTable({
                     onChange={handleSearch}
                     className="max-w-sm"
                 />
+                </div>
+                <Button
+                    onClick={() => router.push('/dashboard/invoices/new')}
+                    className="ml-4"
+                >
+                    New Invoice
+                </Button>
             </div>
             <Table>
                 <TableHeader>
@@ -109,9 +117,10 @@ export function InvoicesTable({
                         }
 
                         return (
-                            <TableRow key={invoice._id} onClick={() => {
-                                alert('selected invoice: ' + invoice._id)
-                            }} className="cursor-pointer">
+                            <TableRow 
+                                key={invoice._id} 
+                                onClick={() => router.push(`/dashboard/invoices/${invoice._id}/view`)}
+                                className="cursor-pointer hover:bg-gray-100">
                                 <TableCell>{invoice._id}</TableCell>
                                 <TableCell> {invoice.customerFirstName + ' ' + invoice.customerLastName}</TableCell>
                                 <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>

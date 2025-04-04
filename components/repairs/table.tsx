@@ -48,6 +48,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
         params.set('page', newPage.toString());
         router.push(`${pathname}?${params.toString()}`);
     };
+
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
@@ -60,6 +61,11 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
         }
         router.push(`${pathname}?${params.toString()}`);
     };
+
+    const handleRowClick = (repairNumber: string) => {
+        router.push(`/dashboard/repairs/${repairNumber}/view`);
+    };
+
     return (
         <div>
             <div className="mb-4">
@@ -87,7 +93,11 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                 </TableHeader>
                 <TableBody>
                     {repairsList.map((repair: Repair) => (
-                        <TableRow key={repair.repairNumber}>
+                        <TableRow 
+                            key={repair.repairNumber}
+                            className="cursor-pointer hover:bg-gray-50"
+                            onClick={() => handleRowClick(repair.repairNumber)}
+                        >
                             <TableCell>{repair.repairNumber}</TableCell>
                             <TableCell>{repair.itemNumber}</TableCell>
                             <TableCell>{repair.description}</TableCell>
@@ -101,8 +111,6 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                     ))}
                 </TableBody>
             </Table>
-
-
 
             <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
@@ -129,6 +137,5 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                 </div>
             </div>
         </div>
-
     )
 }

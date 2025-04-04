@@ -168,14 +168,23 @@ export async function fetchReturns(page = 1, limit = 10, search = ''    ) {
 }
 
 
-export async function fetchRepairs(page = 1, limit = 10, search = ''    ) {
+export async function fetchRepairs(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
 
         let query = {};
         if (search) {
-            query = { search: { $regex: search, $options: 'i' } };
+            query = {
+                $or: [
+                    { repairNumber: { $regex: search, $options: 'i' } },
+                    { itemNumber: { $regex: search, $options: 'i' } },
+                    { description: { $regex: search, $options: 'i' } },
+                    { customerFirstName: { $regex: search, $options: 'i' } },
+                    { customerLastName: { $regex: search, $options: 'i' } },
+                    { vendor: { $regex: search, $options: 'i' } }
+                ]
+            };
         }
 
         const repairs = await Repair.find(query)
@@ -194,7 +203,7 @@ export async function fetchRepairs(page = 1, limit = 10, search = ''    ) {
             }
         };
     } catch (error) {
-        console.error('Error fetching returns:', error);
+        console.error('Error fetching repairs:', error);
         throw error;
     }
 }
@@ -300,4 +309,32 @@ export async function fetchLogItemById(id: string) {
         console.error('Error fetching log item:', error);
         throw error;
     }
+}
+
+export async function fetchRepairByNumber(repairNumber: string) {
+  try {
+    await dbConnect();
+    console.log('repair number:', repairNumber);
+    const repair = await Repair.findOne({ repairNumber });
+    console.log('repair:', repair);
+
+    return repair ? JSON.parse(JSON.stringify(repair)) : null;
+  } catch (error) {
+    console.error("Error fetching repair:", error);
+    throw error;
+  }
+}
+
+export async function fetchInvoiceById(id: number) {
+  try {
+    await dbConnect();
+    //const _id = new mongoose.Types.ObjectId(id);
+
+    const invoice = await Invoice.findOne({ _id: id });
+
+    return invoice ? JSON.parse(JSON.stringify(invoice)) : null;
+  } catch (error) {
+    console.error("Error fetching invoice:", error);
+    throw error;
+  }
 }
