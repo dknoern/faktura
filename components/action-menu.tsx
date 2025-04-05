@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,9 +9,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Printer, ImagePlus } from "lucide-react";
+import { UploadDialog } from "./upload-dialog";
 
-export function ActionMenu() {
+interface ActionMenuProps {
+    id: string;
+    onUploadComplete?: () => void;
+}
+
+export function ActionMenu({ id, onUploadComplete }: ActionMenuProps) {
+    const [showUploadDialog, setShowUploadDialog] = useState(false);
     return (
+        <>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2">
@@ -19,11 +28,9 @@ export function ActionMenu() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                    <a href="#images" className="flex items-center gap-2">
-                        <ImagePlus className="h-4 w-4" />
-                        Add Images
-                    </a>
+                <DropdownMenuItem onSelect={() => setShowUploadDialog(true)} className="flex items-center gap-2">
+                    <ImagePlus className="h-4 w-4" />
+                    Add Images
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => window.print()} className="flex items-center gap-2">
                     <Printer className="h-4 w-4" />
@@ -31,5 +38,12 @@ export function ActionMenu() {
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+        <UploadDialog
+            id={id}
+            open={showUploadDialog}
+            onOpenChange={setShowUploadDialog}
+            onUploadComplete={onUploadComplete}
+        />
+        </>
     );
 }

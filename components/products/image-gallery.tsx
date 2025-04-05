@@ -7,7 +7,7 @@ import {
     DialogContent,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ImageGalleryProps {
     images: string[];
@@ -46,7 +46,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                                 </div>
                             </div>
                         </DialogTrigger>
-                        <DialogContent className="max-w-7xl w-full h-[90vh] p-0" title={`Product image ${index + 1}`}>
+                        <DialogContent className="max-w-7xl w-full h-[90vh] p-0" title={`Product image ${index + 1} of ${images.length}`}>
                             <div className="relative w-full h-full">
                                 <button
                                     className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white"
@@ -54,9 +54,27 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                                 >
                                     <X className="h-6 w-6" />
                                 </button>
+                                {index > 0 && (
+                                    <button
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-all"
+                                        onClick={() => setSelectedImage(images[index - 1])}
+                                        aria-label="Previous image"
+                                    >
+                                        <ChevronLeft className="h-8 w-8" />
+                                    </button>
+                                )}
+                                {index < images.length - 1 && (
+                                    <button
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition-all"
+                                        onClick={() => setSelectedImage(images[index + 1])}
+                                        aria-label="Next image"
+                                    >
+                                        <ChevronRight className="h-8 w-8" />
+                                    </button>
+                                )}
                                 <Image
                                     src={`/api/images?path=${encodeURIComponent(image)}`}
-                                    alt={`Product image ${index + 1}`}
+                                    alt={`Product image ${index + 1} of ${images.length}`}
                                     fill
                                     className="object-contain p-4"
                                 />
