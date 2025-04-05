@@ -7,7 +7,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Printer } from "lucide-react";
+import { ChevronDown, Printer, ImagePlus } from "lucide-react";
 
 export function ActionMenu() {
     return (
@@ -20,7 +20,10 @@ export function ActionMenu() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                    <a href="#images">Add Images</a>
+                    <a href="#images" className="flex items-center gap-2">
+                        <ImagePlus className="h-4 w-4" />
+                        Add Images
+                    </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => window.print()} className="flex items-center gap-2">
                     <Printer className="h-4 w-4" />

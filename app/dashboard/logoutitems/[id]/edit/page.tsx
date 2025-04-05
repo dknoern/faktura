@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { fetchOutById } from '@/lib/data';
-import { OutForm } from '@/components/outs/form';
+import { OutForm } from '@/components/outs/form'
 import { ImageGallery } from '@/components/products/image-gallery';
 import { getProductImages } from '@/lib/utils/productImages';
 
