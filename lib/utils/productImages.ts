@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const UPLOADS_DIR = '/Users/davidk/Documents/demesy/backups/uploads';
+export const UPLOADS_DIR = '/Users/davidk/Documents/demesy/backups/uploads';
 
 export async function getProductImages(productId: string): Promise<string[]> {
     try {
