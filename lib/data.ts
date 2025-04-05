@@ -338,3 +338,22 @@ export async function fetchInvoiceById(id: number) {
     throw error;
   }
 }
+
+export async function fetchOutById(id: string) {
+  try {
+    await dbConnect();
+    const _id = new mongoose.Types.ObjectId(id);
+
+    console.log('Database connected, attempting to fetch out with id:', id)
+
+
+
+    const out = await Out.findOne({ _id });
+
+    console.log('out:', out);
+    return out ? JSON.parse(JSON.stringify(out)) : null;
+  } catch (error) {
+    console.error("Error fetching out item:", error);
+    throw error;
+  }
+}
