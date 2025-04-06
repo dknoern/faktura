@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
+import { saveImage } from '@/lib/utils/storage';
 
-const UPLOADS_DIR = '/Users/davidk/Documents/demesy/backups/uploads';
+
 
 export async function POST(request: NextRequest) {
     try {
@@ -18,8 +18,6 @@ export async function POST(request: NextRequest) {
         const timestamp = Math.floor(Date.now() / 1000);
         const originalName = path.basename(file.name);
         const newFileName = `${id}-${timestamp}-${originalName}`;
-        const filePath = path.join(UPLOADS_DIR, newFileName);
-
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
@@ -35,9 +33,9 @@ export async function POST(request: NextRequest) {
                     withoutEnlargement: true // Don't enlarge if smaller
                 })
                 .toBuffer();
-            await writeFile(filePath, resizedImage);
+            await saveImage(resizedImage, newFileName);
         } else {
-            await writeFile(filePath, buffer);
+            await saveImage(buffer, newFileName);
         }
 
         return NextResponse.json({ success: true, fileName: newFileName });

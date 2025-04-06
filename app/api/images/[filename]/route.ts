@@ -1,24 +1,19 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
 import path from 'path';
-import { UPLOADS_DIR } from '@/lib/utils/productImages';
-
+import { getImage } from '@/lib/utils/storage';
 
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ filename: string }> }
 ) {
-    const url = new URL(request.url);
     try {
-        const filePath = path.join(UPLOADS_DIR, (await params).filename);
-        const fileStats = await fs.stat(filePath);
-        const fileBuffer = await fs.readFile(filePath);
+        const filename = (await params).filename;
+        const imageBuffer = await getImage(filename);
+        const contentType = path.extname(filename).toLowerCase() === '.png' 
+            ? 'image/png' 
+            : 'image/jpeg';
         
-        // Determine content type based on file extension
-        const ext = path.extname((await params).filename).toLowerCase();
-        const contentType = ext === '.png' ? 'image/png' : 'image/jpeg';
-        
-        return new NextResponse(fileBuffer, {
+        return new NextResponse(imageBuffer, {
             headers: {
                 'Content-Type': contentType,
                 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
