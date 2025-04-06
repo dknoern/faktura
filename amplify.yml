@@ -13,6 +13,10 @@ frontend:
         - echo "AUTH_TRUST_HOST=true" >> .env
         - echo "AUTH_URL=$AUTH_URL" >> .env
         - echo "MONGODB_URI=$MONGODB_URI" >> .env
+        - echo "IMAGE_BUCKET=$IMAGE_BUCKET" >> .env
+        - echo "AWS_REGION=$AWS_REGION" >> .env
+        - echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
+        - echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
         - npm run build
   artifacts:
     baseDirectory: .next

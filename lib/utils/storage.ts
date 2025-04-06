@@ -115,7 +115,8 @@ export async function imageAction(action: 'rotateLeft' | 'rotateRight' | 'delete
             case 'rotateLeft':
             case 'rotateRight': {
                 const angle = action === 'rotateLeft' ? -90 : 90;
-                const image = sharp(await fs.readFile(filepath));
+                const imageBuffer = await getImage(filename);
+                const image = sharp(imageBuffer);
                 const buffer = await image.rotate(angle).toBuffer();
                 await saveImage(buffer, filename);
                 break;

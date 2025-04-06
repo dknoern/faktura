@@ -5,7 +5,7 @@ export async function POST(request: Request) {
     try {
         const { action, filename } = await request.json();
 
-        imageAction(action, filename);
+        await imageAction(action, filename);
 
         return NextResponse.json({ success: true });
     } catch (error) {
