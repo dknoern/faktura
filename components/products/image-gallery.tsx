@@ -20,7 +20,8 @@ export function ImageGallery({ images }: ImageGalleryProps) {
     // Convert absolute paths to API URLs
     const getApiUrl = (absolutePath: string) => {
         const filename = absolutePath.split('/').pop();
-        return `/api/images/${filename}`;
+        // Use path as version to ensure unique URL after rotation
+        return `/api/images/${filename}?v=${encodeURIComponent(absolutePath)}`;
     };
 
     const [localImages, setLocalImages] = useState<string[]>(images.map(getApiUrl));
@@ -100,6 +101,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                                     alt="Product image"
                                     fill
                                     className="object-cover rounded-lg"
+                                    unoptimized
                                 />
                                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                                     <Button
@@ -171,6 +173,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                                     alt={`Product image ${index + 1} of ${localImages.length}`}
                                     fill
                                     className="object-contain p-4"
+                                    unoptimized
                                 />
                             </div>
                         </DialogContent>

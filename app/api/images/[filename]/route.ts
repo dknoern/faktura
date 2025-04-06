@@ -8,8 +8,10 @@ export async function GET(
     request: Request,
     { params }: { params: Promise<{ filename: string }> }
 ) {
+    const url = new URL(request.url);
     try {
         const filePath = path.join(UPLOADS_DIR, (await params).filename);
+        const fileStats = await fs.stat(filePath);
         const fileBuffer = await fs.readFile(filePath);
         
         // Determine content type based on file extension
@@ -19,7 +21,9 @@ export async function GET(
         return new NextResponse(fileBuffer, {
             headers: {
                 'Content-Type': contentType,
-                'Cache-Control': 'public, max-age=31536000',
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
             },
         });
     } catch (error) {
