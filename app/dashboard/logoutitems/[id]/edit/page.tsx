@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { fetchOutById } from '@/lib/data';
 import { OutForm } from '@/components/outs/form'
 import { ImageGallery } from '@/components/products/image-gallery';
-import { getProductImages } from '@/lib/utils/productImages';
+import { getProductImages } from '@/lib/utils/storage';
 import { LogHeader } from '@/components/logs/log-header';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {

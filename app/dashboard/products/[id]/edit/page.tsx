@@ -1,7 +1,7 @@
 import ProductEditForm from '@/components/products/editForm';
 import { ImageGallery } from '@/components/products/image-gallery';
 import { fetchProductById, getRepairsForItem } from '@/lib/data';
-import { getProductImages } from '@/lib/utils/productImages';
+import { getProductImages } from '@/lib/utils/storage';
 import { notFound } from 'next/navigation';
 import { ProductHeader } from '@/components/products/product-header';
 

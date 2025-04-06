@@ -1,13 +1,14 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { writeFile, readFile } from 'fs/promises';
 import path from 'path';
-
-const UPLOADS_DIR = '/Users/davidk/Documents/demesy/backups/uploads';
-const IMAGE_BUCKET = process.env.IMAGE_BUCKET;
+import fs from 'fs/promises';
+import sharp from 'sharp';
+const UPLOADS_DIR = process.env.UPLOADS_DIR || '/Users/davidk/Documents/demesy/backups/uploads';
+export const IMAGE_BUCKET = process.env.IMAGE_BUCKET;
 
 // Initialize S3 client if bucket is configured
 const s3Client = IMAGE_BUCKET ? new S3Client({
-    region: process.env.AWS_REGION || 'us-west-2'
+    region: process.env.AWS_REGION || 'us-west-1'
 }) : null;
 
 export async function saveImage(buffer: Buffer, fileName: string): Promise<void> {
@@ -60,4 +61,58 @@ function getContentType(fileName: string): string {
         default:
             return 'application/octet-stream';
     }
+}
+
+
+export async function getProductImages(productId: string): Promise<string[]> {
+
+    if (IMAGE_BUCKET && s3Client) {
+        // Get from S3
+        const response = await s3Client.send(new ListObjectsV2Command({
+            Bucket: IMAGE_BUCKET,
+            Prefix: productId
+        }));
+        
+        if (!response.Contents) {
+            return [];
+        }
+        
+        return response.Contents.map(item => item.Key || '');
+    }
+    else {
+        // Get from file system
+        try {
+            const files = await fs.readdir(UPLOADS_DIR);
+            const productImages = files.filter(file => file.startsWith(productId));
+            return productImages.map(file => path.join("/", file));
+        } catch (error) {
+            console.error('Error reading product images:', error);
+            return [];
+        }
+    }
+}
+
+
+export async function imageAction(action: 'rotateLeft' | 'rotateRight' | 'delete', filename: string) {
+
+        const filepath = path.join(UPLOADS_DIR, filename);
+
+        switch (action) {
+            case 'rotateLeft':
+            case 'rotateRight': {
+                const angle = action === 'rotateLeft' ? -90 : 90;
+                const image = sharp(await fs.readFile(filepath));
+                const buffer = await image.rotate(angle).toBuffer();
+                await fs.writeFile(filepath, buffer);
+                break;
+            }
+            case 'delete': {
+                await fs.unlink(filepath);
+                break;
+            }
+            default:
+                throw new Error('Invalid action');
+        }
+
+
 }
