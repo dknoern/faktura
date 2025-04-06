@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import path from 'path';
+import sharp from 'sharp';
 
 const UPLOADS_DIR = '/Users/davidk/Documents/demesy/backups/uploads';
 
@@ -14,15 +15,30 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'File and ID are required' }, { status: 400 });
         }
 
-        const timestamp = Date.now();
-        const fileExtension = path.extname(file.name);
-        const newFileName = `${id}_${timestamp}${fileExtension}`;
+        const timestamp = Math.floor(Date.now() / 1000);
+        const originalName = path.basename(file.name);
+        const newFileName = `${id}-${timestamp}-${originalName}`;
         const filePath = path.join(UPLOADS_DIR, newFileName);
 
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        await writeFile(filePath, buffer);
+        // Process image with Sharp
+        const image = sharp(buffer);
+        const metadata = await image.metadata();
+        
+        // If image is larger than 2000px in any dimension, resize it
+        if (metadata.width && metadata.width > 2000 || metadata.height && metadata.height > 2000) {
+            const resizedImage = await image
+                .resize(2000, 2000, {
+                    fit: 'inside', // Maintain aspect ratio
+                    withoutEnlargement: true // Don't enlarge if smaller
+                })
+                .toBuffer();
+            await writeFile(filePath, resizedImage);
+        } else {
+            await writeFile(filePath, buffer);
+        }
 
         return NextResponse.json({ success: true, fileName: newFileName });
     } catch (error) {
