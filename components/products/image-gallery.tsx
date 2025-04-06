@@ -25,19 +25,6 @@ export function ImageGallery({ images }: ImageGalleryProps) {
     };
 
     const [localImages, setLocalImages] = useState<string[]>(images.map(getApiUrl));
-    const selectedIndex = selectedImage ? localImages.indexOf(selectedImage) : -1;
-
-    const showNext = () => {
-        if (selectedIndex < localImages.length - 1) {
-            setSelectedImage(localImages[selectedIndex + 1]);
-        }
-    };
-
-    const showPrevious = () => {
-        if (selectedIndex > 0) {
-            setSelectedImage(localImages[selectedIndex - 1]);
-        }
-    };
 
     const handleImageAction = async (action: 'rotateLeft' | 'rotateRight' | 'delete', imagePath: string) => {
         try {

@@ -109,8 +109,6 @@ export async function getProductImages(productId: string): Promise<string[]> {
 
 export async function imageAction(action: 'rotateLeft' | 'rotateRight' | 'delete', filename: string) {
 
-        const filepath = path.join(UPLOADS_DIR, filename);
-
         switch (action) {
             case 'rotateLeft':
             case 'rotateRight': {
