@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { writeFile, readFile } from 'fs/promises';
 import path from 'path';
 import fs from 'fs/promises';
@@ -24,6 +24,20 @@ export async function saveImage(buffer: Buffer, fileName: string): Promise<void>
         // Save to file system
         const filePath = path.join(UPLOADS_DIR, fileName);
         await writeFile(filePath, buffer);
+    }
+}
+
+export async function deleteImage(fileName: string): Promise<void> {
+    if (IMAGE_BUCKET && s3Client) {
+        // Delete from S3
+        await s3Client.send(new DeleteObjectCommand({
+            Bucket: IMAGE_BUCKET,
+            Key: fileName
+        }));
+    } else {
+        // Delete from file system
+        const filePath = path.join(UPLOADS_DIR, fileName);
+        await fs.unlink(filePath);
     }
 }
 
@@ -103,11 +117,11 @@ export async function imageAction(action: 'rotateLeft' | 'rotateRight' | 'delete
                 const angle = action === 'rotateLeft' ? -90 : 90;
                 const image = sharp(await fs.readFile(filepath));
                 const buffer = await image.rotate(angle).toBuffer();
-                await fs.writeFile(filepath, buffer);
+                await saveImage(buffer, filename);
                 break;
             }
             case 'delete': {
-                await fs.unlink(filepath);
+                await deleteImage(filename);
                 break;
             }
             default:
