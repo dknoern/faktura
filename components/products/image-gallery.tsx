@@ -50,14 +50,21 @@ export function ImageGallery({ images }: ImageGalleryProps) {
             } else {
                 // Force a refresh of the image by adding a timestamp query parameter
                 const timestamp = Date.now();
-                setLocalImages(prev => prev.map(img => {
+                const newImages = localImages.map(img => {
                     if (img === imagePath) {
                         // Remove any existing timestamp query
                         const baseUrl = img.split('?')[0];
                         return `${baseUrl}?t=${timestamp}`;
                     }
                     return img;
-                }));
+                });
+                setLocalImages(newImages);
+                
+                // Update the selected image if it was the one rotated
+                if (selectedImage === imagePath) {
+                    const baseUrl = imagePath.split('?')[0];
+                    setSelectedImage(`${baseUrl}?t=${timestamp}`);
+                }
             }
         } catch (error) {
             console.error('Error processing image:', error);
@@ -90,42 +97,8 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                                     className="object-cover rounded-lg"
                                     unoptimized
                                 />
-                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-white hover:text-white hover:bg-black/50"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            handleImageAction('rotateLeft', image);
-                                        }}
-                                    >
-                                        <RotateCcw className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-white hover:text-white hover:bg-black/50"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            handleImageAction('rotateRight', image);
-                                        }}
-                                    >
-                                        <RotateCw className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-white hover:text-white hover:bg-red-500/50"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            if (confirm('Are you sure you want to delete this image?')) {
-                                                handleImageAction('delete', image);
-                                            }
-                                        }}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                    <span className="text-white">Click to view</span>
                                 </div>
                             </div>
                         </DialogTrigger>
@@ -155,13 +128,46 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                                         <ChevronRight className="h-8 w-8" />
                                     </button>
                                 )}
-                                <Image
-                                    src={image}
-                                    alt={`Product image ${index + 1} of ${localImages.length}`}
-                                    fill
-                                    className="object-contain p-4"
-                                    unoptimized
-                                />
+                                <div className="relative w-full h-full flex flex-col items-center">
+                                    <div className="relative w-full flex-1">
+                                        <Image
+                                            src={image}
+                                            alt={`Product image ${index + 1} of ${localImages.length}`}
+                                            fill
+                                            className="object-contain p-4"
+                                            unoptimized
+                                        />
+                                    </div>
+                                    <div className="w-full p-4 bg-gray-50 flex justify-center gap-4">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => handleImageAction('rotateLeft', image)}
+                                        >
+                                            <RotateCcw className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => handleImageAction('rotateRight', image)}
+                                        >
+                                            <RotateCw className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="text-red-600 hover:text-red-600 hover:bg-red-50"
+                                            onClick={() => {
+                                                if (confirm('Are you sure you want to delete this image?')) {
+                                                    handleImageAction('delete', image);
+                                                    setOpen(false);
+                                                }
+                                            }}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                         </DialogContent>
                     </Dialog>
