@@ -39,6 +39,11 @@ export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: Uploa
                 throw new Error('Upload failed');
             }
 
+            // Reset file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+
             onUploadComplete?.();
             onOpenChange(false);
         } catch (error) {
@@ -54,6 +59,12 @@ export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: Uploa
             // First check if we can access the camera
             if (!navigator.mediaDevices?.getUserMedia) {
                 throw new Error('Camera API not available');
+            }
+
+            // Check if we already have camera permission
+            const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+            if (permission.state === 'denied') {
+                throw new Error('Camera permission was denied. Please enable camera access in your browser settings.');
             }
 
             // Set showCamera first to ensure video element is rendered
