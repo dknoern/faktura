@@ -128,8 +128,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Watch className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Lager</span>
-                  <span className="truncate text-xs">Inventory</span>
+                  <span className="truncate font-semibold">Inventory</span>
+                  <span className="truncate text-xs">Management</span>
                 </div>
               </a>
             </SidebarMenuButton>

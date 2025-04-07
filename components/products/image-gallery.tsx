@@ -98,7 +98,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                                     unoptimized
                                 />
                                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                    <span className="text-white">Click to view</span>
+                                    {/*<span className="text-white">Click to view</span>*/}
                                 </div>
                             </div>
                         </DialogTrigger>
