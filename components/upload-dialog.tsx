@@ -67,14 +67,14 @@ export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: Uploa
             }
 
             const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: true,  // Simplified constraints
+                video: {
+                    facingMode: { ideal: 'environment' }  // Prefer rear camera
+                },
                 audio: false
             });
 
-
             videoRef.current.srcObject = mediaStream;
             setStream(mediaStream);
-
 
         } catch (error) {
             console.error('Error accessing camera:', error);
