@@ -10,6 +10,7 @@ const TenantSchema = new mongoose.Schema({
     state: String,
     zip: String,
     phone: String,
+    fax: String,
     website: String,
     warranty: String,
     returnPolicy: String,

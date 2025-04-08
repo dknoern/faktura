@@ -1,95 +1,135 @@
-import { fetchRepairByNumber } from "@/lib/data";
+import { fetchRepairByNumber, fetchDefaultTenant } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
+import { Printer, Mail, Edit } from "lucide-react";
 
 
 export default async function ViewRepairPage(props: { params: Promise<{ repairNumber: string }> }) {
-
   const params = await props.params;
   const repairNumber = params.repairNumber;
 
   const repair = await fetchRepairByNumber(repairNumber);
+  const tenant = await fetchDefaultTenant();
 
   if (!repair) {
     return <div>Repair not found</div>;
   }
 
+  if (!tenant) {
+    return <div>Company information not found</div>;
+  }
+
+  const getApiUrl = (tenantId: string) => {
+    return `/api/images/logo-${tenantId}.png`;
+  };
+
+  const formattedDate = repair.dateOut
+    ? new Date(repair.dateOut).toLocaleDateString()
+    : new Date().toLocaleDateString();
+
   return (
-    <div>
-      <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-2xl font-bold tracking-tight pl-1.5">
-          Repair #{repair.repairNumber}
-        </h2>
-        <Button asChild variant="outline">
-          <Link href={`/dashboard/repairs/${repair.repairNumber}/edit`}>
-            Edit Repair
-          </Link>
-        </Button>
-      </div>
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">Repair Details</h3>
-              <div className="mt-2 space-y-2">
-                <div>
-                  <span className="font-medium">Repair Number:</span>{" "}
-                  {repair.repairNumber}
-                </div>
-                <div>
-                  <span className="font-medium">Item Number:</span>{" "}
-                  {repair.itemNumber}
-                </div>
-                <div>
-                  <span className="font-medium">Description:</span>{" "}
-                  {repair.description}
-                </div>
-                <div>
-                  <span className="font-medium">Vendor:</span> {repair.vendor}
-                </div>
-                <div>
-                  <span className="font-medium">Repair Cost:</span> $
-                  {repair.repairCost ? repair.repairCost.toFixed(2) : '0.00'}
-                </div>
-              </div>
-            </div>
+    <div className="container mx-auto py-1 px-4 max-w-4xl">
 
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">Dates</h3>
-              <div className="mt-2 space-y-2">
-                <div>
-                  <span className="font-medium">Date Out:</span>{" "}
-                  {repair.dateOut
-                    ? new Date(repair.dateOut).toLocaleDateString()
-                    : "Not set"}
-                </div>
-                <div>
-                  <span className="font-medium">Customer Approved:</span>{" "}
-                  {repair.customerApprovedDate
-                    ? new Date(repair.customerApprovedDate).toLocaleDateString()
-                    : "Not set"}
-                </div>
-                <div>
-                  <span className="font-medium">Return Date:</span>{" "}
-                  {repair.returnDate
-                    ? new Date(repair.returnDate).toLocaleDateString()
-                    : "Not set"}
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Customer Information</h3>
-            <div className="mt-2 space-y-2">
-              <div>
-                <span className="font-medium">Name:</span> {repair.customerFirstName}{" "}
-                {repair.customerLastName}
-              </div>
+      <div className="bg-white p-8 rounded-lg shadow">
+        {/* Header with Logo */}
+        <div className="mb-8">
+          <div className="flex flex-col items-start">
+            <div className="w-48 mb-2">
+              <Image
+                src={getApiUrl(tenant._id)}
+                alt={tenant.nameLong}
+                width={300}
+                height={80}
+                className="w-full"
+              />
             </div>
+            <p className="text-sm">{tenant.nameLong}</p>
+            <p className="text-sm">{tenant.address}</p>
+            <p className="text-sm">{tenant.city}, {tenant.state} {tenant.zip}</p>
+            <p className="text-sm">Phone {tenant.phone}</p>
+            <p className="text-sm">Fax {tenant.fax}</p>
           </div>
         </div>
+
+        {/* Repair Information */}
+        <div className="mb-6">
+          <div className="mb-4">
+            <h3 className="font-bold text-lg">Repair #</h3>
+            <p>{repair.repairNumber}</p>
+          </div>
+
+          <div className="mb-4">
+            <h3 className="font-bold text-lg">Repair Date:</h3>
+            <p>{formattedDate}</p>
+          </div>
+
+          <div className="mb-4">
+            <h3 className="font-bold text-lg">Customer Name:</h3>
+            <p>{repair.customerFirstName} {repair.customerLastName}</p>
+          </div>
+
+          <div className="mb-4">
+            <h3 className="font-bold text-lg">Vendor Name</h3>
+            <p>{repair.vendor}</p>
+          </div>
+        </div>
+
+        {/* Item Table */}
+        <div className="mb-6">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-2 px-4">ITEM #</th>
+                <th className="text-left py-2 px-4">DESCRIPTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="py-2 px-4">{repair.itemNumber}</td>
+                <td className="py-2 px-4">{repair.description}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Repair Issues */}
+        <div className="mb-6">
+          <h3 className="font-bold text-lg">Repair Issues</h3>
+          <p>{repair.repairIssues || 'None specified'}</p>
+        </div>
+
+        {/* Repair Cost */}
+        <div>
+          <h3 className="font-bold text-lg">Repair Cost</h3>
+          <p>${repair.repairCost ? repair.repairCost.toFixed(2) : '0.00'}</p>
+        </div>
       </div>
+
+
+      <div className="mb-4 flex justify-between items-center">
+
+<div className="flex gap-2 mt-8">
+  <Button variant="outline" className="flex items-center gap-1">
+    <Printer className="h-4 w-4" />
+    <span>Print</span>
+  </Button>
+  <Button asChild variant="outline" className="flex items-center gap-1">
+    <Link href={`/dashboard/repairs/${repair.repairNumber}/edit`}>
+      <Edit className="h-4 w-4" />
+      <span>Edit</span>
+    </Link>
+  </Button>
+  <Button variant="outline" className="flex items-center gap-1">
+    <Mail className="h-4 w-4" />
+    <span>EMail</span>
+  </Button>
+</div>
+</div>
     </div>
+
+
+
   );
 } 
