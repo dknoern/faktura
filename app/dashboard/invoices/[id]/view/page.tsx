@@ -26,6 +26,10 @@ export default async function ViewInvoicePage(props: { params: Promise<{ id: num
         return <div>Company information not found</div>;
     }
 
+    const getApiUrl = (tenantId: string) => {
+        return `/api/images/logo-${tenantId}.png`;
+    };
+
     console.log('Logo data length:', tenant.logo?.length);
     console.log('Logo data starts with:', tenant.logo?.substring(0, 50));
 
@@ -37,7 +41,7 @@ export default async function ViewInvoicePage(props: { params: Promise<{ id: num
                     <div className="flex justify-between items-start mb-6">
                         <div className="w-48">
                             <Image
-                                src="/api/images/logo-67f48a2050abe41246b22a87.png"
+                                src={getApiUrl(tenant._id)}
                                 alt={tenant.nameLong} 
                                 width={300}
                                 height={80}
