@@ -14,7 +14,6 @@ export default async function ViewInvoicePage(props: { params: Promise<{ id: num
     const params = await props.params;
     const id = params.id;
 
-    console.log('Invoice id:', id);
     const invoice = await fetchInvoiceById(id);
 
     const tenant = await fetchDefaultTenant();
@@ -30,9 +29,6 @@ export default async function ViewInvoicePage(props: { params: Promise<{ id: num
         return `/api/images/logo-${tenantId}.png`;
     };
 
-    console.log('Logo data length:', tenant.logo?.length);
-    console.log('Logo data starts with:', tenant.logo?.substring(0, 50));
-
     return (
         <div className="container mx-auto py-6 px-8 max-w-4xl">
             <div className="bg-white p-8 rounded-lg shadow">
@@ -46,6 +42,7 @@ export default async function ViewInvoicePage(props: { params: Promise<{ id: num
                                 width={300}
                                 height={80}
                                 className="w-full max-w-[200px]"
+                                unoptimized
                             />
                             <h2 className="text-xl mt-2 text-[#B69D57]">INVOICE</h2>
                         </div>

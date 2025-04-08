@@ -90,10 +90,7 @@ export function InvoicesTable({
             </div>
             <Table>
                 <TableHeader>
-                    <TableRow onClick={() => {
-                        alert('hi')
-                        console.log('hi')
-                    }}>
+                    <TableRow>
                         <TableHead>Invoice</TableHead>
                         <TableHead>Customer</TableHead>
                         <TableHead style={{ whiteSpace: 'nowrap' }}>Date</TableHead>

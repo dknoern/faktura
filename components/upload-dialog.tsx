@@ -171,7 +171,6 @@ export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: Uploa
                                     className="w-full h-full rounded-lg bg-black"
                                     style={{ transform: 'scaleX(-1)' }} /* Mirror the video for front camera */
                                     onLoadedMetadata={(e) => {
-                                        console.log('Video metadata loaded in component');
                                         const video = e.target as HTMLVideoElement;
                                         video.play().catch(e => {
                                             console.error('Error playing video in component:', e);
