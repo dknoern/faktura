@@ -1,6 +1,7 @@
 "use client"
 
 import { ChevronRight, type LucideIcon } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 import {
   Collapsible,
@@ -16,6 +17,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar
 } from "@/components/ui/sidebar"
 import Link from 'next/link';
 
@@ -33,17 +35,35 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const router = useRouter();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  // Function to handle navigation and close sidebar on mobile
+  const handleNavigation = (url: string) => {
+    if (isMobile) {
+      // Close the mobile sidebar
+      setOpenMobile(false);
+    }
+    // Navigate to the URL
+    router.push(url);
+  };
+
   return (
     <SidebarGroup>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={item.title}>
-                <Link href={item.url}>
+              <SidebarMenuButton 
+                asChild 
+                tooltip={item.title}
+                onClick={item.items?.length ? undefined : () => handleNavigation(item.url)}
+              >
+                {/* Use div instead of Link to handle navigation manually */}
+                <div className="cursor-pointer">
                   <item.icon />
                   <span>{item.title}</span>
-                </Link>
+                </div>
               </SidebarMenuButton>
               {item.items?.length ? (
                 <>
@@ -57,10 +77,14 @@ export function NavMain({
                     <SidebarMenuSub>
                       {item.items?.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <Link href={subItem.url}>
+                          <SidebarMenuSubButton 
+                            asChild
+                            onClick={() => handleNavigation(subItem.url)}
+                          >
+                            {/* Use div instead of Link to handle navigation manually */}
+                            <div className="cursor-pointer">
                               <span>{subItem.title}</span>
-                            </Link>
+                            </div>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}
