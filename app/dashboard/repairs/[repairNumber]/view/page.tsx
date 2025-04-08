@@ -43,6 +43,8 @@ export default async function ViewRepairPage(props: { params: Promise<{ repairNu
                 width={300}
                 height={80}
                 className="w-full"
+                unoptimized
+                
               />
             </div>
             <p className="text-sm">{tenant.nameLong}</p>
