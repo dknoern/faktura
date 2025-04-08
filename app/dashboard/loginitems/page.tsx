@@ -16,7 +16,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
   return (
     <div>
       <div className="mb-4">
-        <h2 className='text-2xl font-bold tracking-tight pl-1.5'>Log In Record</h2>
+        <h2 className='text-2xl font-bold tracking-tight pl-1.5'>Log In Items</h2>
       </div>
       <div>
         <Suspense fallback={<SkeletonTable />}>

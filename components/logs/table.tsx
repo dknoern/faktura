@@ -102,13 +102,14 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
                         }
 
                         return (
-                            <TableRow key={log._id}>
 
+                            <TableRow 
+                                key={log._id} 
+                                onClick={() => router.push(`/dashboard/loginitems/${log._id}/edit`)}
+                                className="cursor-pointer hover:bg-gray-100">
+                        
 
-
-
-
-                                <LinkTableCell style={{ whiteSpace: 'nowrap' }} href={`/dashboard/loginitems/${log._id}/edit`}>
+                                <TableCell style={{ whiteSpace: 'nowrap' }}>
                                     {log.date ? new Date(log.date).toLocaleDateString('en-US', {
                                         day: '2-digit',
                                         month: '2-digit',
@@ -118,7 +119,7 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
                                         minute: '2-digit',
                                         hour12: false
                                     }) : ''}
-                                </LinkTableCell>
+                                </TableCell>
                                 <TableCell> {log.receivedFrom}</TableCell>
                                 <TableCell> {log.customerName}</TableCell>
 
