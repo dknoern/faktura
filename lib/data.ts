@@ -1,6 +1,7 @@
 import dbConnect from './dbConnect';
 import mongoose from 'mongoose';
-import { Invoice } from './models/invoice';
+import { Invoice } from "./models/invoice";
+import { Tenant } from "./models/tenant";
 import { productModel } from './models/product';
 import { Return } from './models/return';
 import { Repair } from './models/repair';
@@ -321,6 +322,17 @@ export async function fetchRepairByNumber(repairNumber: string) {
     return repair ? JSON.parse(JSON.stringify(repair)) : null;
   } catch (error) {
     console.error("Error fetching repair:", error);
+    throw error;
+  }
+}
+
+export async function fetchDefaultTenant() {
+  try {
+    await dbConnect();
+    const tenant = await Tenant.findOne({ isDefault: true });
+    return tenant ? JSON.parse(JSON.stringify(tenant)) : null;
+  } catch (error) {
+    console.error("Error fetching default tenant:", error);
     throw error;
   }
 }

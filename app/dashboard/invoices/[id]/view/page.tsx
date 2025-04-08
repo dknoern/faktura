@@ -1,11 +1,14 @@
-import { fetchInvoiceById } from "@/lib/data";
+import { fetchDefaultTenant, fetchInvoiceById } from "@/lib/data";
+import Image from "next/image";
+import { Smartphone, MapPin, Globe } from "lucide-react";
 
 interface LineItem {
     itemNumber: string;
     name: string;
+    amount: number;
+    serialNumber?: string;
+    longDesc?: string;
 }
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default async function ViewInvoicePage(props: { params: Promise<{ id: number }> }) {
     const params = await props.params;
@@ -14,63 +17,129 @@ export default async function ViewInvoicePage(props: { params: Promise<{ id: num
     console.log('Invoice id:', id);
     const invoice = await fetchInvoiceById(id);
 
+    const tenant = await fetchDefaultTenant();
     if (!invoice) {
         return <div>Invoice not found</div>;
     }
 
+    if (!tenant) {
+        return <div>Company information not found</div>;
+    }
+
+    console.log('Logo data length:', tenant.logo?.length);
+    console.log('Logo data starts with:', tenant.logo?.substring(0, 50));
+
     return (
-        <div className="container mx-auto py-6">
-            <div className="mb-4 flex justify-between items-center">
-                <h2 className="text-2xl font-bold">
-                    Invoice #{invoice._id}
-                </h2>
-                <Button asChild variant="outline">
-                    <Link href={`/dashboard/invoices/${invoice._id}/edit`}>
-                        Edit Invoice
-                    </Link>
-                </Button>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow">
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500">Customer</h3>
-                            <p className="mt-1">{invoice.customerFirstName} {invoice.customerLastName}</p>
+        <div className="container mx-auto py-6 px-8 max-w-4xl">
+            <div className="bg-white p-8 rounded-lg shadow">
+                {/* Header */}
+                <div className="mb-8">
+                    <div className="flex justify-between items-start mb-6">
+                        <div className="w-48">
+                            <Image
+                                src="/api/images/logo-67f48a2050abe41246b22a87.png"
+                                alt={tenant.nameLong} 
+                                width={300}
+                                height={80}
+                                className="w-full max-w-[200px]"
+                            />
+                            <h2 className="text-xl mt-2 text-[#B69D57]">INVOICE</h2>
                         </div>
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500">Date</h3>
-                            <p className="mt-1">{new Date(invoice.date).toLocaleDateString()}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500">Invoice Type</h3>
-                            <p className="mt-1">{invoice.invoiceType}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-500">Tracking Number</h3>
-                            <p className="mt-1">{invoice.trackingNumber || 'N/A'}</p>
+                        <div className="text-sm text-right">
+                            <p>Invoice # {invoice._id}</p>
+                            <p>Invoice Date: {new Date(invoice.date).toLocaleDateString()}</p>
+                            <p>Method of Sale: {invoice.invoiceType}</p>
+                            <p>Paid By: {invoice.paymentMethod || 'N/A'}</p>
                         </div>
                     </div>
+                </div>
+
+                {/* Sale Type and Billing Address */}
+                <div className="grid grid-cols-2 gap-8 mb-8">
                     <div>
-                        <h3 className="text-sm font-medium text-gray-500 mb-4">Line Items</h3>
-                        <div className="space-y-3">
-                            {invoice.lineItems.map((item: LineItem, index: number) => (
-                                <div key={index} className="flex justify-between border-b pb-2">
-                                    <div>
-                                        <p className="font-medium">{item.itemNumber}</p>
-                                        <p className="text-sm text-gray-600">{item.name}</p>
-                                    </div>
-                                </div>
-                            ))}
+                        <h3 className="font-bold mb-2">SALE TYPE</h3>
+                        <p className="uppercase">{invoice.customerFirstName} {invoice.customerLastName}</p>
+                    </div>
+                    <div>
+                        <h3 className="font-bold mb-2">BILLING ADDRESS</h3>
+                        <p>{invoice.customerFirstName} {invoice.customerLastName}</p>
+                        <p>{invoice.address}</p>
+                        <p>{invoice.city}, {invoice.state} {invoice.zip}</p>
+                    </div>
+                </div>
+
+                {/* Item Description */}
+                <div className="mb-8">
+                    <div className="grid grid-cols-[1fr,auto] gap-4">
+                        <h3 className="font-bold">ITEM DESCRIPTION</h3>
+                        <h3 className="font-bold text-right">TOTAL</h3>
+                    </div>
+                    <div className="border-t border-b border-gray-200 py-4 my-2">
+                        {invoice.lineItems.map((item: LineItem, index: number) => (
+                            <div key={index} className="grid grid-cols-[1fr,auto] gap-4 mb-2">
+                                <p className="text-sm">{item.name}</p>
+                                <p className="text-sm text-right">
+                                    ${(item.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-[1fr,auto] gap-4 mt-4">
+                        <div></div>
+                        <div className="text-right">
+                            <p className="text-sm mb-1">SUB TOTAL: ${(invoice.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                            <p className="text-sm mb-1">TAX: ${(invoice.tax || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                            <p className="text-sm mb-4">SHIPPING: ${(invoice.shipping || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                            <div className="bg-[#B69D57] text-white px-4 py-2">
+                                <p className="font-bold">TOTAL DUE: ${(invoice.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                            </div>
                         </div>
-                        <div className="mt-6 text-right">
-                            <h3 className="text-sm font-medium text-gray-500">Total</h3>
-                            <p className="text-xl font-bold">
-                                {Math.ceil(invoice.total).toLocaleString('en-US', { 
-                                    style: 'currency', 
-                                    currency: 'USD' 
-                                }).replace('.00', '')}
-                            </p>
+                    </div>
+                </div>
+
+                {/* Warranty and Return Policy */}
+                <div className="text-sm space-y-4 mb-8">
+                    <div>
+                        <h3 className="font-bold mb-2">Warranty:</h3>
+                        <p className="text-gray-600">{tenant.warranty}</p>
+                    </div>
+                    <div>
+                        <h3 className="font-bold mb-2">Return Privilege:</h3>
+                        <p className="text-gray-600">{tenant.returnPolicy}</p>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="flex justify-between text-sm mb-8">
+                    <div className="flex items-start">
+                        <Smartphone className="h-5 w-5 text-[#B69D57] mt-0.5 mr-2" />
+                        <div>
+                            <h3 className="font-bold mb-1">PHONE</h3>
+                            <p>{tenant.phone}</p>
                         </div>
+                    </div>
+                    <div className="flex items-start">
+                        <MapPin className="h-5 w-5 text-[#B69D57] mt-0.5 mr-2" />
+                        <div>
+                            <h3 className="font-bold mb-1">ADDRESS</h3>
+                            <p>{tenant.address}</p>
+                            <p>{tenant.city}, {tenant.state} {tenant.zip}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start">
+                        <Globe className="h-5 w-5 text-[#B69D57] mt-0.5 mr-2" />
+                        <div>
+                            <h3 className="font-bold mb-1">WEB</h3>
+                            <p>{tenant.website}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bank Wire Transfer Instructions */}
+                <div className="text-sm">
+                    <h3 className="mb-2">BANK WIRE TRANSFER INSTRUCTIONS</h3>
+                    <div className="grid grid-cols-[auto,1fr] gap-x-8 gap-y-1">
+                        <p>{tenant.bankWireTransferInstructions}</p>
                     </div>
                 </div>
             </div>

@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Validate that the path is within the allowed directory
-    const allowedDir = '/Users/davidk/Documents/demesy/backups/uploads';
+    const allowedDir = process.env.UPLOADS_DIR || './uploads';
     const normalizedPath = path.normalize(imagePath);
     
     if (!normalizedPath.startsWith(allowedDir)) {
