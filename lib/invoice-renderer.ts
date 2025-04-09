@@ -81,22 +81,17 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
   return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto;">
 
-
-
-
     <!-- Header -->
       <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-
-
 
         <div>
           <img src="${logoUrl}" height="76px" width="190px" alt="Company Logo" />
           <div style="color: #B69D57; font-size: 24px; margin-top: 10px;">INVOICE</div>
         </div>
         <div style="text-align: right;">
-          <p style="margin: 5px 0;">Invoice #${invoice._id}</p>
-          <p style="margin: 5px 0;">Date: ${formattedDate}</p>
-          <p style="margin: 5px 0;">Method of Sale: ${invoice.invoiceType}</p>
+          <p style="margin: 1px 0;">Invoice #${invoice._id}</p>
+          <p style="margin: 1px 0;">Date: ${formattedDate}</p>
+          <p style="margin: 1px 0;">Method of Sale: ${invoice.invoiceType}</p>
           ${invoice.paymentMethod ? `<p style="margin: 5px 0;">Paid By: ${invoice.paymentMethod}</p>` : ''}
         </div>
       </div>
@@ -138,6 +133,12 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
                     <td style="text-align: right;">Shipping:</td>
                     <td style="text-align: right;">${formatCurrency(invoice.shipping)}</td>
                   </tr>
+
+                  <tr>
+                    <td style="background-color: #B69D57; color:white; text-align: right;">Hi:</td>
+                    <td style="text-align: right; background-color: #B69D57; color:white;"><strong>$3.45</strong></td>
+                  </tr>
+
                   <tr>
                     <td colspan="2" style="background-color: #B69D57; color: white; padding: 8px; text-align: right; margin-top: 10px;">
                       <strong>TOTAL: ${formattedTotal}</strong>
