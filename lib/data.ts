@@ -75,13 +75,10 @@ export async function fetchProducts(page = 1, limit = 10, search = '') {
 
 export async function fetchProductById(id: string) {
     try {
-        console.log('getting product by id----:', id);
         await dbConnect();
         var _id = new mongoose.Types.ObjectId(id);
         const product = await productModel.findOne({_id: _id});
         product.id = id;
-        console.log('product:', product);
-
         return product;
     } catch (error) {
         console.error('Error fetching product:', error);
@@ -92,7 +89,6 @@ export async function fetchProductById(id: string) {
 
 export async function fetchCustomerById(id: number) {
     try {
-        console.log('getting customer by id----:', id);
         await dbConnect();
         const customer = await customerModel.findOne({_id: id});
         return customer;
@@ -289,8 +285,6 @@ export async function getRepairsForItem(productId: string) {
 export async function fetchLogItemById(id: string) {
     try {
         await dbConnect();
-        console.log('Database connected, attempting to fetch log with id:', id);
-
         // Get the raw collection and convert to ObjectId
         const collection = logModel.collection;
         const _id = new mongoose.Types.ObjectId(id);
@@ -303,8 +297,6 @@ export async function fetchLogItemById(id: string) {
             return null;
         }
         log.id = id;
-
-        console.log('Found document:', log);
         return log;
     } catch (error) {
         console.error('Error fetching log item:', error);
@@ -355,17 +347,21 @@ export async function fetchOutById(id: string) {
   try {
     await dbConnect();
     const _id = new mongoose.Types.ObjectId(id);
-
-    console.log('Database connected, attempting to fetch out with id:', id)
-
-
-
     const out = await Out.findOne({ _id });
-
-    console.log('out:', out);
     return out ? JSON.parse(JSON.stringify(out)) : null;
   } catch (error) {
     console.error("Error fetching out item:", error);
+    throw error;
+  }
+}
+
+export async function fetchReturnById(id: number) {
+  try {
+    await dbConnect();
+    const returnItem = await Return.findOne({ _id: id });
+    return returnItem ? JSON.parse(JSON.stringify(returnItem)) : null;
+  } catch (error) {
+    console.error("Error fetching return item:", error);
     throw error;
   }
 }

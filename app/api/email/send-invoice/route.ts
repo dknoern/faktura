@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { fetchInvoiceById, fetchDefaultTenant } from '@/lib/data';
 import { generateEmailHtml } from '@/lib/invoice-renderer';
+import { getImageHost } from '@/lib/utils/imageHost';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
     // Fetch invoice and tenant data
     const invoice = await fetchInvoiceById(Number(invoiceId));
     const tenant = await fetchDefaultTenant();
+    const imageHost = await getImageHost();
     
     if (!invoice) {
       return NextResponse.json(
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
     }
     
     // Generate email HTML content using the shared utility
-    const emailHtml = generateEmailHtml(invoice, tenant, process.env.AUTH_URL || 'http://localhost:3000');
+    const emailHtml = generateEmailHtml(invoice, tenant, imageHost);
     
     // Send email using AWS SES
     const params = {

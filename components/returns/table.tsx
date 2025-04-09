@@ -103,7 +103,7 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
                         }
 
                         return (
-                            <TableRow key={ret._id}>
+                            <TableRow key={ret._id} onClick={() => router.push(`/dashboard/returns/${ret._id}`)} className="cursor-pointer">
                                 <TableCell>{ret._id}</TableCell>
                                 <TableCell>{ret.invoiceId}</TableCell>
                                 <TableCell>
