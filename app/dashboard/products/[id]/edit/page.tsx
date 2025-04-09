@@ -14,7 +14,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       getProductImages(id)
     ]);
 
-    console.log('images=', productImages);
     if (!product) {
       notFound();
     }

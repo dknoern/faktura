@@ -26,7 +26,6 @@ export async function updateLog(id: string, data: LogData) {
   try {
     await dbConnect();
 
-    console.log(data);
     const collection = logModel.collection;
 
     const _id = new Types.ObjectId(id);

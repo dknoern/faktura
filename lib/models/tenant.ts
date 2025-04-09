@@ -15,7 +15,8 @@ const TenantSchema = new mongoose.Schema({
     warranty: String,
     returnPolicy: String,
     bankWireTransferInstructions: String,
-    logo: String
+    logo: String,
+    email: String
 });
 
 export const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', TenantSchema);
