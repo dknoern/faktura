@@ -71,13 +71,12 @@ export const generateLineItemsHtml = (lineItems: LineItem[]) => {
 
 
 // Generate invoice HTML content
-export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant): string => {
+export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseUrl: string): string => {
   const formattedDate = formatDate(invoice.date);
   const formattedTotal = formatCurrency(invoice.total);
   const lineItemsHtml = generateLineItemsHtml(invoice.lineItems);
 
-  const baseUrl = process.env.AUTH_URL || 'http://localhost:3000';
-  const logoUrl = `${baseUrl}/api/images/logo-${tenant._id}.png`;
+  const logoUrl = `${imageBaseUrl}/api/images/logo-${tenant._id}.png`;
   
   return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto;">
@@ -190,8 +189,8 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant): string =>
 };
 
 // Generate complete email HTML with proper doctype and head
-export const generateEmailHtml = (invoice: Invoice, tenant: Tenant): string => {
-  const invoiceHtml = generateInvoiceHtml(invoice, tenant);
+export const generateEmailHtml = (invoice: Invoice, tenant: Tenant, imageBaseUrl: string): string => {
+  const invoiceHtml = generateInvoiceHtml(invoice, tenant, imageBaseUrl);
   
   return `
     <!DOCTYPE html>

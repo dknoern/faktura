@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Invoice, Tenant, generateInvoiceHtml } from "@/lib/invoice-renderer";
 
-export function ViewInvoice({invoice, tenant}:  {invoice: Invoice, tenant: Tenant}) {
+export function ViewInvoice({invoice, tenant, imageBaseUrl}:  {invoice: Invoice, tenant: Tenant, imageBaseUrl: string}) {
 
     const router = useRouter();
     const [isEmailSending, setIsEmailSending] = useState(false);
@@ -99,7 +99,7 @@ export function ViewInvoice({invoice, tenant}:  {invoice: Invoice, tenant: Tenan
                 {/* Invoice Content - Using the shared renderer */}
                 <div 
                     className="invoice-content" 
-                    dangerouslySetInnerHTML={{ __html: generateInvoiceHtml(invoice, tenant) }}
+                    dangerouslySetInnerHTML={{ __html: generateInvoiceHtml(invoice, tenant, imageBaseUrl) }}
                 />
             </div>
             

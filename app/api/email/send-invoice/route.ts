@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     }
     
     // Generate email HTML content using the shared utility
-    const emailHtml = generateEmailHtml(invoice, tenant);
+    const emailHtml = generateEmailHtml(invoice, tenant, process.env.AUTH_URL || 'http://localhost:3000');
     
     // Send email using AWS SES
     const params = {
