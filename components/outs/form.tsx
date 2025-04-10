@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { SignaturePad } from "@/components/ui/signature-pad";
 
 interface OutItem {
     _id?: string;
@@ -17,6 +18,9 @@ interface OutItem {
     customerFirstName: string;
     customerLastName: string;
     vendor: string;
+    signature?: string;
+    signatureDate?: string;
+    signatureUser?: string;
 }
 
 export function OutForm({ out }: { out?: OutItem }) {
@@ -32,7 +36,10 @@ export function OutForm({ out }: { out?: OutItem }) {
             comments: "",
             customerFirstName: "",
             customerLastName: "",
-            vendor: ""
+            vendor: "",
+            signature: "",
+            signatureDate: "",
+            signatureUser: ""
         }
     );
 
@@ -125,7 +132,34 @@ export function OutForm({ out }: { out?: OutItem }) {
                 </div>
             </div>
 
-            <div className="flex justify-end gap-4">
+            {formData.signature && (
+                <div className="mt-6 border rounded-md p-4 bg-gray-50">
+                    <h3 className="text-sm font-medium mb-2">Signature</h3>
+                    <div className="bg-white border rounded-md p-2 inline-block">
+                        <img src={formData.signature} alt="Signature" className="h-16 object-contain" />
+                    </div>
+                    {formData.signatureDate && (
+                        <p className="text-xs text-gray-500 mt-2">
+                            Signed by {formData.signatureUser} on {new Date(formData.signatureDate).toLocaleDateString()}
+                        </p>
+                    )}
+                </div>
+            )}
+
+            <div className="mt-6">
+                <SignaturePad
+                    value={formData.signature}
+                    onChange={(signature) => setFormData({
+                        ...formData,
+                        signature,
+                        signatureDate: new Date().toISOString(),
+                        signatureUser: formData.sentBy || "User"
+                    })}
+                    label="eSignature (optional)"
+                />
+            </div>
+
+            <div className="flex justify-end gap-4 mt-6">
                 <Button type="button" variant="outline" onClick={() => router.back()}>
                     Cancel
                 </Button>
