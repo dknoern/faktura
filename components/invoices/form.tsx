@@ -19,19 +19,35 @@ interface InvoiceFormData {
     trackingNumber: string;
     total: number;
     invoiceType: string;
+    customerId?: number;
 }
 
-export function InvoiceForm({ invoice }: { invoice?: InvoiceFormData }) {
+interface Customer {
+    _id: number;
+    firstName: string;
+    lastName: string;
+    company?: string;
+    email?: string;
+    phone?: string;
+    address1?: string;
+    address2?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+}
+
+export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFormData, selectedCustomer?: Customer }) {
     const router = useRouter();
     const [formData, setFormData] = useState<InvoiceFormData>(
         invoice || {
-            customerFirstName: "",
-            customerLastName: "",
+            customerFirstName: selectedCustomer?.firstName || "",
+            customerLastName: selectedCustomer?.lastName || "",
             date: new Date().toISOString().split("T")[0],
             lineItems: [{ itemNumber: "", name: "" }],
             trackingNumber: "",
             total: 0,
-            invoiceType: ""
+            invoiceType: "",
+            customerId: selectedCustomer?._id
         }
     );
 

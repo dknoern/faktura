@@ -14,6 +14,8 @@ import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { CustomerSelectModalWrapper } from "../customers/select-modal-wrapper";
+import { PlusCircle } from "lucide-react";
 
 interface PaginationProps {
     total: number;
@@ -42,6 +44,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+    const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
 
     const handlePageChange = (newPage: number) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -66,9 +69,16 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
         router.push(`/dashboard/repairs/${repairNumber}/view`);
     };
 
+    // Handle customer selection for new repair
+    const handleCustomerSelect = (customer: any) => {
+        setIsCustomerModalOpen(false);
+        // Navigate to the new repair page with the selected customer ID
+        router.push(`/dashboard/repairs/new?customerId=${customer._id}`);
+    };
+
     return (
         <div>
-            <div className="mb-4">
+            <div className="mb-4 flex justify-between items-center">
                 <Input
                     type="text"
                     placeholder="Search repairs..."
@@ -76,7 +86,27 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                     onChange={handleSearch}
                     className="max-w-sm"
                 />
+                <Button 
+                    onClick={() => setIsCustomerModalOpen(true)}
+                    className="ml-auto"
+                >
+                    <PlusCircle className="mr-2 h-4 w-4" /> New Repair
+                </Button>
             </div>
+            
+            {/* Customer selection modal */}
+            <CustomerSelectModalWrapper 
+                isOpen={isCustomerModalOpen}
+                onClose={() => setIsCustomerModalOpen(false)}
+                onSelect={handleCustomerSelect}
+                customers={[]}
+                pagination={{
+                    total: 0,
+                    pages: 1,
+                    currentPage: 1,
+                    limit: 10
+                }}
+            />
             <Table>
                 <TableHeader>
                     <TableRow>

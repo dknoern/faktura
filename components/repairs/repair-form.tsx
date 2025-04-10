@@ -20,9 +20,17 @@ interface RepairFormProps {
     vendor: string;
     repairCost: number;
   };
+  selectedCustomer?: {
+    _id: number;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+    company?: string;
+  } | null;
 }
 
-export function RepairForm({ repair }: RepairFormProps) {
+export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -112,7 +120,7 @@ export function RepairForm({ repair }: RepairFormProps) {
           <Input
             id="customerFirstName"
             name="customerFirstName"
-            defaultValue={repair?.customerFirstName}
+            defaultValue={repair?.customerFirstName || selectedCustomer?.firstName || ''}
             required
           />
         </div>
@@ -121,11 +129,39 @@ export function RepairForm({ repair }: RepairFormProps) {
           <Input
             id="customerLastName"
             name="customerLastName"
-            defaultValue={repair?.customerLastName}
+            defaultValue={repair?.customerLastName || selectedCustomer?.lastName || ''}
             required
           />
         </div>
       </div>
+      
+      {/* Additional customer fields if available */}
+      {selectedCustomer && (
+        <div className="grid grid-cols-2 gap-4">
+          {selectedCustomer.email && (
+            <div className="space-y-2">
+              <Label htmlFor="customerEmail">Customer Email</Label>
+              <Input
+                id="customerEmail"
+                name="customerEmail"
+                defaultValue={selectedCustomer.email}
+                readOnly
+              />
+            </div>
+          )}
+          {selectedCustomer.phone && (
+            <div className="space-y-2">
+              <Label htmlFor="customerPhone">Customer Phone</Label>
+              <Input
+                id="customerPhone"
+                name="customerPhone"
+                defaultValue={selectedCustomer.phone}
+                readOnly
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

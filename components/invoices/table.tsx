@@ -8,12 +8,13 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { z } from "zod";
+import { CustomerSelectModalWrapper } from "@/components/customers/select-modal-wrapper";
+import { customerSchema } from "@/lib/models/customer";
 
 interface PaginationProps {
     total: number;
@@ -49,6 +50,44 @@ export function InvoicesTable({
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+    const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+    const [customers, setCustomers] = useState<z.infer<typeof customerSchema>[]>([]);
+    const [customersPagination, setCustomersPagination] = useState({
+        total: 0,
+        pages: 1,
+        currentPage: 1,
+        limit: 10
+    });
+    
+    // This effect loads customer data on the server side when needed
+    useEffect(() => {
+        if (isCustomerModalOpen) {
+            // We'll use a server action to load the data
+            const loadCustomers = async () => {
+                try {
+                    // Use the server action to fetch customers
+                    const result = await fetch('/api/customers-data')
+                        .then(res => res.json())
+                        .catch(() => ({
+                            customers: [],
+                            pagination: { total: 0, pages: 1, currentPage: 1, limit: 10 }
+                        }));
+                    
+                    setCustomers(result.customers || []);
+                    setCustomersPagination(result.pagination || { 
+                        total: 0, 
+                        pages: 1, 
+                        currentPage: 1, 
+                        limit: 10 
+                    });
+                } catch (error) {
+                    console.error('Error loading customers:', error);
+                }
+            };
+            
+            loadCustomers();
+        }
+    }, [isCustomerModalOpen]);
 
     const invoiceList = Array.isArray(invoices) ? invoices : [];
 
@@ -82,7 +121,7 @@ export function InvoicesTable({
                 />
                 </div>
                 <Button
-                    onClick={() => router.push('/dashboard/invoices/new')}
+                    onClick={() => setIsCustomerModalOpen(true)}
                     className="ml-4"
                 >
                     New Invoice
@@ -171,6 +210,18 @@ export function InvoicesTable({
                     </Button>
                 </div>
             </div>
+
+            {/* Customer selection modal */}
+            <CustomerSelectModalWrapper
+                isOpen={isCustomerModalOpen}
+                onClose={() => setIsCustomerModalOpen(false)}
+                onSelect={(customer) => {
+                    router.push(`/dashboard/invoices/new?customerId=${customer._id}`);
+                    setIsCustomerModalOpen(false);
+                }}
+                customers={customers}
+                pagination={customersPagination}
+            />
         </div>
     )
 }

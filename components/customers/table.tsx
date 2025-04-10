@@ -23,44 +23,113 @@ type Customer = z.infer<typeof customerSchema>;
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-export function CustomersTable({ customers, pagination }: { customers: Customer[], pagination: PaginationProps }) {
+import { useCallback } from "react";
+interface CustomersTableProps {
+    customers: Customer[]
+    pagination: PaginationProps
+    isModal?: boolean
+    onSelectCustomer?: (customer: Customer) => void
+    modalRouter?: any
+    onSearch?: (query: string) => void
+    onPageChange?: (page: number) => void
+}
 
-    const router = useRouter();
+export function CustomersTable({ 
+    customers, 
+    pagination,
+    isModal = false,
+    onSelectCustomer,
+    modalRouter,
+    onSearch,
+    onPageChange
+}: CustomersTableProps) {
+
+    // Always call hooks unconditionally at the top level
+    const defaultRouter = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    
+    // Use the modal router if provided (for modal mode), otherwise use the real router
+    const router = modalRouter || defaultRouter;
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+    
+    // Check if we're in customer selection mode for invoices
+    const selectForInvoice = !isModal && searchParams.get('selectForInvoice') === 'true';
 
     const customersList = Array.isArray(customers) ? customers : [];
 
     const handlePageChange = (newPage: number) => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('page', newPage.toString());
-        router.push(`${pathname}?${params.toString()}`);
+        if (isModal && onPageChange) {
+            // If in modal mode and onPageChange is provided, use it
+            onPageChange(newPage);
+        } else {
+            // Otherwise use the normal URL-based pagination
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('page', newPage.toString());
+            router.push(`${pathname}?${params.toString()}`);
+        }
     };
+    
+    const handleCustomerClick = useCallback((customer: Customer) => {
+        if (isModal && onSelectCustomer) {
+            // If in modal mode, call the onSelectCustomer callback
+            onSelectCustomer(customer);
+        } else if (selectForInvoice) {
+            // If in selection mode, navigate to new invoice with customer ID
+            router.push(`/dashboard/invoices/new?customerId=${customer._id}`);
+        } else {
+            // Otherwise, navigate to customer edit page as usual
+            router.push(`/dashboard/customers/${customer._id}/edit`);
+        }
+    }, [router, selectForInvoice, isModal, onSelectCustomer]);
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
-        const params = new URLSearchParams(searchParams.toString());
-        if (value) {
-            params.set('search', value);
-            params.set('page', '1'); // Reset to first page when searching
+        
+        if (isModal && onSearch) {
+            // If in modal mode and onSearch is provided, use it
+            onSearch(value);
         } else {
-            params.delete('search');
+            // Otherwise use the normal URL-based search
+            const params = new URLSearchParams(searchParams.toString());
+            if (value) {
+                params.set('search', value);
+                params.set('page', '1'); // Reset to first page when searching
+            } else {
+                params.delete('search');
+            }
+            router.push(`${pathname}?${params.toString()}`);
         }
-        router.push(`${pathname}?${params.toString()}`);
     };
 
     return (
         <div>
-            <div className="mb-4">
-                <Input
-                    type="text"
-                    placeholder="Search customers..."
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    className="max-w-sm"
-                />
+            <div className="mb-4 flex justify-between items-center">
+                <div>
+                    <Input
+                        type="text"
+                        placeholder="Search customers..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        className="max-w-sm"
+                    />
+                </div>
+                {isModal ? (
+                    <div className="flex items-center">
+                        <h2 className="text-lg font-semibold mr-4">Select a customer for the new invoice</h2>
+                    </div>
+                ) : selectForInvoice && (
+                    <div className="flex items-center">
+                        <h2 className="text-lg font-semibold mr-4">Select a customer for the new invoice</h2>
+                        <Button 
+                            variant="outline" 
+                            onClick={() => router.push('/dashboard/invoices')}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                )}
             </div>
             <Table>
                 <TableHeader>
@@ -75,9 +144,11 @@ export function CustomersTable({ customers, pagination }: { customers: Customer[
                 </TableHeader>
                 <TableBody>
                     {customersList.map((customer: Customer) => (
-                        <TableRow key={customer._id} className="cursor-pointer" onClick={() => {
-                            router.push(`/dashboard/customers/${customer._id}/edit`);
-                        }}>
+                        <TableRow 
+                            key={customer._id} 
+                            className="cursor-pointer hover:bg-gray-100" 
+                            onClick={() => handleCustomerClick(customer)}
+                        >
                             <TableCell>{customer._id}</TableCell>
                             <TableCell> {customer.firstName + ' ' + customer.lastName}</TableCell>
                             <TableCell>{customer.city}</TableCell>
