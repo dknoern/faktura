@@ -1,7 +1,7 @@
 import { CustomersTable } from "@/components/customers/table";
 import { SkeletonTable } from "@/components/skeletons";
 import { Suspense } from "react";
-import { Plus } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -25,7 +25,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
           href="/dashboard/customers/new"
           className={buttonVariants({ variant: "default" })}
         >
-          <Plus className="w-4 h-4" />
+          <PlusCircle className="w-4 h-4" />
           New Customer
         </Link>
       </div>

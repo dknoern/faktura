@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import {
   Dialog,
   DialogContent,
+  DialogTitle
 } from "@/components/ui/dialog"
 import { CustomersTable } from "./table"
 import { z } from "zod"
@@ -90,7 +91,8 @@ export function CustomerSelectModalWrapper({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
-        <div className="overflow-y-auto pr-2" style={{ maxHeight: 'calc(90vh - 80px)' }}>
+        <DialogTitle className="text-xl font-semibold mb-4">Select Customer</DialogTitle>
+        <div className="overflow-y-auto pr-2" style={{ maxHeight: 'calc(90vh - 120px)' }}>
           {/* Pass the customers table component but with isModal flag */}
           <CustomersTable 
             customers={customers} 

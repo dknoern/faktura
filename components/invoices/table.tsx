@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { CustomerSelectModalWrapper } from "@/components/customers/select-modal-wrapper";
 import { customerSchema } from "@/lib/models/customer";
+import { PlusCircle } from "lucide-react";
 
 interface PaginationProps {
     total: number;
@@ -122,9 +123,10 @@ export function InvoicesTable({
                 </div>
                 <Button
                     onClick={() => setIsCustomerModalOpen(true)}
-                    className="ml-4"
+                    className="ml-4 flex items-center gap-1"
                 >
-                    New Invoice
+                    <PlusCircle size={18} />
+                    <span>New Invoice</span>
                 </Button>
             </div>
             <Table>

@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/select"
 
 import { Input } from "@/components/ui/input"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 import { Textarea } from "../ui/textarea"
 import { Checkbox } from "../ui/checkbox"
@@ -35,6 +36,10 @@ import { productSchema } from "../../lib/models/product"
 
 
 export default function ProductEditForm({ product, repairs }: { product: z.infer<typeof productSchema>, repairs: Array<{ _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }> }) {
+    const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
+    const isNewProduct = !product.id;
 
     // 1. Define your form.
     const form = useForm<z.infer<typeof productSchema>>({
@@ -47,10 +52,37 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
     })
 
     // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof productSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+    async function onSubmit(values: z.infer<typeof productSchema>) {
+        setIsSubmitting(true);
+        try {
+            const endpoint = isNewProduct ? '/api/products' : `/api/products/${product.id}`;
+            const method = isNewProduct ? 'POST' : 'PUT';
+            
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(values),
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to save product');
+            }
+            
+            //const savedProduct = await response.json();
+            
+            // On success, redirect to the product list page
+            router.push('/dashboard/products');
+            router.refresh();
+            
+        } catch (error) {
+            console.error('Error saving product:', error);
+            // On failure, stay on the current page and show error
+            setSubmitError('Failed to save product. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
 
@@ -635,9 +667,18 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                         </div>
                     </div>
 
-                    <div className="flex justify-center space-y-0 space-x-4">
-                        <Button type="submit">Submit</Button>
-                        <Link href="/dashboard/products"><Button variant="secondary" >Cancel</Button></Link>
+                    <div className="space-y-2">
+                        {submitError && (
+                            <div className="text-red-500 text-center mb-2">
+                                {submitError}
+                            </div>
+                        )}
+                        <div className="flex justify-center space-y-0 space-x-4">
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? 'Saving...' : isNewProduct ? 'Create Product' : 'Update Product'}
+                            </Button>
+                            <Link href="/dashboard/products"><Button variant="secondary" type="button" disabled={isSubmitting}>Cancel</Button></Link>
+                        </div>
                     </div>
 
                 </form>
