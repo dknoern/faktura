@@ -25,6 +25,19 @@ export interface Invoice {
   shipping: number;
   total: number;
   date: string;
+  shipAddress1: string;
+  shipAddress2: string;
+  shipCity: string;
+  shipState: string;
+  shipZip: string;
+  billingAddress1: string;
+  billingAddress2: string;
+  billingCity: string;
+  billingState: string;
+  billingZip: string;
+  customerPhone: string;
+  trackingNumber: string;
+  customerEmail: string;
 }
 
 export interface Tenant {
@@ -44,8 +57,8 @@ export interface Tenant {
 
 // Format currency values
 export const formatCurrency = (value: number = 0) => {
-  return value.toLocaleString('en-US', { 
-    style: 'currency', 
+  return value.toLocaleString('en-US', {
+    style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2
   });
@@ -62,8 +75,8 @@ export const generateLineItemsHtml = (lineItems: LineItem[]) => {
     const amount = formatCurrency(item.amount);
     return `
       <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${amount}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; font-size: 12px;">${item.name.toUpperCase()}<p>${item.longDesc || ''}</p></td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-size: 12px; vertical-align: top;">${amount}</td>
       </tr>
     `;
   }).join('');
@@ -77,7 +90,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
   const lineItemsHtml = generateLineItemsHtml(invoice.lineItems);
 
   const logoUrl = `${imageBaseUrl}/api/images/logo-${tenant._id}.png`;
-  
+
   return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto;">
 
@@ -95,23 +108,37 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
           ${invoice.paymentMethod ? `<p style="margin: 5px 0;">Paid By: ${invoice.paymentMethod}</p>` : ''}
         </div>
       </div>
+
+
       
-      <!-- Billing Address -->
-      <div style="margin-bottom: 20px;">
-        <div style="font-weight: bold; margin-bottom: 5px;">BILLING ADDRESS</div>
-        <p style="margin: 5px 0;">${invoice.customerFirstName} ${invoice.customerLastName}</p>
-        <p style="margin: 5px 0;">${invoice.address || ''}</p>
-        <p style="margin: 5px 0;">${invoice.city || ''}, ${invoice.state || ''} ${invoice.zip || ''}</p>
+
+      <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+
+
+        <div style="margin-bottom: 20px; width: 50%;">
+          <p style="margin: 0 0;">${invoice.customerFirstName} ${invoice.customerLastName}</p>
+          <p style="margin: 0 0;">${invoice.shipAddress1 || ''}</p>
+          <p style="margin: 0 0;">${invoice.shipAddress2 || ''}</p>
+          <p style="margin: 0 0;">${invoice.shipCity || ''}${invoice.shipState ? ', ' + invoice.shipState : ''} ${invoice.shipZip || ''}</p>
+          <p style="margin: 0 0;">${invoice.customerPhone || ''}</p>
+          <p style="margin: 0 0;">${invoice.customerEmail || ''}</p>
+        </div>
+
+        <div style="margin-bottom: 20px; width: 50%; align-items: left;">
+          <p style="font-weight: bold; margin-bottom: 0;">${invoice.billingAddress1 ? 'BILLING ADDRESS' : ''}</p>
+          <p style="margin: 0 0;">${invoice.billingAddress1 || ''}</p>
+          <p style="margin: 0 0;">${invoice.billingAddress2 || ''}</p>
+          <p style="margin: 0 0;">${invoice.billingCity || ''}${invoice.billingState ? ', ' + invoice.billingState : ''} ${invoice.billingZip || ''}</p>
+        </div>
       </div>
       
       <!-- Items -->
       <div style="margin-bottom: 20px;">
-        <div style="font-weight: bold; margin-bottom: 5px;">ITEM DESCRIPTION</div>
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr>
-              <th style="text-align: left; padding: 8px; border-bottom: 2px solid #eee;">Description</th>
-              <th style="text-align: right; padding: 8px; border-bottom: 2px solid #eee;">Amount</th>
+              <th style="text-align: left; padding: 8px; border-bottom: 2px solid #eee;">ITEM DESCRIPTION</th>
+              <th style="text-align: right; paddin g: 8px; border-bottom: 2px solid #eee;">TOTAL</th>
             </tr>
           </thead>
           <tbody>
@@ -133,12 +160,6 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
                     <td style="text-align: right;">Shipping:</td>
                     <td style="text-align: right;">${formatCurrency(invoice.shipping)}</td>
                   </tr>
-
-                  <tr>
-                    <td style="background-color: #B69D57; color:white; text-align: right;">Hi:</td>
-                    <td style="text-align: right; background-color: #B69D57; color:white;"><strong>$3.45</strong></td>
-                  </tr>
-
                   <tr>
                     <td colspan="2" style="background-color: #B69D57; color: white; padding: 8px; text-align: right; margin-top: 10px;">
                       <strong>TOTAL: ${formattedTotal}</strong>
@@ -154,11 +175,11 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
       <!-- Warranty and Return Policy -->
       <div style="margin-bottom: 20px; font-size: 14px;">
         <div style="margin-bottom: 10px;">
-          <div style="font-weight: bold; margin-bottom: 5px;">Warranty:</div>
+          <div style="font-weight: bold;">Warranty:</div>
           <p style="color: #666;">${tenant.warranty || 'N/A'}</p>
         </div>
         <div>
-          <div style="font-weight: bold; margin-bottom: 5px;">Return Privilege:</div>
+          <div style="font-weight: bold;">Return Privilege:</div>
           <p style="color: #666;">${tenant.returnPolicy || 'N/A'}</p>
         </div>
       </div>
@@ -182,7 +203,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
       
       <!-- Bank Wire Transfer Instructions -->
       <div style="font-size: 14px;">
-        <div style="margin-bottom: 5px;">BANK WIRE TRANSFER INSTRUCTIONS</div>
+        <div>BANK WIRE TRANSFER INSTRUCTIONS</div>
         <p>${tenant.bankWireTransferInstructions || 'N/A'}</p>
       </div>
     </div>
@@ -192,7 +213,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
 // Generate complete email HTML with proper doctype and head
 export const generateEmailHtml = (invoice: Invoice, tenant: Tenant, imageBaseUrl: string): string => {
   const invoiceHtml = generateInvoiceHtml(invoice, tenant, imageBaseUrl);
-  
+
   return `
     <!DOCTYPE html>
     <html>
@@ -210,3 +231,4 @@ export const generateEmailHtml = (invoice: Invoice, tenant: Tenant, imageBaseUrl
     </html>
   `;
 };
+
