@@ -53,6 +53,14 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof productSchema>) {
+        // Convert string values to proper types before submission
+        const formattedValues = {
+            ...values,
+            cost: typeof values.cost === 'string' ? Number(values.cost) || 0 : values.cost || 0,
+            sellingPrice: typeof values.sellingPrice === 'string' ? Number(values.sellingPrice) || 0 : values.sellingPrice || 0,
+            listPrice: typeof values.listPrice === 'string' ? Number(values.listPrice) || 0 : values.listPrice || 0,
+            totalRepairCost: typeof values.totalRepairCost === 'string' ? Number(values.totalRepairCost) || 0 : values.totalRepairCost || 0
+        };
         setIsSubmitting(true);
         try {
             const endpoint = isNewProduct ? '/api/products' : `/api/products/${product.id}`;
@@ -63,7 +71,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(values),
+                body: JSON.stringify(formattedValues),
             });
             
             if (!response.ok) {
@@ -533,7 +541,15 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                     <FormItem>
                                                         <FormLabel>Our price</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="" {...field} value={field.value || ""} />
+                                                            <Input 
+                                                                type="number"
+                                                                {...field} 
+                                                                value={field.value === undefined || field.value === null ? "" : field.value} 
+                                                                onChange={e => {
+                                                                    const value = e.target.value === "" ? 0 : Number(e.target.value);
+                                                                    field.onChange(value);
+                                                                }}
+                                                            />
 
                                                         </FormControl>
                                                         <FormMessage />
@@ -548,7 +564,15 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                     <FormItem>
                                                         <FormLabel>List price</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="" {...field} value={field.value || ""} />
+                                                            <Input 
+                                                                type="number"
+                                                                {...field} 
+                                                                value={field.value === undefined || field.value === null ? "" : field.value} 
+                                                                onChange={e => {
+                                                                    const value = e.target.value === "" ? 0 : Number(e.target.value);
+                                                                    field.onChange(value);
+                                                                }}
+                                                            />
 
                                                         </FormControl>
                                                         <FormMessage />
@@ -564,7 +588,15 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                     <FormItem>
                                                         <FormLabel>Cost</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="" {...field} value={field.value || ""} />
+                                                            <Input 
+                                                                type="number"
+                                                                {...field} 
+                                                                value={field.value === undefined || field.value === null ? "" : field.value} 
+                                                                onChange={e => {
+                                                                    const value = e.target.value === "" ? 0 : Number(e.target.value);
+                                                                    field.onChange(value);
+                                                                }}
+                                                            />
 
                                                         </FormControl>
                                                         <FormMessage />

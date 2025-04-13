@@ -35,8 +35,8 @@ export const productSchema = z.object({
     notes: z.string().optional(),
     ebayNoReserve: z.boolean().optional(),
     inventoryItem:z.boolean().optional(),
-    sellerType: z.string().optional(),
-    seller:z.string().optional(),
+    sellerType: z.string().min(3).max(255),
+    seller:z.string().min(3).max(255),
     search: z.string().optional(),
     history: z.array(z.object({
         _id: z.string(),
