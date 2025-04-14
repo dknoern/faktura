@@ -130,6 +130,11 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                     history: product.history || [],
                 })
             }
+
+            if (repairs && repairs.length > 0) {
+                const totalCost = repairs.reduce((sum, repair) => sum + (repair.repairCost || 0), 0);
+                form.setValue('totalRepairCost', totalCost);
+              }
         }
         fetchProduct()
     }, [form, product])
@@ -698,6 +703,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                             </Tabs>
                         </div>
                     </div>
+                    <div>is submitting: {isSubmitting.toString()}</div>
 
                     <div className="space-y-2">
                         {submitError && (
@@ -711,6 +717,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                             </Button>
                             <Link href="/dashboard/products"><Button variant="secondary" type="button" disabled={isSubmitting}>Cancel</Button></Link>
                         </div>
+                        
                     </div>
 
                 </form>
