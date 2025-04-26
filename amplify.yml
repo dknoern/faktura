@@ -17,6 +17,12 @@ frontend:
         - echo "AWS_REGION=$REGION" >> .env
         - echo "AWS_ACCESS_KEY_ID=$ACCESS_KEY_ID" >> .env
         - echo "AWS_SECRET_ACCESS_KEY=$SECRET_ACCESS_KEY" >> .env
+        - echo "AVATAX_APP_NAME=$AVATAX_APP_NAME" >> .env
+        - echo "AVATAX_APP_VERSION=$AVATAX_APP_VERSION" >> .env
+        - echo "AVATAX_ENVIRONMENT=$AVATAX_ENVIRONMENT" >> .env
+        - echo "AVATAX_MACHINE_NAME=$AVATAX_MACHINE_NAME" >> .env
+        - echo "AVATAX_USERNAME=$AVATAX_USERNAME" >> .env
+        - echo "AVATAX_PASSWORD=$AVATAX_PASSWORD" >> .env
         - npm run build
   artifacts:
     baseDirectory: .next

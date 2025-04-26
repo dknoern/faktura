@@ -27,17 +27,21 @@ export interface Invoice {
   date: string;
   shipAddress1: string;
   shipAddress2: string;
+  shipAddress3: string;
   shipCity: string;
   shipState: string;
   shipZip: string;
   billingAddress1: string;
   billingAddress2: string;
+  billingAddress3: string;
   billingCity: string;
   billingState: string;
   billingZip: string;
   customerPhone: string;
   trackingNumber: string;
   customerEmail: string;
+  taxExempt: boolean;
+  customerId: string;
 }
 
 export interface Tenant {

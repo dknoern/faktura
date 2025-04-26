@@ -8,6 +8,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { LineItems, LineItem } from "./line-items"
 import { Printer, Edit, Mail } from "lucide-react"
+import { createInvoice, updateInvoice } from "@/lib/invoiceActions"
 
 interface InvoiceFormData {
   _id?: number
@@ -103,27 +104,22 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    const url = formData._id 
-      ? `/api/invoices/${formData._id}`
-      : "/api/invoices"
-      
-    const method = formData._id ? "PUT" : "POST"
-
     try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to save invoice")
+      let result;
+      
+      if (formData._id) {
+        // Update existing invoice
+        result = await updateInvoice(formData._id, formData)
+      } else {
+        // Create new invoice
+        result = await createInvoice(formData)
       }
-
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to save invoice")
+      }
+      
       router.push("/dashboard/invoices")
-      router.refresh()
     } catch (error) {
       console.error("Error saving invoice:", error)
     }
