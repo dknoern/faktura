@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import dbConnect from "./dbConnect";
 import { Invoice } from "./models/invoice";
 import { Counter } from "./models/counter";
+import { calcTax } from "./utils/tax";
 
 export interface LineItem {
   productId?: string;
@@ -77,6 +78,12 @@ export async function createInvoice(data: InvoiceData) {
     
     // Create the invoice
     const invoice = new Invoice(invoiceData);
+
+    // calculate tax
+    const calculatedTax = await calcTax(invoice as any);
+    invoice.tax = calculatedTax;
+    invoice.total = (invoice.subtotal || 0) + (invoice.tax || 0) + (invoice.shipping || 0);  
+    
     await invoice.save();
     
     revalidatePath('/dashboard/invoices');
@@ -99,6 +106,12 @@ export async function updateInvoice(id: number, data: InvoiceData) {
       search: `${data.customerFirstName} ${data.customerLastName} ${data.invoiceNo || ''}`
     };
     
+
+    // calculate tax
+    const calculatedTax = await calcTax(invoiceData as any);
+    invoiceData.tax = calculatedTax;
+    invoiceData.total = (invoiceData.subtotal || 0) + (invoiceData.tax || 0) + (invoiceData.shipping || 0);  
+    
     // Update the invoice
     await Invoice.findByIdAndUpdate(id, invoiceData);
     
@@ -106,6 +119,6 @@ export async function updateInvoice(id: number, data: InvoiceData) {
     return { success: true, invoiceId: id };
   } catch (error) {
     console.error("Error updating invoice:", error);
-    return { success: false, error: "Failed to update invoice" };
+    return { success: false, error: "Failed to update invoice: " + (error instanceof Error ? error.message : String(error)) };
   }
 }

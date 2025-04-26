@@ -17,11 +17,13 @@ export interface LineItem {
 }
 
 interface LineItemsProps {
-  items: LineItem[]
+  items: LineItem[],
+  shipping: number,
+  tax: number,
   onChange: (items: LineItem[]) => void
 }
 
-export function LineItems({ items, onChange }: LineItemsProps) {
+export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false)
   const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null)
   const [isAddingNewItem, setIsAddingNewItem] = useState(false)
@@ -204,7 +206,7 @@ export function LineItems({ items, onChange }: LineItemsProps) {
                 type="number" 
                 className="w-[100px]" 
                 placeholder="0.00"
-                value={0}
+                value={shipping}
                 readOnly
               />
             </div>
@@ -217,7 +219,7 @@ export function LineItems({ items, onChange }: LineItemsProps) {
                 type="number" 
                 className="w-[100px]" 
                 placeholder="0.00"
-                value={0}
+                value={tax}
                 readOnly
               />
             </div>

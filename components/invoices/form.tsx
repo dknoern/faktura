@@ -7,7 +7,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { LineItems, LineItem } from "./line-items"
-import { Printer, Edit, Mail } from "lucide-react"
 import { createInvoice, updateInvoice } from "@/lib/invoiceActions"
 
 const formatDateTime = (input: string) => {
@@ -88,11 +87,17 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
           shipCity: selectedCustomer?.city || "",
           shipState: selectedCustomer?.state || "",
           shipZip: selectedCustomer?.zip || "",
-          shipCountry: "",
-          date: formatDateTime(new Date().toISOString()),
-          lineItems: [],
+          shipCountry: "USA",
+          customerEmail: selectedCustomer?.email || "",
+          customerPhone: selectedCustomer?.phone || "",
+          date: new Date().toISOString(),
           total: 0,
-          customerId: selectedCustomer?._id
+          subtotal: 0,
+          tax: 0,
+          shipping: 0,
+          lineItems: [],
+          copyAddress: false,
+          invoiceType: "Invoice"
         }
   )
 
@@ -101,7 +106,7 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
     if (formData.lineItems.length === 0) {
       setFormData(prev => ({
         ...prev,
-        lineItems: [{ itemNumber: "", name: "", amount: 0 }]
+        lineItems: []
       }))
     }
   }, [])
@@ -179,20 +184,7 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-md shadow-sm">
       {/* Header */}
-      <div className="flex justify-between items-center p-4 border-b">
-        <h1 className="text-2xl font-bold">Invoice</h1>
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" className="flex items-center gap-1">
-            <Printer className="h-4 w-4" /> Print
-          </Button>
-          <Button type="button" variant="outline" size="sm" className="flex items-center gap-1">
-            <Mail className="h-4 w-4" /> Email
-          </Button>
-          <Button type="submit" size="sm" disabled={!allItemsValid} className="flex items-center gap-1">
-            <Edit className="h-4 w-4" /> Save
-          </Button>
-        </div>
-      </div>
+
 
       {/* Main Form */}
       <div className="p-4 grid grid-cols-2 gap-x-8 gap-y-4">
@@ -364,9 +356,9 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
           </div>
           
           <div className="grid grid-cols-[120px_1fr] items-center">
-            <label className="text-sm font-medium">Invoice Type</label>
+            <label className="text-sm font-medium">Invoice Type <span className="text-red-500">*</span></label>
             <Select
-              value={formData.invoiceType || undefined}
+              value={formData.invoiceType || "Invoice"}
               onValueChange={(value) => setFormData({ ...formData, invoiceType: value })}
             >
               <SelectTrigger>
@@ -490,6 +482,8 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
       <div className="p-4">
         <LineItems 
           items={formData.lineItems} 
+          shipping={formData.shipping || 0}
+          tax={formData.tax || 0}
           onChange={handleLineItemsChange} 
         />
       </div>

@@ -13,8 +13,8 @@ const avataxConfig = {
 
 // Security credentials for Avatax
 const avataxCredentials = {
-  username: process.env.AVATAX_ACCOUNT,
-  password: process.env.AVATAX_LICENSE
+  username: process.env.AVATAX_USERNAME,
+  password: process.env.AVATAX_PASSWORD
 };
 
 /**
@@ -44,6 +44,8 @@ export async function calcTax(invoice: Invoice): Promise<number> {
 
   try {
     // Create Avatax client
+
+    console.log('Creating Avatax client, config:', avataxConfig, 'credentials:', avataxCredentials);
     const client = new Avatax(avataxConfig).withSecurity(avataxCredentials);
 
     // Prepare line items for tax calculation
@@ -55,31 +57,44 @@ export async function calcTax(invoice: Invoice): Promise<number> {
       description: item.name
     }));
 
-    // Build transaction model for Avatax API
     const transactionModel = {
-      code: invoice._id.toString(),
-      customerCode: invoice.customerId.toString(),
+      code: (invoice._id || '0').toString(),
+      customerCode: (invoice.customerId || '0').toString(),
       type: Enums.DocumentType.SalesInvoice,
       date: new Date(invoice.date || Date.now()),
       companyCode: 'DEFAULT',
       commit: true,
       currencyCode: 'USD',
+      taxCode: 'PC040206',
       addresses: {
         singleLocation: {
-          line1: invoice.shipAddress1 || '',
+          line1: invoice.shipAddress1 ,
           line2: invoice.shipAddress2 || '',
           line3: invoice.shipAddress3 || '',
-          city: invoice.shipCity || '',
-          region: invoice.shipState || '',
-          postalCode: invoice.shipZip || ''
+          city: invoice.shipCity ,
+          region: invoice.shipState ,
+          postalCode: invoice.shipZip
         }
       },
       lines: lines
     };
 
+
+  
+
+
     // Call Avatax API to calculate tax
-    const result = await client.createTransaction({ model: transactionModel });
-    
+
+
+
+    const createOrAdjustTransactionModel = {
+      createTransactionModel: transactionModel,
+      adjustmentReason: Enums.AdjustmentReason.Other,
+      adjustmentDescription: 'Invoice Creation or Update'
+    };
+
+    //const result = await client.createTransaction({ model: transactionModel });
+    const result = await client.createOrAdjustTransaction({ model: createOrAdjustTransactionModel });
     // Calculate total tax from result
     let totalTax = 0;
     if (result && result.summary && Array.isArray(result.summary)) {
@@ -93,7 +108,13 @@ export async function calcTax(invoice: Invoice): Promise<number> {
     console.log("Total tax from Avalara for invoice", invoice._id, "is", totalTax);
     return totalTax;
   } catch (error: any) {
-    console.error('Avatax calculation error:', error.message);
-    throw new Error(`Tax calculation failed: ${error.message}`);
+    console.error('Avatax calculation error:', error);
+    console.log('Invoice data causing error:', JSON.stringify({
+      _id: invoice._id || 'undefined',
+      customerId: invoice.customerId || 'undefined',
+      shipState: invoice.shipState || 'undefined'
+    }));
+
+    throw new Error("Failed to calculate tax");
   }
 }
