@@ -10,6 +10,16 @@ import { LineItems, LineItem } from "./line-items"
 import { Printer, Edit, Mail } from "lucide-react"
 import { createInvoice, updateInvoice } from "@/lib/invoiceActions"
 
+const formatDateTime = (input: string) => {
+  const dateObj = new Date(input);
+  const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const dd = String(dateObj.getDate()).padStart(2, '0');
+  const yyyy = dateObj.getFullYear();
+  const hh = String(dateObj.getHours()).padStart(2, '0');
+  const min = String(dateObj.getMinutes()).padStart(2, '0');
+  return `${mm}/${dd}/${yyyy} ${hh}:${min}`;
+};
+
 interface InvoiceFormData {
   _id?: number
   invoiceNo?: string
@@ -67,14 +77,23 @@ interface Customer {
 export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFormData, selectedCustomer?: Customer }) {
   const router = useRouter()
   const [formData, setFormData] = useState<InvoiceFormData>(
-    invoice || {
-      customerFirstName: selectedCustomer?.firstName || "",
-      customerLastName: selectedCustomer?.lastName || "",
-      date: new Date().toISOString().split("T")[0],
-      lineItems: [],
-      total: 0,
-      customerId: selectedCustomer?._id
-    }
+    invoice
+      ? { ...invoice, date: formatDateTime(invoice.date) }
+      : {
+          customerFirstName: selectedCustomer?.firstName || "",
+          customerLastName: selectedCustomer?.lastName || "",
+          shipAddress1: selectedCustomer?.address1 || "",
+          shipAddress2: selectedCustomer?.address2 || "",
+          shipAddress3: "",
+          shipCity: selectedCustomer?.city || "",
+          shipState: selectedCustomer?.state || "",
+          shipZip: selectedCustomer?.zip || "",
+          shipCountry: "",
+          date: formatDateTime(new Date().toISOString()),
+          lineItems: [],
+          total: 0,
+          customerId: selectedCustomer?._id
+        }
   )
 
   // Initialize with at least one line item if none exist
@@ -101,8 +120,15 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
     }))
   }, [formData.lineItems, formData.shipping, formData.tax])
 
+  // Require that all line items have a description and amount before allowing save
+  const allItemsValid = formData.lineItems.length > 0 && formData.lineItems.every(item => item.name.trim() !== "" && item.amount > 0);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!allItemsValid) {
+      alert("Please ensure every item has a description and amount.");
+      return;
+    }
     
     try {
       let result;
@@ -162,7 +188,7 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
           <Button type="button" variant="outline" size="sm" className="flex items-center gap-1">
             <Mail className="h-4 w-4" /> Email
           </Button>
-          <Button type="submit" size="sm" className="flex items-center gap-1">
+          <Button type="submit" size="sm" disabled={!allItemsValid} className="flex items-center gap-1">
             <Edit className="h-4 w-4" /> Save
           </Button>
         </div>
@@ -183,15 +209,14 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
           <div className="grid grid-cols-[120px_1fr] items-center">
             <label className="text-sm font-medium">Date</label>
             <Input
-              type="date"
+              type="text"
+              readOnly
               value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              required
             />
           </div>
           
           <div className="grid grid-cols-[120px_1fr] items-center">
-            <label className="text-sm font-medium">First Name *</label>
+            <label className="text-sm font-medium">First Name <span className="text-red-500">*</span></label>
             <Input
               value={formData.customerFirstName}
               onChange={(e) => setFormData({ ...formData, customerFirstName: e.target.value })}
@@ -200,10 +225,11 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
           </div>
           
           <div className="grid grid-cols-[120px_1fr] items-center">
-            <label className="text-sm font-medium">Last Name</label>
+            <label className="text-sm font-medium">Last Name <span className="text-red-500">*</span></label>
             <Input
               value={formData.customerLastName}
               onChange={(e) => setFormData({ ...formData, customerLastName: e.target.value })}
+              required
             />
           </div>
           
@@ -233,10 +259,11 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
           </div>
           
           <div>
-            <h3 className="font-medium mb-2">Shipping Address</h3>
+            <h3 className="font-medium mb-2">Shipping Address  <span className="text-red-500">*</span></h3>
             <div className="space-y-2">
               <Input
                 placeholder="Address Line 1"
+                required
                 value={formData.shipAddress1 || ""}
                 onChange={(e) => setFormData({ ...formData, shipAddress1: e.target.value })}
               />
@@ -253,11 +280,13 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   placeholder="City"
+                  required
                   value={formData.shipCity || ""}
                   onChange={(e) => setFormData({ ...formData, shipCity: e.target.value })}
                 />
                 <Input
                   placeholder="State"
+                  required
                   value={formData.shipState || ""}
                   onChange={(e) => setFormData({ ...formData, shipState: e.target.value })}
                 />
@@ -265,6 +294,7 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   placeholder="ZIP"
+                  required
                   value={formData.shipZip || ""}
                   onChange={(e) => setFormData({ ...formData, shipZip: e.target.value })}
                 />
@@ -469,7 +499,7 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={!allItemsValid}>
           {formData._id ? "Update Invoice" : "Create Invoice"}
         </Button>
       </div>
