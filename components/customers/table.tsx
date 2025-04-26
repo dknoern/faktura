@@ -10,7 +10,7 @@ import {
 import { customerSchema } from "@/lib/models/customer";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface PaginationProps {
     total: number;
@@ -52,6 +52,7 @@ export function CustomersTable({
     // Use the modal router if provided (for modal mode), otherwise use the real router
     const router = modalRouter || defaultRouter;
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     
     // Check if we're in customer selection mode for invoices
     const selectForInvoice = !isModal && searchParams.get('selectForInvoice') === 'true';
@@ -87,21 +88,38 @@ export function CustomersTable({
         const value = e.target.value;
         setSearchQuery(value);
         
-        if (isModal && onSearch) {
-            // If in modal mode and onSearch is provided, use it
-            onSearch(value);
-        } else {
-            // Otherwise use the normal URL-based search
-            const params = new URLSearchParams(searchParams.toString());
-            if (value) {
-                params.set('search', value);
-                params.set('page', '1'); // Reset to first page when searching
-            } else {
-                params.delete('search');
-            }
-            router.push(`${pathname}?${params.toString()}`);
+        // Clear any existing timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
         }
+        
+        // Set a new timeout
+        searchTimeoutRef.current = setTimeout(() => {
+            if (isModal && onSearch) {
+                // If in modal mode and onSearch is provided, use it
+                onSearch(value);
+            } else {
+                // Otherwise use the normal URL-based search
+                const params = new URLSearchParams(searchParams.toString());
+                if (value) {
+                    params.set('search', value);
+                    params.set('page', '1'); // Reset to first page when searching
+                } else {
+                    params.delete('search');
+                }
+                router.push(`${pathname}?${params.toString()}`);
+            }
+        }, 300); // 300ms debounce delay
     };
+    
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     return (
         <div>

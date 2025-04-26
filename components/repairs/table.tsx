@@ -13,7 +13,7 @@ import { useSearchParams } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CustomerSelectModalWrapper } from "../customers/select-modal-wrapper";
 import { PlusCircle } from "lucide-react";
 
@@ -44,6 +44,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
 
     const handlePageChange = (newPage: number) => {
@@ -55,15 +56,33 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
-        const params = new URLSearchParams(searchParams.toString());
-        if (value) {
-            params.set('search', value);
-            params.set('page', '1'); // Reset to first page when searching
-        } else {
-            params.delete('search');
+        
+        // Clear any existing timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
         }
-        router.push(`${pathname}?${params.toString()}`);
+        
+        // Set a new timeout
+        searchTimeoutRef.current = setTimeout(() => {
+            const params = new URLSearchParams(searchParams.toString());
+            if (value) {
+                params.set('search', value);
+                params.set('page', '1'); // Reset to first page when searching
+            } else {
+                params.delete('search');
+            }
+            router.push(`${pathname}?${params.toString()}`);
+        }, 300); // 300ms debounce delay
     };
+    
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const handleRowClick = (repairNumber: string) => {
         router.push(`/dashboard/repairs/${repairNumber}/view`);
