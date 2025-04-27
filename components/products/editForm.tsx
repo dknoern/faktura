@@ -137,7 +137,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
               }
         }
         fetchProduct()
-    }, [form, product])
+    }, [form, product, repairs])
 
     return (
         <div>

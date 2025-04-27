@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,7 +39,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
   const [totalPages, setTotalPages] = useState(1)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -70,13 +70,14 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, search])
+
 
   useEffect(() => {
     if (isOpen) {
       fetchProducts()
     }
-  }, [isOpen, page])
+  }, [isOpen, page, fetchProducts])
 
   // Only trigger fetch when search button is clicked, not on every search change
   const handleSearch = (e: React.FormEvent) => {
@@ -86,7 +87,6 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
   }
 
   const handleProductSelect = (product: Product) => {
-    console.log("Product selected:", product)
     onProductSelect(product)
     onClose()
   }

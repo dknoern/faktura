@@ -58,10 +58,6 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
 
   // Calculate totals whenever relevant form fields change
   useEffect(() => {
-    calculateTotals();
-  }, [formData.lineItems, formData.shipping, formData.taxable]);
-
-  const calculateTotals = () => {
     // Calculate subtotal from line items
     const subTotal = formData.lineItems.reduce((total, item) => {
       return total + (item.amount || 0);
@@ -79,7 +75,8 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
       salesTax,
       totalReturnAmount
     }));
-  };
+  }, [formData.lineItems, formData.shipping, formData.taxable]);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;

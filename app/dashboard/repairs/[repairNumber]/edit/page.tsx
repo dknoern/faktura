@@ -7,7 +7,6 @@ export default async function EditRepairPage(props: { params: Promise<{ repairNu
   const params = await props.params;
   const repairNumber = params.repairNumber;
 
-  console.log('Repair number:', repairNumber);
   const repair = await fetchRepairByNumber(repairNumber);
 
   if (!repair) {

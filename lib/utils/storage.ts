@@ -55,11 +55,7 @@ export async function getImage(fileName: string): Promise<Buffer> {
         
         return Buffer.from(await response.Body.transformToByteArray());
     } else {
-        // Get from file system
-        console.log('fileName=', fileName);
-        console.log('UPLOADS_DIR=', UPLOADS_DIR);
         const filePath = path.join(UPLOADS_DIR, fileName);
-        console.log('filePath=', filePath);
         return readFile(filePath);
     }
 }

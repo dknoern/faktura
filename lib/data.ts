@@ -293,7 +293,6 @@ export async function fetchLogItemById(id: string) {
         const log = await collection.findOne({ _id });
         
         if (!log) {
-            console.log('No document found with ID:', id);
             return null;
         }
         log.id = id;
@@ -307,9 +306,7 @@ export async function fetchLogItemById(id: string) {
 export async function fetchRepairByNumber(repairNumber: string) {
   try {
     await dbConnect();
-    console.log('repair number:', repairNumber);
     const repair = await Repair.findOne({ repairNumber });
-    console.log('repair:', repair);
 
     return repair ? JSON.parse(JSON.stringify(repair)) : null;
   } catch (error) {

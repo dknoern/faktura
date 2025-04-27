@@ -109,7 +109,7 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
         lineItems: []
       }))
     }
-  }, [])
+  }, [formData.lineItems.length])
 
   // Calculate totals when line items change
   useEffect(() => {
