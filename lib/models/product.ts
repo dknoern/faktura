@@ -30,6 +30,7 @@ export const productSchema = z.object({
     listPrice: z.number().optional(),
     totalRepairCost: z.number().optional(),
     sellingPrice: z.number().optional(),
+    totalCost: z.number().optional(),
     received: z.date().optional(),
     status: z.string().optional(),
     notes: z.string().optional(),

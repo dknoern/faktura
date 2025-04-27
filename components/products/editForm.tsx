@@ -41,13 +41,44 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
     const [submitError, setSubmitError] = useState('');
     const isNewProduct = !product.id;
 
+
+    // define productSchema2 which is just productSchema without history
+    const productSchema2 = productSchema.omit({ history: true });
+
     // 1. Define your form.
-    const form = useForm<z.infer<typeof productSchema>>({
-        resolver: zodResolver(productSchema),
+    const form = useForm<z.infer<typeof productSchema2>>({
+        resolver: zodResolver(productSchema2),
         defaultValues: {
             productType: "",
             title: "",
             itemNumber: "",
+            manufacturer: "",
+            modelNumber: "",
+            model: "",
+            condition: "",
+            gender: "",
+            features: "",
+            case: "",
+            size: "",
+            dial: "",
+            bracelet: "",
+            comments: "",
+            serialNo: "",
+            longDesc: "",
+            lastUpdated: new Date(),
+            cost: 0,
+            listPrice: 0,
+            //totalRepairCost: 0,
+            sellingPrice: 0,
+            totalCost: 0,
+            received: new Date(),
+            status: "",
+            notes: "",
+            ebayNoReserve: false,
+            inventoryItem: false,
+            seller: "",
+            sellerType: "",
+            search: "",
         },
     })
 
@@ -59,7 +90,8 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
             cost: typeof values.cost === 'string' ? Number(values.cost) || 0 : values.cost || 0,
             sellingPrice: typeof values.sellingPrice === 'string' ? Number(values.sellingPrice) || 0 : values.sellingPrice || 0,
             listPrice: typeof values.listPrice === 'string' ? Number(values.listPrice) || 0 : values.listPrice || 0,
-            totalRepairCost: typeof values.totalRepairCost === 'string' ? Number(values.totalRepairCost) || 0 : values.totalRepairCost || 0
+            totalRepairCost: typeof values.totalRepairCost === 'string' ? Number(values.totalRepairCost) || 0 : values.totalRepairCost || 0,
+            totalCost: typeof values.totalCost === 'string' ? Number(values.totalCost) || 0 : values.totalCost || 0
         };
         setIsSubmitting(true);
         try {
@@ -118,22 +150,21 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                     seller: product.seller || "",
                     comments: product.comments || "",
                     sellingPrice: product.sellingPrice || 0,
-                    //ourPrice: product.ourPrice || 0,
                     listPrice: product.listPrice || 0,
                     cost: product.cost || 0,
-                    //repairCost: product.repairCost || 0,
-                    //totalCost: product.totalCost || 0,
+                    totalCost: product.totalCost || 0,
                     totalRepairCost: product.totalRepairCost || 0,
                     status: product.status || "",
                     ebayNoReserve: product.ebayNoReserve || false,
-                    inventoryItem: product.inventoryItem || false,
-                    history: product.history || [],
+                    inventoryItem: product.inventoryItem || false
                 })
             }
 
             if (repairs && repairs.length > 0) {
-                const totalCost = repairs.reduce((sum, repair) => sum + (repair.repairCost || 0), 0);
-                form.setValue('totalRepairCost', totalCost);
+                const totalRepairCost = repairs.reduce((sum, repair) => sum + (repair.repairCost || 0), 0);
+                form.setValue('totalRepairCost', totalRepairCost);    
+                const totalCost = (product.cost || 0) + totalRepairCost;
+                form.setValue('totalCost',totalCost);
               }
         }
         fetchProduct()
@@ -626,13 +657,12 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
                                             <FormField
                                                 control={form.control}
-                                                name="sellingPrice"
+                                                name="totalCost"
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Total Cost</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="" {...field} value={(product.cost || 0) + (product.totalRepairCost || 0)} disabled />
-
+                                                            <Input placeholder="" {...field} value={field.value || ""} disabled />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -703,7 +733,6 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                             </Tabs>
                         </div>
                     </div>
-                    <div>is submitting: {isSubmitting.toString()}</div>
 
                     <div className="space-y-2">
                         {submitError && (
