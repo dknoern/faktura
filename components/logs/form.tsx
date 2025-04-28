@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { logSchema } from "@/lib/models/log";
+import { logSchema, CARRIER_OPTIONS } from "@/lib/models/log";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,13 @@ import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { createLog, updateLog } from "@/app/actions/logs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type LogFormValues = z.infer<typeof logSchema>;
 
@@ -31,7 +38,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
     resolver: zodResolver(logSchema),
     defaultValues: {
       date: new Date(),
-      receivedFrom: "",
+      receivedFrom: undefined,
       comments: "",
       user: "",
       customerName: "",
@@ -73,7 +80,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
     if (log) {
       form.reset({
         date: new Date(log.date),
-        receivedFrom: log.receivedFrom || "",
+        receivedFrom: log.receivedFrom,
         comments: log.comments || "",
         user: log.user || "",
         customerName: log.customerName || "",
@@ -96,7 +103,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
             control={form.control}
             name="date"
             render={({ field }) => (
-              <FormItem>
+              <FormItem hidden={!log?.id}>
                 <FormLabel>Date <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <Input 
@@ -118,7 +125,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
                       const date = e.target.value ? new Date(e.target.value) : new Date();
                       field.onChange(date);
                     }}
-                    disabled={!!log?.id}
+                    disabled
                   />
                 </FormControl>
                 <FormMessage />
@@ -133,7 +140,22 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
               <FormItem>
                 <FormLabel>Received From <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    value={form.getValues('receivedFrom') || ''}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a carrier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CARRIER_OPTIONS.map((carrier) => (
+                        <SelectItem key={carrier} value={carrier}>
+                          {carrier}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -145,7 +167,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
             name="customerName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Customer Name <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Customer Name</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>

@@ -13,10 +13,20 @@ const lineItemSchema = z.object({
   repairId: z.string().optional(),
 });
 
+export const CARRIER_OPTIONS = [
+  "FedEx",
+  "UPS",
+  "USPS",
+  "Courier",
+  "Other"
+] as const;
+
 export const logSchema = z.object({
   id: z.string().optional(),
   date: z.date(),
-  receivedFrom: z.string().min(1, "Received from is required"),
+  receivedFrom: z.enum(CARRIER_OPTIONS, {
+    errorMap: () => ({ message: "Please select a carrier" })
+  }),
   comments: z.string().optional(),
   user: z.string().optional(),
   customerName: z.string().optional(),

@@ -15,7 +15,7 @@ export async function createLog(data: LogData) {
     const log = await logModel.create(data);
     
     revalidatePath('/dashboard/loginitems');
-    return { success: true, data: log };
+    return { success: true, data: JSON.parse(JSON.stringify(log)) };
   } catch (error) {
     console.error('Error creating log:', error);
     return { success: false, error: 'Failed to create log item' };
