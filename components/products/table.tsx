@@ -116,7 +116,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
 
             <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                    Showing {products.length} of {pagination.total} invoices
+                    Showing {products.length} of {pagination.total} products
                 </div>
                 <div className="flex space-x-2">
                     <Button

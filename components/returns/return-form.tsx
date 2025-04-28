@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-hot-toast";
+import { createReturn, updateReturn } from "@/lib/actions";
 
 interface LineItem {
   productId?: string;
@@ -58,9 +59,9 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
 
   // Calculate totals whenever relevant form fields change
   useEffect(() => {
-    // Calculate subtotal from line items
+    // Calculate subtotal from line items that are included
     const subTotal = formData.lineItems.reduce((total, item) => {
-      return total + (item.amount || 0);
+      return total + (item.included ? (item.amount || 0) : 0);
     }, 0);
 
     // Calculate sales tax if taxable
@@ -69,6 +70,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
     // Calculate total
     const totalReturnAmount = subTotal + salesTax + (formData.shipping || 0);
 
+    // Proper way to update state - no direct mutations
     setFormData(prev => ({
       ...prev,
       subTotal,
@@ -103,10 +105,21 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
       ...updatedItems[index],
       [field]: value
     };
-    
+
+    // Recalculate totals
+    const subTotal = updatedItems.reduce((total, item) => {
+      return total + (item.included ? item.amount : 0);
+    }, 0);
+    const salesTax = formData.taxable ? subTotal * 0.0825 : 0;
+    const totalReturnAmount = subTotal + salesTax + (formData.shipping || 0);
+
+    // Update the state with the new values
     setFormData(prev => ({
       ...prev,
-      lineItems: updatedItems
+      lineItems: updatedItems,
+      subTotal: subTotal,
+      salesTax: salesTax,
+      totalReturnAmount: totalReturnAmount
     }));
   };
 
@@ -115,15 +128,17 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/returns/${isEditing ? formData._id : ''}`, {
-        method: isEditing ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      let result;
+      
+      if (isEditing && formData._id) {
+        // Update existing return using server action
+        result = await updateReturn(formData._id, formData);
+      } else {
+        // Create new return using server action
+        result = await createReturn(formData);
+      }
 
-      if (!response.ok) {
+      if (!result.success) {
         throw new Error('Failed to save return');
       }
 
@@ -151,6 +166,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
             value={formData._id || ''}
             onChange={handleNumberInputChange}
             readOnly={isEditing}
+            disabled
           />
         </div>
         
@@ -161,6 +177,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
             name="invoiceId"
             value={formData.invoiceId || ''}
             onChange={handleInputChange}
+            disabled
           />
         </div>
         
@@ -169,9 +186,10 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
           <Input
             id="returnDate"
             name="returnDate"
-            type="date"
-            value={formData.returnDate || ''}
+            type="text"
+            value={formData.returnDate?.toString().split('T')[0] || ''}
             onChange={handleInputChange}
+            disabled
           />
         </div>
         
@@ -232,7 +250,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
               <tr key={index} className="border-b border-gray-200">
                 <td className="p-2">
                   <Input
-                    value={item.longDesc || ''}
+                    value={item.name || ''}
                     onChange={(e) => handleLineItemChange(index, 'longDesc', e.target.value)}
                   />
                 </td>
@@ -272,6 +290,11 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
             )}
           </tbody>
           <tfoot>
+
+
+
+
+
             <tr className="bg-gray-50">
               <td colSpan={2} className="p-2 text-right font-medium">Subtotal</td>
               <td className="p-2">${formData.subTotal?.toFixed(2) || '0.00'}</td>
