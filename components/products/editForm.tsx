@@ -163,7 +163,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
             if (repairs && repairs.length > 0) {
                 const totalRepairCost = repairs.reduce((sum, repair) => sum + (repair.repairCost || 0), 0);
                 form.setValue('totalRepairCost', totalRepairCost);    
-                const totalCost = (product.cost || 0) + totalRepairCost;
+                const totalCost = (product.cost || 0) + (totalRepairCost || 0);
                 form.setValue('totalCost',totalCost);
               }
         }
@@ -481,6 +481,9 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                 )}
                             />
 
+
+                            {product.sellerType === "Partner" && product.id != null && <div style={{ fontSize: '14px', cursor: 'pointer' }} className="text-blue-500 hover:underline"><Link href={`/dashboard/invoices/${product.id}/partner`}>Partner Invoice</Link></div>}
+
                             <FormField
                                 control={form.control}
                                 name="seller"
@@ -647,7 +650,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                     <FormItem>
                                                         <FormLabel>Repair Cost</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="" {...field} value={field.value || ""} disabled />
+                                                            <Input placeholder="" {...field} value={field.value || "0"} disabled />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -662,7 +665,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                     <FormItem>
                                                         <FormLabel>Total Cost</FormLabel>
                                                         <FormControl>
-                                                            <Input placeholder="" {...field} value={field.value || ""} disabled />
+                                                            <Input placeholder="" {...field} value={field.value || "0"} disabled />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
