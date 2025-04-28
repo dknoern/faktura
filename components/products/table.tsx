@@ -105,7 +105,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                             <TableCell>{product.modelNumber}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>
                                 <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : 'orange' }}>
-                                    {product.sellerType === 'Partner' ? 'Partnership' : product.status}
+                                    {product.sellerType === 'Partner' && product.status !== 'Sold' ? 'Partnership' : product.status}
                                 </Badge>
                             </TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
