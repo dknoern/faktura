@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { logSchema, CARRIER_OPTIONS } from "@/lib/models/log";
+import { logSchema } from "@/lib/models/log";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+export const CARRIER_OPTIONS = [
+  "FedEx",
+  "UPS",
+  "USPS",
+  "Courier",
+  "Other"
+] as const;
 
 type LogFormValues = z.infer<typeof logSchema>;
 
@@ -142,8 +150,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
                 <FormControl>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    value={form.getValues('receivedFrom') || ''}
+                    value={log?.receivedFrom}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a carrier" />
