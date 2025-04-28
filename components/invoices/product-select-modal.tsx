@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,15 +22,6 @@ interface ProductSelectModalProps {
   onProductSelect: (product: Product) => void
 }
 
-// Sample product data for testing when API isn't available
-const SAMPLE_PRODUCTS: Product[] = [
-  { _id: "1", itemNumber: "64119", title: "Rolex GMT-Master II 126710BLNR", sellingPrice: 17500, serialNo: "08C74425" },
-  { _id: "2", itemNumber: "64120", title: "Omega Seamaster 300M", sellingPrice: 5500, serialNo: "12345678" },
-  { _id: "3", itemNumber: "64121", title: "Cartier Santos Medium", sellingPrice: 7200, serialNo: "87654321" },
-  { _id: "4", itemNumber: "64122", title: "Tudor Black Bay 58", sellingPrice: 3800, serialNo: "TB58123" },
-  { _id: "5", itemNumber: "64123", title: "Grand Seiko SBGA211", sellingPrice: 6300, serialNo: "GS211456" },
-]
-
 export function ProductSelectModal({ isOpen, onClose, onProductSelect }: ProductSelectModalProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
@@ -38,8 +29,9 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = async () => {
     try {
       setLoading(true)
       setError(null)
@@ -56,31 +48,51 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
         setProducts(data.products)
         setTotalPages(data.pagination?.pages || 1)
       } else {
-        // Fallback to sample data if API doesn't return expected format
-        console.warn("API didn't return expected data format, using sample data")
-        setProducts(SAMPLE_PRODUCTS)
-        setTotalPages(1)
+        setError("No products found")
+        setProducts([])
       }
     } catch (error) {
       console.error("Error fetching products:", error)
-      setError("Failed to load products. Using sample data instead.")
-      // Fallback to sample data on error
-      setProducts(SAMPLE_PRODUCTS)
-      setTotalPages(1)
+      setError("Failed to load products")
+      setProducts([])
     } finally {
       setLoading(false)
     }
-  }, [page, search])
+  }
 
 
   useEffect(() => {
     if (isOpen) {
       fetchProducts()
     }
-  }, [isOpen, page, fetchProducts])
+    
+    return () => {
+      // Clear any pending timeouts when component unmounts
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [isOpen, page])
 
-  // Only trigger fetch when search button is clicked, not on every search change
-  const handleSearch = (e: React.FormEvent) => {
+  // Handle search input changes with debouncing
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearch(value)
+    
+    // Clear any existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+    
+    // Set a new timeout to delay the search
+    searchTimeoutRef.current = setTimeout(() => {
+      setPage(1)
+      fetchProducts()
+    }, 300) // 300ms debounce delay
+  }
+  
+  // Handle form submit
+  const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setPage(1)
     fetchProducts()
@@ -109,11 +121,11 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
           </div>
         )}
         
-        <form onSubmit={handleSearch} className="flex items-center space-x-2 my-4">
+        <form onSubmit={handleSearchSubmit} className="flex items-center space-x-2 my-4">
           <Input
             placeholder="Search products..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             className="flex-1"
           />
           <Button type="submit" size="icon" disabled={loading}>

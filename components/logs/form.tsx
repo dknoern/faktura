@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { X, ShoppingBag, FileText, Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ProductSelectDialog } from "./product-select-dialog";
+import { ProductSelectModal } from "@/components/invoices/product-select-modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const CARRIER_OPTIONS = [
@@ -93,6 +93,13 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
     try {
       setError(null);
       setIsSubmitting(true);
+
+      // Validate that there is at least one line item
+      if (!log?.id && lineItems.length === 0) {
+        setError("At least one item must be added before saving.");
+        setIsSubmitting(false);
+        return;
+      }
 
       // Ensure date is a proper Date object and include id if it exists
       const formData = {
@@ -318,8 +325,8 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
             <CardHeader className="pb-3">
               <div className="flex justify-between items-center">
                 <CardTitle>Items</CardTitle>
+                {!log?.id && (
                 <div className="flex gap-2">
-                  {/* Inventory Item Button */}
                   <Button 
                     size="sm" 
                     variant="outline" 
@@ -331,8 +338,6 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
                   >
                     <ShoppingBag className="mr-2 h-4 w-4" /> Inventory Item
                   </Button>
-                  
-                  {/* Misc Item Button */}
                   <Button 
                     size="sm" 
                     variant="outline" 
@@ -344,8 +349,6 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
                   >
                     <FileText className="mr-2 h-4 w-4" /> Misc Item
                   </Button>
-                  
-                  {/* Repair Return Button */}
                   <Button 
                     size="sm" 
                     variant="outline" 
@@ -358,6 +361,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
                     <Wrench className="mr-2 h-4 w-4" /> Repair Return
                   </Button>
                 </div>
+              )}
               </div>
             </CardHeader>
             <CardContent>
@@ -370,17 +374,18 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
                         <TableHead>Item Number</TableHead>
                         <TableHead>Repair Number</TableHead>
                         <TableHead className="text-right">Repair Cost</TableHead>
-                        <TableHead className="text-right">Action</TableHead>
+                        <TableHead className="text-right"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {lineItems.map((item, index) => (
                         <TableRow key={index}>
-                          <TableCell>{item.name || "-"}</TableCell>
-                          <TableCell>{item.itemNumber || "-"}</TableCell>
-                          <TableCell>{item.repairNumber || "-"}</TableCell>
-                          <TableCell className="text-right">{item.repairCost ? `$${item.repairCost.toFixed(2)}` : "-"}</TableCell>
+                          <TableCell>{item.name || ""}</TableCell>
+                          <TableCell>{item.itemNumber || ""}</TableCell>
+                          <TableCell>{item.repairNumber || ""}</TableCell>
+                          <TableCell className="text-right">{item.repairCost ? `$${item.repairCost.toFixed(2)}` : ""}</TableCell>
                           <TableCell className="text-right">
+                            {!log?.id && (
                             <Button 
                               size="sm" 
                               variant="destructive" 
@@ -389,6 +394,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
                               <X className="h-4 w-4" />
                               <span className="sr-only">Remove</span>
                             </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -404,11 +410,14 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
           </Card>
         </div>
         
-        {/* Product Select Dialog for Inventory Items */}
-        <ProductSelectDialog
-          open={inventoryModalOpen}
-          onOpenChange={setInventoryModalOpen}
-          onProductSelect={handleProductSelect}
+        {/* Product Select Modal for Inventory Items */}
+        <ProductSelectModal
+          isOpen={inventoryModalOpen}
+          onClose={() => setInventoryModalOpen(false)}
+          onProductSelect={(product) => {
+            handleProductSelect(product);
+            // Modal is closed automatically by ProductSelectModal
+          }}
         />
         
         {/* Misc Item Modal */}
@@ -507,12 +516,22 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button 
+            type="submit" 
+            disabled={isSubmitting || (!log?.id && lineItems.length === 0)}
+            title={!log?.id && lineItems.length === 0 ? "At least one item is required" : undefined}
+          >
             {isSubmitting
               ? (log?.id ? "Updating..." : "Creating...")
               : (log?.id ? "Update Log Item" : "Create Log Item")}
           </Button>
         </div>
+        
+        {!log?.id && lineItems.length === 0 && (
+          <div className="text-center text-sm text-amber-600 mt-2">
+            At least one item must be added before saving
+          </div>
+        )}
       </form>
     </Form>
   );

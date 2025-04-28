@@ -133,21 +133,6 @@ export function CustomersTable({
                         className="max-w-sm"
                     />
                 </div>
-                {isModal ? (
-                    <div className="flex items-center">
-                        <h2 className="text-lg font-semibold mr-4">Select a customer for the new invoice</h2>
-                    </div>
-                ) : selectForInvoice && (
-                    <div className="flex items-center">
-                        <h2 className="text-lg font-semibold mr-4">Select a customer for the new invoice</h2>
-                        <Button 
-                            variant="outline" 
-                            onClick={() => router.push('/dashboard/invoices')}
-                        >
-                            Cancel
-                        </Button>
-                    </div>
-                )}
             </div>
             <Table>
                 <TableHeader>
@@ -181,7 +166,7 @@ export function CustomersTable({
 
             <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                    Showing {customersList.length} of {pagination.total} invoices
+                    Showing {customersList.length} of {pagination.total} customers
                 </div>
                 <div className="flex space-x-2">
                     <Button
