@@ -366,8 +366,8 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Item Number</TableHead>
                         <TableHead>Item Received</TableHead>
+                        <TableHead>Item Number</TableHead>
                         <TableHead>Repair Number</TableHead>
                         <TableHead className="text-right">Repair Cost</TableHead>
                         <TableHead className="text-right">Action</TableHead>
@@ -376,8 +376,8 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
                     <TableBody>
                       {lineItems.map((item, index) => (
                         <TableRow key={index}>
-                          <TableCell>{item.itemNumber || "-"}</TableCell>
                           <TableCell>{item.name || "-"}</TableCell>
+                          <TableCell>{item.itemNumber || "-"}</TableCell>
                           <TableCell>{item.repairNumber || "-"}</TableCell>
                           <TableCell className="text-right">{item.repairCost ? `$${item.repairCost.toFixed(2)}` : "-"}</TableCell>
                           <TableCell className="text-right">
