@@ -1,29 +1,30 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
+import { searchRepairItems } from "@/app/actions/inventory"
 
-interface Product {
+interface Repair {
   _id: string
+  repairNumber: string
   itemNumber: string
-  title: string
-  sellingPrice?: number
-  serialNo?: string
-  longDesc?: string
+  description: string
+  repairCost?: number
+  status?: string
 }
 
-interface ProductSelectModalProps {
+interface RepairSelectModalProps {
   isOpen: boolean
   onClose: () => void
-  onProductSelect: (product: Product) => void
+  onRepairSelect: (repair: Repair) => void
 }
 
-export function ProductSelectModal({ isOpen, onClose, onProductSelect }: ProductSelectModalProps) {
-  const [products, setProducts] = useState<Product[]>([])
+export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSelectModalProps) {
+  const [repairs, setRepairs] = useState<Repair[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -31,39 +32,44 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
   const [error, setError] = useState<string | null>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchProducts = async () => {
+  const fetchRepairs = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/products?page=${page}&limit=10&search=${search}`)
+      // Use the server action instead of fetch API
+      const result = await searchRepairItems(search)
       
-      if (!response.ok) {
-        throw new Error(`Error fetching products: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.products) {
-        setProducts(data.products)
-        setTotalPages(data.pagination?.pages || 1)
+      if (result.success) {
+        // The searchRepairItems returns all results without pagination
+        // We need to handle pagination on the client side
+        const allRepairs = result.data
+        const totalItems = allRepairs.length
+        const totalPageCount = Math.ceil(totalItems / 10)
+        
+        // Calculate the slice of repairs for the current page
+        const startIndex = (page - 1) * 10
+        const endIndex = Math.min(startIndex + 10, totalItems)
+        const currentPageRepairs = allRepairs.slice(startIndex, endIndex)
+        
+        setRepairs(currentPageRepairs)
+        setTotalPages(totalPageCount)
       } else {
-        setError("No products found")
-        setProducts([])
+        setError(result.error || "No repairs found")
+        setRepairs([])
       }
     } catch (error) {
-      console.error("Error fetching products:", error)
-      setError("Failed to load products")
-      setProducts([])
+      console.error("Error fetching repairs:", error)
+      setError("Failed to load repairs")
+      setRepairs([])
     } finally {
       setLoading(false)
     }
   }
 
-
   useEffect(() => {
     if (isOpen) {
-      fetchProducts()
+      fetchRepairs()
     }
     
     return () => {
@@ -87,7 +93,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
     // Set a new timeout to delay the search
     searchTimeoutRef.current = setTimeout(() => {
       setPage(1)
-      fetchProducts()
+      fetchRepairs()
     }, 300) // 300ms debounce delay
   }
   
@@ -95,24 +101,24 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setPage(1)
-    fetchProducts()
+    fetchRepairs()
   }
 
-  const handleProductSelect = (product: Product) => {
-    onProductSelect(product)
+  const handleRepairSelect = (repair: Repair) => {
+    onRepairSelect(repair)
     onClose()
   }
   
   // Make the entire row clickable
-  const handleRowClick = (product: Product) => {
-    handleProductSelect(product)
+  const handleRowClick = (repair: Repair) => {
+    handleRepairSelect(repair)
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>Select Product</DialogTitle>
+          <DialogTitle>Select Repair</DialogTitle>
         </DialogHeader>
         
         {error && (
@@ -123,7 +129,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
         
         <form onSubmit={handleSearchSubmit} className="flex items-center space-x-2 my-4">
           <Input
-            placeholder="Search products..."
+            placeholder="Search repairs by number or description..."
             value={search}
             onChange={handleSearchChange}
             className="flex-1"
@@ -134,9 +140,10 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Item Number</TableHead>
+                <TableHead>Repair #</TableHead>
+                <TableHead>Item #</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead>Price</TableHead>
+                <TableHead>Repair Cost</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -145,31 +152,32 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
                   <TableCell colSpan={4} className="text-center py-8">
                     <div className="flex justify-center items-center">
                       <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                      <span>Loading products...</span>
+                      <span>Loading repairs...</span>
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : products.length === 0 ? (
+              ) : repairs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8">
                     <div className="flex flex-col items-center justify-center space-y-2">
-                      <p>No products found</p>
-                      <Button variant="outline" size="sm" onClick={() => fetchProducts()}>
+                      <p>No repairs found</p>
+                      <Button variant="outline" size="sm" onClick={() => fetchRepairs()}>
                         Refresh
                       </Button>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
-                products.map((product) => (
+                repairs.map((repair) => (
                   <TableRow 
-                    key={product._id} 
+                    key={repair._id} 
                     className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => handleRowClick(product)}
+                    onClick={() => handleRowClick(repair)}
                   >
-                    <TableCell>{product.itemNumber}</TableCell>
-                    <TableCell>{product.title}</TableCell>
-                    <TableCell>${product.sellingPrice?.toFixed(2) || "0.00"}</TableCell>
+                    <TableCell>{repair.repairNumber}</TableCell>
+                    <TableCell>{repair.itemNumber}</TableCell>
+                    <TableCell>{repair.description}</TableCell>
+                    <TableCell>${repair.repairCost?.toFixed(2) || "0.00"}</TableCell>
                   </TableRow>
                 ))
               )}
@@ -198,10 +206,6 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
             </Button>
           </div>
         )}
-        
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

@@ -15,7 +15,6 @@ import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea} from "@/components/ui/textarea";
 import { createLog, updateLog } from "@/app/actions/logs";
-import { searchRepairItems } from "@/app/actions/inventory";
 import {
   Select,
   SelectContent,
@@ -33,6 +32,7 @@ import {
 import { X, ShoppingBag, FileText, Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductSelectModal } from "@/components/invoices/product-select-modal";
+import { RepairSelectModal } from "@/components/logs/repair-select-modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const CARRIER_OPTIONS = [
@@ -65,10 +65,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
   const [miscModalOpen, setMiscModalOpen] = useState(false);
   const [repairModalOpen, setRepairModalOpen] = useState(false);
   
-  // Repair search state
-  const [repairSearchQuery, setRepairSearchQuery] = useState("");
-  const [repairSearchResults, setRepairSearchResults] = useState<any[]>([]);
-  const [isSearchingRepairs, setIsSearchingRepairs] = useState(false);
+  // We don't need the repair search state anymore as it's handled by the modal
   
   // Misc item state
   const [miscItemName, setMiscItemName] = useState("");
@@ -152,25 +149,8 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
     setLineItems([...lineItems, newItem]);
   }
   
-  // Search for repair items
-  async function handleRepairSearch() {
-    if (!repairSearchQuery.trim()) return;
-    
-    setIsSearchingRepairs(true);
-    try {
-      const result = await searchRepairItems(repairSearchQuery);
-      if (result.success) {
-        setRepairSearchResults(result.data);
-      }
-    } catch (error) {
-      console.error('Error searching repair items:', error);
-    } finally {
-      setIsSearchingRepairs(false);
-    }
-  }
-  
   // Add repair item to line items
-  function addRepairItem(repair: any) {
+  function handleRepairSelect(repair: any) {
     const newItem: LineItem = {
       itemNumber: repair.itemNumber,
       name: repair.description,
@@ -179,7 +159,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
       repairId: repair._id,
     };
     setLineItems([...lineItems, newItem]);
-    setRepairModalOpen(false);
+    // Modal is closed automatically by RepairSelectModal
   }
   
   // Add misc item to line items
@@ -438,67 +418,15 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
           </DialogContent>
         </Dialog>
         
-        {/* Repair Search Modal */}
-        <Dialog open={repairModalOpen} onOpenChange={setRepairModalOpen}>
-          <DialogContent className="sm:max-w-[700px]">
-            <DialogHeader>
-              <DialogTitle>Add Repair Item</DialogTitle>
-            </DialogHeader>
-            
-            <div className="flex mb-4 mt-4">
-              <Input 
-                placeholder="Search repair items by number or description..." 
-                value={repairSearchQuery}
-                onChange={(e) => setRepairSearchQuery(e.target.value)}
-                className="flex-1 mr-2"
-              />
-              <Button onClick={handleRepairSearch} disabled={isSearchingRepairs}>
-                {isSearchingRepairs ? "Searching..." : "Search"}
-              </Button>
-            </div>
-            
-            {repairSearchResults.length > 0 ? (
-              <div className="max-h-[300px] overflow-y-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Repair #</TableHead>
-                      <TableHead>Item #</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {repairSearchResults.map((repair: any) => (
-                      <TableRow key={repair._id}>
-                        <TableCell>{repair.repairNumber}</TableCell>
-                        <TableCell>{repair.itemNumber}</TableCell>
-                        <TableCell>{repair.description}</TableCell>
-                        <TableCell className="text-right">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => addRepairItem(repair)}
-                          >
-                            Select
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="py-8 text-center text-muted-foreground">
-                {isSearchingRepairs ? "Searching..." : "Search for repair items by number or description"}
-              </div>
-            )}
-            
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setRepairModalOpen(false)}>Cancel</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Repair Select Modal */}
+        <RepairSelectModal
+          isOpen={repairModalOpen}
+          onClose={() => setRepairModalOpen(false)}
+          onRepairSelect={(repair) => {
+            handleRepairSelect(repair);
+            // Modal is closed automatically by RepairSelectModal
+          }}
+        />
 
         <div className="flex justify-center space-x-4">
           <Button
