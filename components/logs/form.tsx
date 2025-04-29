@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea} from "@/components/ui/textarea";
 import { createLog, updateLog } from "@/app/actions/logs";
 import { searchRepairItems } from "@/app/actions/inventory";
 import {
@@ -38,6 +38,7 @@ import { X, ShoppingBag, FileText, Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductSelectModal } from "@/components/invoices/product-select-modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { log } from "console";
 
 export const CARRIER_OPTIONS = [
   "FedEx",
@@ -81,18 +82,35 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
     resolver: zodResolver(logSchema),
     defaultValues: {
       date: new Date(),
-      receivedFrom: undefined,
-      comments: "",
-      user: "",
-      customerName: "",
+      receivedFrom: log?.receivedFrom || undefined,
+      comments: log?.comments || "",
+      user: log?.user || "",
+      customerName: log?.customerName || "",
       lineItems: [],
     },
   });
+  
+  // Initialize form values and line items if editing an existing log
+  useEffect(() => {
+    if (log?.id) {
+      // Set line items from existing log
+      if (log.lineItems && log.lineItems.length > 0) {
+        setLineItems(log.lineItems);
+      }
+    } else {
+      // Ensure date is set for new logs
+      form.setValue("date", new Date());
+    }
+    
+    // Log the form state for debugging
+    console.log("Form initialized with values:", form.getValues());
+  }, [log, form]);
 
   async function onSubmit(data: LogFormValues) {
     try {
       setError(null);
       setIsSubmitting(true);
+      console.log("Form submission started", { data, lineItems });
 
       // Validate that there is at least one line item
       if (!log?.id && lineItems.length === 0) {
@@ -104,10 +122,12 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
       // Ensure date is a proper Date object and include id if it exists
       const formData = {
         ...data,
-        date: new Date(data.date),
+        date: data.date instanceof Date ? data.date : new Date(),
         lineItems: lineItems,
         id: log?.id // Include the id if it exists
       };
+      
+      console.log("Submitting form data:", formData);
 
       const result = log?.id
         ? await updateLog(log.id, formData)
@@ -206,7 +226,12 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const formValues = form.getValues();
+        console.log("Form submitted with values:", formValues);
+        onSubmit(formValues);
+      }} className="space-y-8">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -214,110 +239,83 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem hidden={!log?.id}>
-                <FormLabel>Date <span className="text-red-500">*</span></FormLabel>
-                <FormControl>
-                  <Input 
-                    type="datetime-local" 
-                    {...field} 
-                    value={field.value instanceof Date 
-                      ? field.value.toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric'
-                        }).split('/').reverse().join('-') + 'T' + 
-                        field.value.toLocaleTimeString('en-GB', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: false
-                        })
-                      : ''} 
-                    onChange={(e) => {
-                      const date = e.target.value ? new Date(e.target.value) : new Date();
-                      field.onChange(date);
-                    }}
-                    disabled
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          <FormField
-            control={form.control}
-            name="receivedFrom"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Received From <span className="text-red-500">*</span></FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={log?.receivedFrom}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a carrier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CARRIER_OPTIONS.map((carrier) => (
-                        <SelectItem key={carrier} value={carrier}>
-                          {carrier}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          <FormField
-            control={form.control}
-            name="customerName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Customer Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <label className="text-sm font-medium">Date <span className="text-red-500">*</span></label>
+            <Input
+              value={log?.date ? new Date(log.date).toLocaleDateString('en-US', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              }) : new Date().toLocaleDateString('en-US', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              })}
+              type="text"
+              disabled
+            />
+          </div>
 
-          <FormField
-            control={form.control}
-            name="user"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Received By</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
+
+
+
+
+
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <label className="text-sm font-medium">Received From <span className="text-red-500">*</span></label>
+            <Select 
+              value={form.watch("receivedFrom") || ""}
+              onValueChange={(value) => form.setValue("receivedFrom", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a carrier" />
+              </SelectTrigger>
+              <SelectContent>
+                {CARRIER_OPTIONS.map((carrier) => (
+                  <SelectItem key={carrier} value={carrier}>
+                    {carrier}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <label className="text-sm font-medium">Customer Name</label>
+            <Input
+              value={form.watch("customerName") || ""}
+              onChange={(e) => form.setValue("customerName", e.target.value)}
+            />
+          </div>
+
+
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <label className="text-sm font-medium">Received By</label>
+            <Input
+              value={form.watch("user") || ""}
+              onChange={(e) => form.setValue("user", e.target.value)}
+            />
+          </div>
+
+
+          <div className="grid grid-cols-[120px_1fr] items-center">
+            <label className="text-sm font-medium">Note/Comment</label>
+            <Textarea
+              value={form.watch("comments") || ""}
+              onChange={(e) => form.setValue("comments", e.target.value)}
+            />
+          </div>
         </div>
-
-        <FormField
-          control={form.control}
-          name="comments"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Note/Comment</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         
         {/* Line Items Section */}
         <div className="mt-8">
@@ -517,9 +515,24 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
             Cancel
           </Button>
           <Button 
-            type="submit" 
-            disabled={isSubmitting || (!log?.id && lineItems.length === 0)}
-            title={!log?.id && lineItems.length === 0 ? "At least one item is required" : undefined}
+            type="button" 
+            disabled={isSubmitting || (!log?.id && lineItems.length === 0) || !form.watch("receivedFrom")}
+            title={!form.watch("receivedFrom") ? "A carrier must be selected" : (!log?.id && lineItems.length === 0 ? "At least one item is required" : undefined)}
+            onClick={() => {
+              if (!form.watch("receivedFrom")) {
+                setError("A carrier must be selected before saving.");
+                return;
+              }
+              if (!log?.id && lineItems.length === 0) {
+                setError("At least one item must be added before saving.");
+                return;
+              }
+              
+              // Manually trigger form submission
+              const formValues = form.getValues();
+              console.log("Manual submission with values:", formValues);
+              onSubmit(formValues);
+            }}
           >
             {isSubmitting
               ? (log?.id ? "Updating..." : "Creating...")
@@ -527,7 +540,12 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
           </Button>
         </div>
         
-        {!log?.id && lineItems.length === 0 && (
+        {!form.watch("receivedFrom") && (
+          <div className="text-center text-sm text-amber-600 mt-2">
+            A carrier must be selected before saving
+          </div>
+        )}
+        {form.watch("receivedFrom") && !log?.id && lineItems.length === 0 && (
           <div className="text-center text-sm text-amber-600 mt-2">
             At least one item must be added before saving
           </div>
