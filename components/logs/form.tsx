@@ -7,11 +7,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
-  FormControl,
-  FormField,
-  FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -38,7 +34,6 @@ import { X, ShoppingBag, FileText, Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductSelectModal } from "@/components/invoices/product-select-modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { log } from "console";
 
 export const CARRIER_OPTIONS = [
   "FedEx",
@@ -59,7 +54,7 @@ type LineItem = {
   repairId?: string;
 };
 
-export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
+export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,7 +79,7 @@ export function LogForm({ log }: { log?: z.infer<typeof logSchema> }) {
       date: new Date(),
       receivedFrom: log?.receivedFrom || undefined,
       comments: log?.comments || "",
-      user: log?.user || "",
+      user: log?.user || user || "",
       customerName: log?.customerName || "",
       lineItems: [],
     },
