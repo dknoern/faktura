@@ -180,6 +180,30 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
     updatedItems.splice(index, 1);
     setLineItems(updatedItems);
   }
+  
+  // Update repair cost for a line item
+  function updateLineItemCost(index: number, cost: string) {
+    const updatedItems = [...lineItems];
+    const numericCost = parseFloat(cost);
+    // Only update if it's a valid number
+    if (!isNaN(numericCost)) {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        repairCost: numericCost
+      };
+      setLineItems(updatedItems);
+    }
+  }
+  
+  // Update item name for a line item
+  function updateLineItemName(index: number, name: string) {
+    const updatedItems = [...lineItems];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      name: name
+    };
+    setLineItems(updatedItems);
+  }
 
   useEffect(() => {
     if (log) {
@@ -353,10 +377,30 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                     <TableBody>
                       {lineItems.map((item, index) => (
                         <TableRow key={index}>
-                          <TableCell>{item.name || ""}</TableCell>
+                          <TableCell>
+                            <Input
+                              type="text"
+                              placeholder="Item description"
+                              value={item.name || ""}
+                              onChange={(e) => updateLineItemName(index, e.target.value)}
+                              className="w-full"
+                            />
+                          </TableCell>
                           <TableCell>{item.itemNumber || ""}</TableCell>
                           <TableCell>{item.repairNumber || ""}</TableCell>
-                          <TableCell className="text-right">{item.repairCost ? `$${item.repairCost.toFixed(2)}` : ""}</TableCell>
+                          <TableCell className="text-right">
+
+                              <Input
+                                type="number"
+                                placeholder="0.00"
+                                value={item.repairCost || ""}
+                                onChange={(e) => updateLineItemCost(index, e.target.value)}
+                                className="w-24 text-right inline-block"
+                                step="0.01"
+                                min="0"
+                              />
+
+                          </TableCell>
                           <TableCell className="text-right">
                             {!log?.id && (
                             <Button 
