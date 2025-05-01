@@ -33,7 +33,7 @@ export async function searchOutstandingRepairs(search: string = '') {
     await dbConnect();
 
 
-    let query = { $and: [
+    const query = { $and: [
       {'search': new RegExp(search, 'i')},
       {'returnDate':{$eq:null}}
     ] };

@@ -28,7 +28,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const [totalPages] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -38,11 +38,11 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
       setError(null)
       
       // Use server action instead of fetch
-      const result = await searchInventoryItems(search, page, 10)
+      const result = await searchInventoryItems(search)
       
       if (result.success && result.data) {
         setProducts(result.data)
-        setTotalPages(result.pagination?.pages || 1)
+        //setTotalPages(result.pagination?.pages || 1)
       } else {
         setError(result.error || "No products found")
         setProducts([])
