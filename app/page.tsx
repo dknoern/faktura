@@ -13,7 +13,7 @@ export default async function Page() {
         <div className="flex flex-col justify-center gap-6 rounded-lg bg-gray-50 px-6 py-10 md:w-2/5 md:px-20">
 
           <p >
-            <strong>Inventory<br/></strong>Management System.
+            <strong>Inventory<br/></strong>Management System
           </p>
 
 
