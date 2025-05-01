@@ -28,20 +28,16 @@ export async function searchInventoryItems(search: string = '') {
 }
 
 // Function to search repair items
-export async function searchRepairItems(search: string = '') {
+export async function searchOutstandingRepairs(search: string = '') {
   try {
     await dbConnect();
-    
-    const query = search 
-      ? { 
-          $or: [
-            { repairNumber: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { itemNumber: { $regex: search, $options: 'i' } }
-          ]
-        }
-      : {};
-    
+
+
+    let query = { $and: [
+      {'search': new RegExp(search, 'i')},
+      {'returnDate':{$eq:null}}
+    ] };
+
     const repairs = await Repair.find(query)
       .sort({ _id: -1 })
       .limit(20);

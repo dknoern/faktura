@@ -206,6 +206,51 @@ export async function fetchRepairs(page = 1, limit = 10, search = '') {
     }
 }
 
+export async function fetchOutstandingRepairs(page = 1, limit = 10, search = '') {
+    try {
+        await dbConnect();
+        const skip = (page - 1) * limit;
+
+        // Build query to find repairs that don't have a return date (outstanding repairs)
+        let query: any = { $and: [{ returnDate: { $eq: null } }, { dateOut: { $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 2)) } }] };
+
+
+        if (search && search.trim() !== '') {
+            query = {
+                $and: [
+                    { returnDate: { $eq: null } },
+                    { dateOut: { $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 2)) } },
+                    {
+                        $or: [
+                            { repairNumber: { $regex: search, $options: 'i' } },
+                            { itemNumber: { $regex: search, $options: 'i' } },
+                            { description: { $regex: search, $options: 'i' } },
+                            { customerFirstName: { $regex: search, $options: 'i' } },
+                            { customerLastName: { $regex: search, $options: 'i' } }
+                        ]
+                    }
+                ]
+            };
+        }
+
+        const repairs = await Repair.find(query)
+            .sort({ dateOut: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalCount = await Repair.countDocuments(query);
+        return {
+            data: JSON.parse(JSON.stringify(repairs)),
+            totalItems: totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+            limit
+        };
+    } catch (error) {
+        console.error('Error fetching outstanding repairs:', error);
+        throw error;
+    }
+}
 
 export async function fetchLogs(page = 1, limit = 10, search = '') {
     try {

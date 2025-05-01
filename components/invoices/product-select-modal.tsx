@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
+import { searchInventoryItems } from "@/app/actions/inventory"
 
 interface Product {
   _id: string
@@ -36,19 +37,14 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/products?page=${page}&limit=10&search=${search}`)
+      // Use server action instead of fetch
+      const result = await searchInventoryItems(search, page, 10)
       
-      if (!response.ok) {
-        throw new Error(`Error fetching products: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.products) {
-        setProducts(data.products)
-        setTotalPages(data.pagination?.pages || 1)
+      if (result.success && result.data) {
+        setProducts(result.data)
+        setTotalPages(result.pagination?.pages || 1)
       } else {
-        setError("No products found")
+        setError(result.error || "No products found")
         setProducts([])
       }
     } catch (error) {

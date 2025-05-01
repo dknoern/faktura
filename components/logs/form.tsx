@@ -389,7 +389,8 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                           <TableCell>{item.itemNumber || ""}</TableCell>
                           <TableCell>{item.repairNumber || ""}</TableCell>
                           <TableCell className="text-right">
-
+                            {/* Only show repair cost input if it's a repair item */}
+                            {(item.repairId || item.repairNumber) ? (
                               <Input
                                 type="number"
                                 placeholder="0.00"
@@ -399,7 +400,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                                 step="0.01"
                                 min="0"
                               />
-
+                            ) : ""}                            
                           </TableCell>
                           <TableCell className="text-right">
                             {!log?.id && (

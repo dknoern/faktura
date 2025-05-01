@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Loader2 } from "lucide-react"
-import { searchRepairItems } from "@/app/actions/inventory"
+// Using fetch API instead of direct server action
+import { format } from "date-fns";
 
 interface Repair {
   _id: string
@@ -15,6 +16,7 @@ interface Repair {
   description: string
   repairCost?: number
   status?: string
+  dateOut?: string
 }
 
 interface RepairSelectModalProps {
@@ -37,23 +39,18 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
       setLoading(true)
       setError(null)
       
-      // Use the server action instead of fetch API
-      const result = await searchRepairItems(search)
+      // Use the API endpoint with fetch
+      const response = await fetch(`/api/repairs?page=${page}&limit=10&search=${encodeURIComponent(search)}`)
+      const result = await response.json()
       
-      if (result.success) {
-        // The searchRepairItems returns all results without pagination
-        // We need to handle pagination on the client side
-        const allRepairs = result.data
-        const totalItems = allRepairs.length
-        const totalPageCount = Math.ceil(totalItems / 10)
+      if (response.ok) {
+        // API returns data array with pagination information
+        setRepairs(result.data || [])
+        setTotalPages(result.totalPages || 1)
         
-        // Calculate the slice of repairs for the current page
-        const startIndex = (page - 1) * 10
-        const endIndex = Math.min(startIndex + 10, totalItems)
-        const currentPageRepairs = allRepairs.slice(startIndex, endIndex)
-        
-        setRepairs(currentPageRepairs)
-        setTotalPages(totalPageCount)
+        if (result.data?.length === 0) {
+          setError("No outstanding repairs found")
+        }
       } else {
         setError(result.error || "No repairs found")
         setRepairs([])
@@ -92,8 +89,11 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
     
     // Set a new timeout to delay the search
     searchTimeoutRef.current = setTimeout(() => {
+      // Reset to first page and then fetch
+      // Using a callback to ensure we use the most recent state
       setPage(1)
-      fetchRepairs()
+      // We need to fetch in a separate effect to ensure page state is updated
+      setTimeout(() => fetchRepairs(), 0)
     }, 300) // 300ms debounce delay
   }
   
@@ -140,10 +140,10 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Repair #</TableHead>
-                <TableHead>Item #</TableHead>
+                <TableHead>Repair</TableHead>
+                <TableHead>Item</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead>Repair Cost</TableHead>
+                <TableHead>Out</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -177,7 +177,7 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
                     <TableCell>{repair.repairNumber}</TableCell>
                     <TableCell>{repair.itemNumber}</TableCell>
                     <TableCell>{repair.description}</TableCell>
-                    <TableCell>${repair.repairCost?.toFixed(2) || "0.00"}</TableCell>
+                    <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.dateOut ? format(new Date(repair.dateOut), 'yyyy-MM-dd') : ''}</TableCell>
                   </TableRow>
                 ))
               )}
