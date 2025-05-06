@@ -3,6 +3,7 @@ import { fetchProducts } from '@/lib/data';
 import dbConnect from '@/lib/dbConnect';
 import { productModel } from '@/lib/models/product';
 import mongoose from 'mongoose';
+import { auth } from '@/auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,8 +26,27 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Get auth session
+    const session = await auth();
+    
+    // Check if user is authenticated
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    
+    // Extract tenant from Auth0 token
+    // The tenant value can be extracted from various places depending on Auth0 setup
+    // It could be in session.user.email, a custom claim, or another property
+    const tenantId = session.user.email?.split('@')[1] || 'default'; // Using domain as tenant for demonstration
+    
     await dbConnect();
     const data = await request.json();
+    
+    // Add tenant to product data
+    data.tenant = tenantId;
     
     // Set creation date
     data.lastUpdated = new Date();

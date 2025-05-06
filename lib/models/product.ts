@@ -7,6 +7,7 @@ extendZod(z);
 
 export const productSchema = z.object({
     id: z.string(),
+    tenant: z.string().min(1).max(255),
     itemNumber: z.string().min(3).max(255),
     productType: z.string().min(3).max(255),
     manufacturer: z.string().optional(),
