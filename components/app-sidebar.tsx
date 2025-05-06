@@ -11,6 +11,7 @@ import {
   SquarePen,
   SquareArrowOutUpRight,
   ChartColumn,
+  UserCircle,
 } from "lucide-react"
 
 import {
@@ -61,6 +62,11 @@ const data = {
       title: "Log Out Items",
       url: "/dashboard/logoutitems",
       icon: SquareArrowOutUpRight,
+    },
+    {
+      title: "Profile",
+      url: "/dashboard/profile",
+      icon: UserCircle,
     },
     {
       title: "Reports",
