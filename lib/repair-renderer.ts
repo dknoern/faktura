@@ -13,6 +13,7 @@ export interface Repair {
   vendor: string;
   repairCost: number;
   repairIssues: string;
+  comments: string;
 }
 
 export interface Tenant {
@@ -112,8 +113,10 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
         <h3 style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">Repair Cost</h3>
         <p style="margin: 5px 0;">${formattedCost}</p>
       </div>
+      <div style="margin-bottom: 20px;">
+      comments go here
     </div>
-  `;
+  `;npm run build
 };
 
 // Generate complete email HTML with proper doctype and head

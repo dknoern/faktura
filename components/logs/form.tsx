@@ -386,8 +386,15 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                               className="w-full"
                             />
                           </TableCell>
-                          <TableCell>{item.itemNumber || ""}</TableCell>
-                          <TableCell>{item.repairNumber || ""}</TableCell>
+                          <TableCell>
+                            <a 
+                              href={`/dashboard/products/${item.productId}/edit`}
+                              className="text-[rgb(98,90,250)] hover:text-black"
+                            >
+                              {item.itemNumber || ""}
+                            </a>
+                          </TableCell>
+                          <TableCell><a href={`/dashboard/repairs/${item.repairNumber}/view`} className="text-[rgb(98,90,250)] hover:text-black">{item.repairNumber || ""}</a></TableCell>
                           <TableCell className="text-right">
                             {/* Only show repair cost input if it's a repair item */}
                             {(item.repairId || item.repairNumber) ? (
@@ -485,10 +492,10 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
           <Button 
             type="button" 
             disabled={isSubmitting || (!log?.id && lineItems.length === 0) || !form.watch("receivedFrom")}
-            title={!form.watch("receivedFrom") ? "A carrier must be selected" : (!log?.id && lineItems.length === 0 ? "At least one item is required" : undefined)}
+            title={!form.watch("receivedFrom") ? "'Received From' must be selected" : (!log?.id && lineItems.length === 0 ? "At least one item is required" : undefined)}
             onClick={() => {
               if (!form.watch("receivedFrom")) {
-                setError("A carrier must be selected before saving.");
+                setError("'Received From' must be selected before saving.");
                 return;
               }
               if (!log?.id && lineItems.length === 0) {
@@ -510,7 +517,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
         
         {!form.watch("receivedFrom") && (
           <div className="text-center text-sm text-amber-600 mt-2">
-            A carrier must be selected before saving
+            <i>Received From</i> must be selected before saving
           </div>
         )}
         {form.watch("receivedFrom") && !log?.id && lineItems.length === 0 && (

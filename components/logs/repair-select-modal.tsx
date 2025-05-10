@@ -17,6 +17,8 @@ interface Repair {
   repairCost?: number
   status?: string
   dateOut?: string
+  customerFirstName?: string
+  customerLastName?: string
 }
 
 interface RepairSelectModalProps {
@@ -143,6 +145,7 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
                 <TableHead>Repair</TableHead>
                 <TableHead>Item</TableHead>
                 <TableHead>Description</TableHead>
+                <TableHead>Customer</TableHead>
                 <TableHead>Out</TableHead>
               </TableRow>
             </TableHeader>
@@ -177,6 +180,7 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
                     <TableCell>{repair.repairNumber}</TableCell>
                     <TableCell>{repair.itemNumber}</TableCell>
                     <TableCell>{repair.description}</TableCell>
+                    <TableCell>{repair.customerFirstName} {repair.customerLastName}</TableCell>
                     <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.dateOut ? format(new Date(repair.dateOut), 'yyyy-MM-dd') : ''}</TableCell>
                   </TableRow>
                 ))
