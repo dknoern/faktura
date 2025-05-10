@@ -116,7 +116,7 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
       <div style="margin-bottom: 20px;">
       comments go here
     </div>
-  `;npm run build
+  `;
 };
 
 // Generate complete email HTML with proper doctype and head
