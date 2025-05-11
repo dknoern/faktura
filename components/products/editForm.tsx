@@ -693,7 +693,21 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                         <TableRow key={historyEvent._id}>
                                                             <TableCell className="font-medium">{historyEvent.user}</TableCell>
                                                             <TableCell>{historyEvent.user}</TableCell>
-                                                            <TableCell>{historyEvent.action}</TableCell>
+                                                            <TableCell>{historyEvent.action}
+                                                                {historyEvent.action === "sold item" ? (
+                                                                    <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/dashboard/invoices/${historyEvent.refDoc}/view`}>
+                                                                        {historyEvent.refDoc}
+                                                                    </Link>
+                                                                    </span>
+                                                                ) : historyEvent.action === "received" && historyEvent.refDoc ? (
+                                                                    <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/dashboard/loginitems/${historyEvent.refDoc}/edit`}>
+                                                                        log
+                                                                    </Link>
+                                                                    </span>
+                                                                ) : (
+                                                                    ''
+                                                                )}
+                                                            </TableCell>
                                                         </TableRow>
                                                     ))}
                                                 </TableBody>
