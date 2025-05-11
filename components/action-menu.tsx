@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Printer, ImagePlus, FileText } from "lucide-react";
 import { UploadDialog } from "./upload-dialog";
 import { CustomerSelectModalWrapper } from "./customers/select-modal-wrapper";
-import { useRouter } from "next/navigation";
 
 interface ActionMenuProps {
     id: string;
@@ -26,7 +25,6 @@ interface ActionMenuProps {
 }
 
 export function ActionMenu({ id, onUploadComplete, customers = [], pagination = { total: 0, pages: 1, currentPage: 1, limit: 10 } }: ActionMenuProps) {
-    const router = useRouter();
     const [showUploadDialog, setShowUploadDialog] = useState(false);
     const [showCustomerSelectModal, setShowCustomerSelectModal] = useState(false);
     
