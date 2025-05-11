@@ -21,6 +21,11 @@ export async function createRepair(formData: FormData) {
   try {
     await dbConnect();
     
+    // Handle repair cost - convert to number only if it has a value
+    const repairCostStr = formData.get("repairCost") as string;
+    const repairCost = repairCostStr && repairCostStr.trim() !== '' ? 
+      parseFloat(repairCostStr) : undefined;
+    
     const repair = new Repair({
       repairNumber: formData.get("repairNumber"),
       itemNumber: formData.get("itemNumber"),
@@ -31,7 +36,12 @@ export async function createRepair(formData: FormData) {
       customerFirstName: formData.get("customerFirstName"),
       customerLastName: formData.get("customerLastName"),
       vendor: formData.get("vendor"),
-      repairCost: parseFloat(formData.get("repairCost") as string),
+      repairCost: repairCost,
+      repairIssues: formData.get("repairIssues") || '',
+      repairNotes: formData.get("repairNotes") || '',
+      warrantyService: formData.get("warrantyService") === 'true',
+      email: formData.get("email") || '',
+      phone: formData.get("phone") || ''
     });
 
     await repair.save();
@@ -46,6 +56,11 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
   try {
     await dbConnect();
     
+    // Handle repair cost - convert to number only if it has a value
+    const repairCostStr = formData.get("repairCost") as string;
+    const repairCost = repairCostStr && repairCostStr.trim() !== '' ? 
+      parseFloat(repairCostStr) : undefined;
+    
     const updateData = {
       itemNumber: formData.get("itemNumber"),
       description: formData.get("description"),
@@ -55,7 +70,12 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
       customerFirstName: formData.get("customerFirstName"),
       customerLastName: formData.get("customerLastName"),
       vendor: formData.get("vendor"),
-      repairCost: parseFloat(formData.get("repairCost") as string),
+      repairCost: repairCost,
+      repairIssues: formData.get("repairIssues") || '',
+      repairNotes: formData.get("repairNotes") || '',
+      warrantyService: formData.get("warrantyService") === 'true',
+      email: formData.get("email") || '',
+      phone: formData.get("phone") || ''
     };
 
     await Repair.findOneAndUpdate({ repairNumber }, updateData);

@@ -5,7 +5,20 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { createRepair, updateRepair } from "@/lib/actions";
+import { ProductSelectModal } from "@/components/invoices/product-select-modal";
+import { searchAvailableProducts } from "@/app/actions/repair-products";
+
+interface Product {
+  _id: string;
+  itemNumber: string;
+  title: string;
+  sellingPrice?: number;
+  serialNo?: string;
+  longDesc?: string;
+}
 
 interface RepairFormProps {
   repair?: {
@@ -19,6 +32,11 @@ interface RepairFormProps {
     customerLastName: string;
     vendor: string;
     repairCost: number;
+    repairIssues?: string;
+    repairNotes?: string;
+    warrantyService?: boolean;
+    email?: string;
+    phone?: string;
   };
   selectedCustomer?: {
     _id: number;
@@ -33,10 +51,22 @@ interface RepairFormProps {
 export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [customerApproved, setCustomerApproved] = useState(!!repair?.customerApprovedDate);
+  const [warrantyService, setWarrantyService] = useState(repair?.warrantyService || false);
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
     try {
+      // Add checkbox values that might not be in the form if unchecked
+      if (!customerApproved) {
+        formData.set('customerApprovedDate', '');
+      }
+      
+      // Set warranty service value
+      formData.set('warrantyService', warrantyService ? 'true' : 'false');
+      
       if (repair) {
         await updateRepair(repair.repairNumber, formData);
       } else {
@@ -51,11 +81,15 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
     }
   };
 
+  const handleProductSelect = (product: Product) => {
+    setSelectedProduct(product);
+  };
+
   return (
     <form action={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="repairNumber">Repair Number</Label>
+          <Label htmlFor="repairNumber">Repair No *</Label>
           <Input
             id="repairNumber"
             name="repairNumber"
@@ -64,36 +98,35 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="itemNumber">Item Number</Label>
+          <Label htmlFor="vendor">Vendor</Label>
           <Input
-            id="itemNumber"
-            name="itemNumber"
-            defaultValue={repair?.itemNumber}
-            required
+            id="vendor"
+            name="vendor"
+            defaultValue={repair?.vendor}
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="dateOut">Date Out</Label>
         <Input
-          id="description"
-          name="description"
-          defaultValue={repair?.description}
-          required
+          id="dateOut"
+          name="dateOut"
+          type="date"
+          defaultValue={repair?.dateOut?.split("T")[0]}
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="dateOut">Date Out</Label>
-          <Input
-            id="dateOut"
-            name="dateOut"
-            type="date"
-            defaultValue={repair?.dateOut?.split("T")[0]}
-          />
-        </div>
+      <div className="flex items-center space-x-2 py-2">
+        <Checkbox 
+          id="customerApproved" 
+          checked={customerApproved}
+          onCheckedChange={(checked) => setCustomerApproved(checked as boolean)}
+        />
+        <Label htmlFor="customerApproved" className="cursor-pointer">Customer Approved</Label>
+      </div>
+
+      {customerApproved && (
         <div className="space-y-2">
           <Label htmlFor="customerApprovedDate">Customer Approved Date</Label>
           <Input
@@ -103,20 +136,83 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
             defaultValue={repair?.customerApprovedDate?.split("T")[0]}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="returnDate">Return Date</Label>
-          <Input
-            id="returnDate"
-            name="returnDate"
-            type="date"
-            defaultValue={repair?.returnDate?.split("T")[0]}
-          />
-        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="returnDate">Return Date</Label>
+        <Input
+          id="returnDate"
+          name="returnDate"
+          type="date"
+          defaultValue={repair?.returnDate?.split("T")[0]}
+        />
+      </div>
+
+      <div className="flex items-center space-x-2 py-2">
+        <Checkbox 
+          id="warrantyService" 
+          checked={warrantyService}
+          onCheckedChange={(checked) => setWarrantyService(checked as boolean)}
+          name="warrantyService"
+        />
+        <Label htmlFor="warrantyService" className="cursor-pointer">Warranty Service</Label>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="repairIssues">Repair Issues</Label>
+        <Textarea
+          id="repairIssues"
+          name="repairIssues"
+          rows={4}
+          defaultValue={repair?.repairIssues || ''}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="customerFirstName">Customer First Name</Label>
+          <Label htmlFor="itemNumber">Item No</Label>
+          <div className="flex">
+            <Input
+              id="itemNumber"
+              name="itemNumber"
+              value={selectedProduct?.itemNumber || repair?.itemNumber || ''}
+              readOnly
+              className="rounded-r-none"
+            />
+            <Button 
+              type="button" 
+              onClick={() => setIsProductModalOpen(true)}
+              className="rounded-l-none"
+            >
+              Select
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description *</Label>
+        <Input
+          id="description"
+          name="description"
+          defaultValue={selectedProduct?.title || repair?.description || ''}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="repairNotes">Repair Notes</Label>
+        <Textarea
+          id="repairNotes"
+          name="repairNotes"
+          rows={4}
+          defaultValue={repair?.repairNotes || ''}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="customerFirstName">Customer First Name *</Label>
           <Input
             id="customerFirstName"
             name="customerFirstName"
@@ -125,7 +221,7 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="customerLastName">Customer Last Name</Label>
+          <Label htmlFor="customerLastName">Customer Last Name *</Label>
           <Input
             id="customerLastName"
             name="customerLastName"
@@ -134,54 +230,39 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
           />
         </div>
       </div>
-      
-      {/* Additional customer fields if available */}
-      {selectedCustomer && (
-        <div className="grid grid-cols-2 gap-4">
-          {selectedCustomer.email && (
-            <div className="space-y-2">
-              <Label htmlFor="customerEmail">Customer Email</Label>
-              <Input
-                id="customerEmail"
-                name="customerEmail"
-                defaultValue={selectedCustomer.email}
-                readOnly
-              />
-            </div>
-          )}
-          {selectedCustomer.phone && (
-            <div className="space-y-2">
-              <Label htmlFor="customerPhone">Customer Phone</Label>
-              <Input
-                id="customerPhone"
-                name="customerPhone"
-                defaultValue={selectedCustomer.phone}
-                readOnly
-              />
-            </div>
-          )}
-        </div>
-      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="vendor">Vendor</Label>
+          <Label htmlFor="phone">Customer Phone</Label>
           <Input
-            id="vendor"
-            name="vendor"
-            defaultValue={repair?.vendor}
-            required
+            id="phone"
+            name="phone"
+            defaultValue={repair?.phone || selectedCustomer?.phone || ''}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="repairCost">Repair Cost</Label>
+          <Label htmlFor="email">Customer Email</Label>
+          <Input
+            id="email"
+            name="email"
+            defaultValue={repair?.email || selectedCustomer?.email || ''}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="repairCost">Repair Cost</Label>
+        <div className="flex">
+          <span className="inline-flex items-center px-3 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md">
+            $
+          </span>
           <Input
             id="repairCost"
             name="repairCost"
             type="number"
             step="0.01"
-            defaultValue={repair?.repairCost}
-            required
+            defaultValue={repair?.repairCost || ''}
+            className="rounded-l-none"
           />
         </div>
       </div>
@@ -198,6 +279,15 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
           {isSubmitting ? "Saving..." : repair ? "Update Repair" : "Create Repair"}
         </Button>
       </div>
+
+      {/* Product Selection Modal */}
+      <ProductSelectModal
+        isOpen={isProductModalOpen}
+        onClose={() => setIsProductModalOpen(false)}
+        onProductSelect={handleProductSelect}
+        customSearchFunction={searchAvailableProducts}
+        modalTitle="Select Available Product"
+      />
     </form>
   );
 } 

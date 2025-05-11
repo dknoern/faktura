@@ -13,7 +13,7 @@ export interface Repair {
   vendor: string;
   repairCost: number;
   repairIssues: string;
-  comments: string;
+  repairNotes: string;
 }
 
 export interface Tenant {
@@ -114,7 +114,7 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
         <p style="margin: 5px 0;">${formattedCost}</p>
       </div>
       <div style="margin-bottom: 20px;">
-      comments go here
+      ${repair.repairNotes || 'None specified'}
     </div>
   `;
 };

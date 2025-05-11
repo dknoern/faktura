@@ -21,9 +21,11 @@ interface ProductSelectModalProps {
   isOpen: boolean
   onClose: () => void
   onProductSelect: (product: Product) => void
+  customSearchFunction?: (search: string) => Promise<{success: boolean, data?: Product[], error?: string}>
+  modalTitle?: string
 }
 
-export function ProductSelectModal({ isOpen, onClose, onProductSelect }: ProductSelectModalProps) {
+export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSearchFunction, modalTitle = "Select Product" }: ProductSelectModalProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
@@ -37,8 +39,10 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
       setLoading(true)
       setError(null)
       
-      // Use server action instead of fetch
-      const result = await searchInventoryItems(search)
+      // Use either the custom search function or the default one
+      const result = customSearchFunction 
+        ? await customSearchFunction(search)
+        : await searchInventoryItems(search)
       
       if (result.success && result.data) {
         setProducts(result.data)
@@ -108,7 +112,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect }: Product
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>Select Product</DialogTitle>
+          <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
         
         {error && (
