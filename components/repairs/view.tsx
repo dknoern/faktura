@@ -101,11 +101,11 @@ export function ViewRepair({repair, tenant}:  {repair: Repair, tenant: Tenant}) 
         </div>
       )}
 
-      <div className="bg-white p-8 rounded-lg shadow print:shadow-none">
+      <div className="bg-white p-7 rounded-lg shadow print:shadow-none">
         {/* Header with Logo */}
-        <div className="mb-8">
+        <div className="mb-4">
           <div className="flex flex-col items-start">
-            <div className="w-48 mb-2">
+            <div className="w-48 mb-0">
               <Image
                 src={getApiUrl(tenant._id)}
                 alt={tenant.nameLong || ''}

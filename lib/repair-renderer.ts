@@ -42,19 +42,19 @@ export const formatCurrency = (value: number = 0) => {
 export const formatDate = (dateString: string | null) => {
   return dateString 
     ? new Date(dateString).toLocaleDateString() 
-    : new Date().toLocaleDateString();
+    : '';
 };
 
 // Generate repair HTML content
 export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
   const formattedDate = formatDate(repair.dateOut);
+  const formattedCustomerApprovedDate = formatDate(repair.customerApprovedDate);
   const formattedCost = formatCurrency(repair.repairCost);
   
   return `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto;">
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; font-size: 12px">
       <!-- Header with Company Info -->
-      <div style="margin-bottom: 20px;">
-        <p style="margin: 5px 0;">${tenant.nameLong || ''}</p>
+      <div style="margin-bottom: 0px;">
         <p style="margin: 5px 0;">${tenant.address || ''}</p>
         <p style="margin: 5px 0;">${tenant.city || ''}, ${tenant.state || ''} ${tenant.zip || ''}</p>
         <p style="margin: 5px 0;">Phone ${tenant.phone || ''}</p>
@@ -64,22 +64,27 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
       <!-- Repair Information -->
       <div style="margin-bottom: 20px;">
         <div style="margin-bottom: 15px;">
-          <h3 style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">Repair #</h3>
-          <p style="margin: 5px 0;">${repair.repairNumber}</p>
+          <h3 style="font-weight: bold;">Repair #</h3>
+          <p>${repair.repairNumber}</p>
         </div>
 
         <div style="margin-bottom: 15px;">
-          <h3 style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">Repair Date</h3>
-          <p style="margin: 5px 0;">${formattedDate}</p>
+          <h3 style="font-weight: bold;">Repair Date</h3>
+          <p>${formattedDate}</p>
         </div>
 
+        ${repair.customerApprovedDate ? `<div style="margin-bottom: 15px;">
+          <h3 style="font-weight: bold;">Customer Approved Date</h3>
+          <p>${formattedCustomerApprovedDate}</p>
+        </div>` : ''}
+
         <div style="margin-bottom: 15px;">
-          <h3 style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">Customer Name</h3>
+          <h3 style="font-weight: bold;">Customer Name</h3>
           <p style="margin: 5px 0;">${repair.customerFirstName} ${repair.customerLastName}</p>
         </div>
 
         <div style="margin-bottom: 15px;">
-          <h3 style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">Vendor Name</h3>
+          <h3 style="font-weight: bold; margin-bottom: 5px;">Vendor Name</h3>
           <p style="margin: 5px 0;">${repair.vendor || 'N/A'}</p>
         </div>
       </div>
@@ -104,13 +109,13 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
       
       <!-- Repair Issues -->
       <div style="margin-bottom: 20px;">
-        <h3 style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">Repair Issues</h3>
+        <h3 style="font-weight: bold; margin-bottom: 5px;">Repair Issues</h3>
         <p style="margin: 5px 0;">${repair.repairIssues || 'None specified'}</p>
       </div>
       
       <!-- Repair Cost -->
       <div style="margin-bottom: 20px;">
-        <h3 style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">Repair Cost</h3>
+        <h3 style="font-weight: bold; margin-bottom: 5px;">Repair Cost</h3>
         <p style="margin: 5px 0;">${formattedCost}</p>
       </div>
       <div style="margin-bottom: 20px;">
