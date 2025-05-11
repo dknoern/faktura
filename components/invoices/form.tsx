@@ -73,8 +73,29 @@ interface Customer {
   zip?: string
 }
 
-export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFormData, selectedCustomer?: Customer }) {
+interface Product {
+  _id: string
+  itemNumber: string
+  title: string
+  sellingPrice?: number
+  serialNo?: string
+  longDesc?: string
+}
+
+export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product }) {
   const router = useRouter()
+  // Create initial line items if a product is selected
+  const initialLineItems = selectedProduct ? [
+    {
+      productId: selectedProduct._id,
+      itemNumber: selectedProduct.itemNumber || '',
+      name: selectedProduct.title || '',
+      amount: selectedProduct.sellingPrice || 0,
+      serialNumber: selectedProduct.serialNo || '',
+      longDesc: selectedProduct.longDesc || ''
+    }
+  ] : [];
+
   const [formData, setFormData] = useState<InvoiceFormData>(
     invoice
       ? { ...invoice, date: formatDateTime(invoice.date) }
@@ -91,11 +112,11 @@ export function InvoiceForm({ invoice, selectedCustomer }: { invoice?: InvoiceFo
           customerEmail: selectedCustomer?.email || "",
           customerPhone: selectedCustomer?.phone || "",
           date: new Date().toISOString(),
-          total: 0,
-          subtotal: 0,
+          total: selectedProduct?.sellingPrice || 0,
+          subtotal: selectedProduct?.sellingPrice || 0,
           tax: 0,
           shipping: 0,
-          lineItems: [],
+          lineItems: initialLineItems,
           copyAddress: false,
           invoiceType: "Invoice"
         }
