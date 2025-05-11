@@ -33,8 +33,14 @@ export function ActionMenu({ id, onUploadComplete, customers = [], pagination = 
     // Handle customer selection for invoice creation
     const handleCustomerSelect = (customer: any) => {
         setShowCustomerSelectModal(false);
-        // Navigate to the new invoice page with both customer ID and product ID
-        router.push(`/dashboard/invoices/new?customerId=${customer._id}&productId=${id}`);
+        
+        // Force reset any lingering scroll locks
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+        
+        // Use window.location for a full page navigation instead of router.push
+        // This ensures a complete page refresh and proper scroll behavior
+        window.location.href = `/dashboard/invoices/new?customerId=${customer._id}&productId=${id}`;
     };
     
     return (
