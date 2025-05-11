@@ -1,6 +1,6 @@
 "use client"
 
-import { ActionMenu } from "../action-menu"
+import { ProductActionMenu } from "../product-action-menu"
 import { useEffect, useState } from "react"
 import { z } from "zod"
 import { customerSchema } from "@/lib/models/customer"
@@ -47,7 +47,7 @@ export function ProductHeader({ id }: ProductHeaderProps) {
     return (
         <div className="mb-8 flex justify-between items-center">
             <h2 className="text-2xl font-bold tracking-tight">Product</h2>
-            <ActionMenu 
+            <ProductActionMenu 
                 id={id} 
                 onUploadComplete={() => window.location.reload()} 
                 customers={customers}

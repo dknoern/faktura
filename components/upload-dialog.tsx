@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -129,10 +129,71 @@ export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: Uploa
         }
     };
 
+    // Fix for scrolling issues - ensure body scroll is restored
+    useEffect(() => {
+        // Function to reset all scroll locks and pointer events
+        const resetBodyStyles = () => {
+            // Remove all scroll locks
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+            
+            // Ensure pointer events are enabled
+            document.body.style.removeProperty('pointer-events');
+            
+            // Remove any other potential locks that might be applied
+            document.documentElement.style.removeProperty('overflow');
+            document.documentElement.style.removeProperty('padding-right');
+            document.documentElement.style.removeProperty('pointer-events');
+            
+            // Force a small reflow/repaint
+            void document.body.offsetHeight;
+        };
+        
+        // When dialog closes, ensure body scroll is enabled
+        if (!open) {
+            // Immediate reset
+            resetBodyStyles();
+            
+            // Additional resets with timeouts to catch any delayed effects
+            setTimeout(resetBodyStyles, 0);
+            setTimeout(resetBodyStyles, 100);
+            setTimeout(resetBodyStyles, 300);
+        }
+        
+        // Cleanup on unmount
+        return () => {
+            resetBodyStyles();
+        };
+    }, [open]);
+
+    // Function to reset all scroll locks and pointer events
+    const resetBodyStyles = () => {
+        // Remove all scroll locks
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+        
+        // Ensure pointer events are enabled
+        document.body.style.removeProperty('pointer-events');
+        
+        // Remove any other potential locks that might be applied
+        document.documentElement.style.removeProperty('overflow');
+        document.documentElement.style.removeProperty('padding-right');
+        document.documentElement.style.removeProperty('pointer-events');
+        
+        // Force a small reflow/repaint
+        void document.body.offsetHeight;
+    };
+
     return (
         <Dialog open={open} onOpenChange={(isOpen) => {
             if (!isOpen) {
                 stopCamera();
+                // Force reset any lingering scroll locks
+                resetBodyStyles();
+                
+                // Use window.location.reload as a last resort if needed
+                // Uncomment the next line if the issue persists
+                // window.location.reload();
             }
             onOpenChange(isOpen);
         }}>

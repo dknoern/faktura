@@ -6,6 +6,7 @@ import {
     Dialog,
     DialogContent,
     DialogTrigger,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { X, ChevronLeft, ChevronRight, RotateCcw, RotateCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,6 +104,8 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                             </div>
                         </DialogTrigger>
                         <DialogContent className="max-w-7xl w-full h-[90vh] p-0">
+                            {/* Hidden DialogTitle for accessibility */}
+                            <DialogTitle className="sr-only">Product Image {index + 1}</DialogTitle>
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <button
                                     className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white"

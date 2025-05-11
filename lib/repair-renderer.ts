@@ -55,14 +55,14 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; font-size: 12px">
       <!-- Header with Company Info -->
       <div style="margin-bottom: 0px;">
-        <p style="margin: 5px 0;">${tenant.address || ''}</p>
-        <p style="margin: 5px 0;">${tenant.city || ''}, ${tenant.state || ''} ${tenant.zip || ''}</p>
-        <p style="margin: 5px 0;">Phone ${tenant.phone || ''}</p>
-        ${tenant.fax ? `<p style="margin: 5px 0;">Fax ${tenant.fax}</p>` : ''}
+        <p>${tenant.address || ''}</p>
+        <p>${tenant.city || ''}, ${tenant.state || ''} ${tenant.zip || ''}</p>
+        <p>Phone ${tenant.phone || ''}</p>
+        ${tenant.fax ? `<p>Fax ${tenant.fax}</p>` : ''}
       </div>
       
       <!-- Repair Information -->
-      <div style="margin-bottom: 20px;">
+      <div style="margin-bottom: 20px; margin-top: 15px;">
         <div style="margin-bottom: 15px;">
           <h3 style="font-weight: bold;">Repair #</h3>
           <p>${repair.repairNumber}</p>

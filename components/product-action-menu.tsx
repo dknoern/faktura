@@ -12,7 +12,7 @@ import { ChevronDown, Printer, ImagePlus, FileText } from "lucide-react";
 import { UploadDialog } from "./upload-dialog";
 import { CustomerSelectModalWrapper } from "./customers/select-modal-wrapper";
 
-interface ActionMenuProps {
+interface ProductActionMenuProps {
     id: string;
     onUploadComplete?: () => void;
     customers?: any[];
@@ -24,7 +24,7 @@ interface ActionMenuProps {
     };
 }
 
-export function ActionMenu({ id, onUploadComplete, customers = [], pagination = { total: 0, pages: 1, currentPage: 1, limit: 10 } }: ActionMenuProps) {
+export function ProductActionMenu({ id, onUploadComplete, customers = [], pagination = { total: 0, pages: 1, currentPage: 1, limit: 10 } }: ProductActionMenuProps) {
     const [showUploadDialog, setShowUploadDialog] = useState(false);
     const [showCustomerSelectModal, setShowCustomerSelectModal] = useState(false);
     
