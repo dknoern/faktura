@@ -11,6 +11,9 @@ import { customerSchema } from "@/lib/models/customer";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { mergeCustomers } from "@/app/actions/mergeCustomers";
+import { toast } from "react-hot-toast";
 
 interface PaginationProps {
     total: number;
@@ -53,6 +56,9 @@ export function CustomersTable({
     const router = modalRouter || defaultRouter;
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    
+    // State for selected customers
+    const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
     
     // Check if we're in customer selection mode for invoices
     const selectForInvoice = !isModal && searchParams.get('selectForInvoice') === 'true';
@@ -120,11 +126,40 @@ export function CustomersTable({
             }
         };
     }, []);
+    
+    // Handle checkbox click without triggering row click
+    const handleCheckboxChange = (e: React.MouseEvent) => {
+        e.stopPropagation();
+    };
+    
+    // Handle merging customers
+    const handleMergeCustomers = async () => {
+        if (selectedCustomers.length < 2) {
+            toast.error("Please select at least two customers to merge");
+            return;
+        }
+        
+        try {
+            const result = await mergeCustomers(selectedCustomers);
+            
+            if (result.success) {
+                toast.success(`${result.count} customers merged`);
+                
+                // Clear selections after successful merge
+                setSelectedCustomers([]);
+            } else {
+                toast.error(result.message);
+            }
+        } catch (error) {
+            console.error("Error merging customers:", error);
+            toast.error("Failed to merge customers");
+        }
+    };
 
     return (
         <div>
             <div className="mb-4 flex justify-between items-center">
-                <div>
+                <div className="flex items-center gap-4">
                     <Input
                         type="text"
                         placeholder="Search customers..."
@@ -132,6 +167,21 @@ export function CustomersTable({
                         onChange={handleSearch}
                         className="max-w-sm"
                     />
+                    {!isModal && selectedCustomers.length >= 2 && (
+                        <Button 
+                            onClick={handleMergeCustomers}
+                            variant="default"
+                        >
+                            Merge Customers
+                        </Button>
+                    )}
+                </div>
+                <div>
+                    {!isModal && selectedCustomers.length > 0 && (
+                        <span className="text-sm text-gray-500">
+                            {selectedCustomers.length} customer{selectedCustomers.length !== 1 ? 's' : ''} selected
+                        </span>
+                    )}
                 </div>
             </div>
             <Table>
@@ -143,6 +193,7 @@ export function CustomersTable({
                         <TableHead>Email</TableHead>
                         <TableHead>Phone</TableHead>
                         <TableHead>Company</TableHead>
+                        {!isModal && <TableHead className="text-right">Select</TableHead>}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -153,11 +204,29 @@ export function CustomersTable({
                             onClick={() => handleCustomerClick(customer)}
                         >
                             <TableCell>{customer._id}</TableCell>
-                            <TableCell> {customer.firstName + ' ' + customer.lastName}</TableCell>
+                            <TableCell>{customer.firstName + ' ' + customer.lastName}</TableCell>
                             <TableCell>{customer.city}</TableCell>
                             <TableCell>{customer.email}</TableCell>
-                            <TableCell> {customer.phone}</TableCell>
-                            <TableCell> {customer.company}</TableCell>
+                            <TableCell>{customer.phone}</TableCell>
+                            <TableCell>{customer.company}</TableCell>
+                            {!isModal && (
+                                <TableCell className="text-right">
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <Checkbox
+                                            checked={selectedCustomers.includes(customer._id)}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setSelectedCustomers(prev => [...prev, customer._id]);
+                                                } else {
+                                                    setSelectedCustomers(prev => prev.filter(id => id !== customer._id));
+                                                }
+                                            }}
+                                            onClick={(e) => handleCheckboxChange(e)}
+                                            className="pointer-events-auto"
+                                        />
+                                    </div>
+                                </TableCell>
+                            )}
                         </TableRow>
                     ))}
                 </TableBody>
