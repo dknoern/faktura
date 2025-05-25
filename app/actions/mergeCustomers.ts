@@ -24,6 +24,10 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
     await dbConnect();
     
     // The first customer ID will be the canonical (primary) customer
+    // canonicalId should be the one with the lowest
+
+    // sort customerIds in ascending order, canonicalId will be the first
+    customerIds.sort((a, b) => a - b);
     const canonicalId = customerIds[0];
     
     // Find the canonical customer

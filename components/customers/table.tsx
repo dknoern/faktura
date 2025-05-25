@@ -14,6 +14,14 @@ import { useState, useRef, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { mergeCustomers } from "@/app/actions/mergeCustomers";
 import { toast } from "react-hot-toast";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 interface PaginationProps {
     total: number;
@@ -59,6 +67,9 @@ export function CustomersTable({
     
     // State for selected customers
     const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
+    
+    // State for confirmation dialog
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     
     // Check if we're in customer selection mode for invoices
     const selectForInvoice = !isModal && searchParams.get('selectForInvoice') === 'true';
@@ -132,13 +143,19 @@ export function CustomersTable({
         e.stopPropagation();
     };
     
-    // Handle merging customers
-    const handleMergeCustomers = async () => {
+    // Show confirmation dialog for merging customers
+    const handleShowMergeConfirmation = () => {
         if (selectedCustomers.length < 2) {
             toast.error("Please select at least two customers to merge");
             return;
         }
         
+        // Open the confirmation dialog
+        setConfirmDialogOpen(true);
+    };
+    
+    // Handle merging customers after confirmation
+    const handleMergeCustomers = async () => {
         try {
             const result = await mergeCustomers(selectedCustomers);
             
@@ -153,6 +170,9 @@ export function CustomersTable({
         } catch (error) {
             console.error("Error merging customers:", error);
             toast.error("Failed to merge customers");
+        } finally {
+            // Close the confirmation dialog
+            setConfirmDialogOpen(false);
         }
     };
 
@@ -169,7 +189,7 @@ export function CustomersTable({
                     />
                     {!isModal && selectedCustomers.length >= 2 && (
                         <Button 
-                            onClick={handleMergeCustomers}
+                            onClick={handleShowMergeConfirmation}
                             variant="default"
                         >
                             Merge Customers
@@ -193,7 +213,7 @@ export function CustomersTable({
                         <TableHead>Email</TableHead>
                         <TableHead>Phone</TableHead>
                         <TableHead>Company</TableHead>
-                        {!isModal && <TableHead className="text-right">Select</TableHead>}
+                        {!isModal && <TableHead className="text-center">Merge</TableHead>}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -210,8 +230,8 @@ export function CustomersTable({
                             <TableCell>{customer.phone}</TableCell>
                             <TableCell>{customer.company}</TableCell>
                             {!isModal && (
-                                <TableCell className="text-right">
-                                    <div onClick={(e) => e.stopPropagation()}>
+                                <TableCell className="text-center">
+                                    <div onClick={(e) => e.stopPropagation()} className="flex justify-center">
                                         <Checkbox
                                             checked={selectedCustomers.includes(customer._id)}
                                             onCheckedChange={(checked) => {
@@ -257,6 +277,24 @@ export function CustomersTable({
                     </Button>
                 </div>
             </div>
+
+            {/* Confirmation Dialog */}
+            <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirm Customer Merge</DialogTitle>
+                        <DialogDescription>
+                            You are about to merge {selectedCustomers.length} customers. This action cannot be undone.
+                            The customer with the lowest ID ({selectedCustomers.length > 0 ? Math.min(...selectedCustomers) : ''}) will be kept, 
+                            and all other customers will be merged into it.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="mt-4">
+                        <Button variant="outline" onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleMergeCustomers}>Merge Customers</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
