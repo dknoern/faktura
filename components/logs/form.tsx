@@ -377,13 +377,13 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                     <TableBody>
                       {lineItems.map((item, index) => (
                         <TableRow key={index}>
-                          <TableCell>
-                            <Input
-                              type="text"
+                          <TableCell className="min-w-[440px]">
+                            <Textarea
+                              cols={70} rows={1}
                               placeholder="Item description"
                               value={item.name || ""}
                               onChange={(e) => updateLineItemName(index, e.target.value)}
-                              className="w-full"
+                              className="w-full min-h-[36px] py-1"
                             />
                           </TableCell>
                           <TableCell>

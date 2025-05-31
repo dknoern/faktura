@@ -9,8 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Camera, Upload } from "lucide-react";
 
-interface UploadDialogProps {
-    id: string;
+interface UploadDialogProps {    id: string;
     onUploadComplete?: () => void;
     open: boolean;
     onOpenChange: (open: boolean) => void;

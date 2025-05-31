@@ -9,7 +9,7 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Printer, ImagePlus, Video, FileUp } from "lucide-react";
+import { ChevronDown, Printer, ImagePlus } from "lucide-react";
 
 interface ActionMenuProps {
     id: string;
@@ -19,8 +19,6 @@ interface ActionMenuProps {
 export function LogActionMenu({ id, onUploadComplete }: ActionMenuProps) {
     const [isUploading, setIsUploading] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
-    const videoInputRef = useRef<HTMLInputElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileUpload = async (file: File) => {
         try {
@@ -61,20 +59,6 @@ export function LogActionMenu({ id, onUploadComplete }: ActionMenuProps) {
         }
     };
 
-    // Trigger native camera for video recording
-    const captureVideo = () => {
-        if (videoInputRef.current) {
-            videoInputRef.current.click();
-        }
-    };
-
-    // Trigger native file picker
-    const selectFile = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
-    };
-
     return (
         <>
             <DropdownMenu>
@@ -91,15 +75,7 @@ export function LogActionMenu({ id, onUploadComplete }: ActionMenuProps) {
                 <DropdownMenuContent align="end">
                     <DropdownMenuItem onSelect={captureImage} className="flex items-center gap-2">
                         <ImagePlus className="h-4 w-4" />
-                        Take Photo
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={captureVideo} className="flex items-center gap-2">
-                        <Video className="h-4 w-4" />
-                        Record Video
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={selectFile} className="flex items-center gap-2">
-                        <FileUp className="h-4 w-4" />
-                        Upload File
+                        Add Image
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={() => window.print()} className="flex items-center gap-2">
@@ -116,41 +92,6 @@ export function LogActionMenu({ id, onUploadComplete }: ActionMenuProps) {
                 className="hidden"
                 accept="image/*"
                 capture="environment"
-                onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                        handleFileUpload(file);
-                    }
-                    // Reset the input to allow selecting the same file again
-                    e.target.value = '';
-                }}
-                disabled={isUploading}
-            />
-
-            {/* Hidden input for recording videos */}
-            <input
-                type="file"
-                ref={videoInputRef}
-                className="hidden"
-                accept="video/*"
-                capture="environment"
-                onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                        handleFileUpload(file);
-                    }
-                    // Reset the input to allow selecting the same file again
-                    e.target.value = '';
-                }}
-                disabled={isUploading}
-            />
-
-            {/* Hidden input for selecting files from device */}
-            <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/*,video/*"
                 onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {

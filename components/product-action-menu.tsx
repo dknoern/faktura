@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Printer, ImagePlus, FileText } from "lucide-react";
-import { UploadDialog } from "./upload-dialog";
 import { CustomerSelectModalWrapper } from "./customers/select-modal-wrapper";
 
 interface ProductActionMenuProps {
@@ -25,8 +24,48 @@ interface ProductActionMenuProps {
 }
 
 export function ProductActionMenu({ id, onUploadComplete, customers = [], pagination = { total: 0, pages: 1, currentPage: 1, limit: 10 } }: ProductActionMenuProps) {
-    const [showUploadDialog, setShowUploadDialog] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [showCustomerSelectModal, setShowCustomerSelectModal] = useState(false);
+    const imageInputRef = useRef<HTMLInputElement>(null);
+    
+    const handleFileUpload = async (file: File) => {
+        try {
+            setIsUploading(true);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('id', id);
+
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Upload failed');
+            }
+
+            // Show success notification
+            console.log(`Upload successful: ${file.name}`);
+            // You could implement a custom notification here if needed
+            
+            onUploadComplete?.();
+        } catch (error) {
+            console.error('Error uploading:', error);
+            // Show error notification
+            console.error(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+            alert(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+            // You could implement a custom notification here if needed
+        } finally {
+            setIsUploading(false);
+        }
+    };
+    
+    // Trigger native camera for image capture
+    const captureImage = () => {
+        if (imageInputRef.current) {
+            imageInputRef.current.click();
+        }
+    };
     
     // Handle customer selection for invoice creation
     const handleCustomerSelect = (customer: any) => {
@@ -45,15 +84,19 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], pagina
         <>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2">
+                <Button 
+                    variant="outline" 
+                    className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
+                    disabled={isUploading}
+                >
                     Action
                     <ChevronDown className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => setShowUploadDialog(true)} className="flex items-center gap-2">
+                <DropdownMenuItem onSelect={captureImage} className="flex items-center gap-2">
                     <ImagePlus className="h-4 w-4" />
-                    Add Images
+                    Add Image
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => window.print()} className="flex items-center gap-2">
                     <Printer className="h-4 w-4" />
@@ -65,11 +108,22 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], pagina
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
-        <UploadDialog
-            id={id}
-            open={showUploadDialog}
-            onOpenChange={setShowUploadDialog}
-            onUploadComplete={onUploadComplete}
+        {/* Hidden input for capturing images */}
+        <input
+            type="file"
+            ref={imageInputRef}
+            className="hidden"
+            accept="image/*"
+            capture="environment"
+            onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                    handleFileUpload(file);
+                }
+                // Reset the input to allow selecting the same file again
+                e.target.value = '';
+            }}
+            disabled={isUploading}
         />
         {/* Customer selection modal for invoice creation */}
         <CustomerSelectModalWrapper
