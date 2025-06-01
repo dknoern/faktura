@@ -1,11 +1,11 @@
 import { RepairForm } from "@/components/repairs/repair-form";
-import { fetchCustomerById } from "@/lib/data";
+import { fetchCustomerById, fetchProductById } from "@/lib/data";
 import { redirect } from "next/navigation";
 
 
 
 
-type SearchParams = Promise<{ customerId?: string }>
+type SearchParams = Promise<{ customerId?: string, productId?: string }>
 
 export default async function NewRepairPage({ searchParams }: { searchParams: SearchParams }) {
 
@@ -15,6 +15,12 @@ export default async function NewRepairPage({ searchParams }: { searchParams: Se
     // If no customer ID is provided, redirect back to repairs page
     if (!params.customerId) {
         redirect("/dashboard/repairs");
+    }
+
+    let product = null;
+    if(params.productId){
+        const productRecord = await fetchProductById(params.productId);
+        product = JSON.parse(JSON.stringify(productRecord));
     }
 
     const customerId = parseInt(params.customerId);
@@ -32,7 +38,7 @@ export default async function NewRepairPage({ searchParams }: { searchParams: Se
     return (
         <div className="container mx-auto py-6">
             <h1 className="text-2xl font-bold mb-6">Create New Repair</h1>
-            <RepairForm selectedCustomer={customer} />
+            <RepairForm selectedCustomer={customer} initialSelectedProduct={product} />
         </div>
     );
 }

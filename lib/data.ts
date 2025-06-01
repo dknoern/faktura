@@ -320,6 +320,7 @@ export async function getRepairsForItem(productId: string) {
     try {
         await dbConnect();
         const repairs = await Repair.find({ itemId: productId });
+        console.log("repairs", repairs);
         return repairs;
     } catch (error) {
         console.error('Error fetching outs:', error);
@@ -354,6 +355,17 @@ export async function fetchRepairByNumber(repairNumber: string) {
         await dbConnect();
         const repair = await Repair.findOne({ repairNumber });
 
+        return repair ? JSON.parse(JSON.stringify(repair)) : null;
+    } catch (error) {
+        console.error("Error fetching repair:", error);
+        throw error;
+    }
+}
+
+export async function fetchRepairById(id: string) {
+    try {
+        await dbConnect();
+        const repair = await Repair.findOne({ _id: id });
         return repair ? JSON.parse(JSON.stringify(repair)) : null;
     } catch (error) {
         console.error("Error fetching repair:", error);

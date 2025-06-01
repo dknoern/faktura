@@ -19,7 +19,7 @@ export default async function EditRepairPage(props: { params: Promise<{ repairNu
         <h2 className="text-2xl font-bold tracking-tight pl-1.5">Edit Repair</h2>
       </div>
       <div className="bg-white p-6 rounded-lg shadow">
-        <RepairForm repair={repair} />
+        <RepairForm repair={repair} initialSelectedProduct={null} />
       </div>
     </div>
   );

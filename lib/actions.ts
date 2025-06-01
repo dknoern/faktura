@@ -2,7 +2,9 @@
 
 import { Repair } from "./models/repair";
 import { Return } from "./models/return";
+import { productModel } from "./models/product";
 import dbConnect from "./dbConnect";
+import { getShortUserFromToken } from "./auth-utils";
 
 
 export type State = {
@@ -20,31 +22,65 @@ export type State = {
 export async function createRepair(formData: FormData) {
   try {
     await dbConnect();
-    
+
     // Handle repair cost - convert to number only if it has a value
     const repairCostStr = formData.get("repairCost") as string;
     const repairCost = repairCostStr && repairCostStr.trim() !== '' ? 
       parseFloat(repairCostStr) : undefined;
-    
+
+    const productId = formData.get("selectedProductId");
+    const customerId = formData.get("selectedCustomerId");
+
     const repair = new Repair({
       repairNumber: formData.get("repairNumber"),
       itemNumber: formData.get("itemNumber"),
       description: formData.get("description"),
-      dateOut: formData.get("dateOut") || null,
+      dateOut: new Date(),
       customerApprovedDate: formData.get("customerApprovedDate") || null,
       returnDate: formData.get("returnDate") || null,
       customerFirstName: formData.get("customerFirstName"),
       customerLastName: formData.get("customerLastName"),
       vendor: formData.get("vendor"),
       repairCost: repairCost,
-      repairIssues: formData.get("repairIssues") || '',
-      repairNotes: formData.get("repairNotes") || '',
+      repairIssues: formData.get("repairIssues"),
+      repairNotes: formData.get("repairNotes"),
       warrantyService: formData.get("warrantyService") === 'true',
-      email: formData.get("email") || '',
-      phone: formData.get("phone") || ''
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      itemId: productId,
+      customerId: customerId,
     });
 
+    console.log("creating this repair", repair);
+
     await repair.save();
+
+    // update product, set status to "In Repair", also add history item with date, and action= "repair"
+
+    const user = await getShortUserFromToken();
+
+    if (productId != null && productId != '') {
+      await productModel.findOneAndUpdate({
+        _id: productId,
+        status: { $ne: "Repair" }
+      }, {
+        "$push": {
+          "history": {
+            user: user,
+            date: Date.now(),
+            action: "in repair",
+            refDoc: repair._id
+          }
+        },
+        "$set": {
+          "status": "Repair",
+          "lastUpdated": new Date()
+        }
+      }, {
+        upsert: false, useFindAndModify: false
+      });
+    }
+
     return { success: true };
   } catch (error) {
     console.error("Error creating repair:", error);

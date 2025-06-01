@@ -9,9 +9,10 @@ type Customer = z.infer<typeof customerSchema>
 
 interface ProductHeaderProps {
     id: string;
+    productStatus: string;
 }
 
-export function ProductHeader({ id }: ProductHeaderProps) {
+export function ProductHeader({ id, productStatus }: ProductHeaderProps) {
     const [customers, setCustomers] = useState<Customer[]>([])
     const [pagination, setPagination] = useState({
         total: 0,
@@ -52,6 +53,7 @@ export function ProductHeader({ id }: ProductHeaderProps) {
                 onUploadComplete={() => window.location.reload()} 
                 customers={customers}
                 pagination={pagination}
+                productStatus={productStatus}
             />
         </div>
     );

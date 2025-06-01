@@ -1,4 +1,4 @@
-import { fetchRepairByNumber, fetchDefaultTenant } from "@/lib/data";
+import { fetchDefaultTenant, fetchRepairById } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { ViewRepair } from "@/components/repairs/view";
 
@@ -8,7 +8,7 @@ export default async function ViewRepairPage(props: { params: Promise<{ repairNu
     const repairNumber = params.repairNumber;
 
     const [repair, tenant] = await Promise.all([
-        fetchRepairByNumber(repairNumber),
+        fetchRepairById(repairNumber),
         fetchDefaultTenant()
     ]);
 

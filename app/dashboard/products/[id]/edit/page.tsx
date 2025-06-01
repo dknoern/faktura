@@ -19,7 +19,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     }
   return (
     <div className="container mx-auto py-1">
-      <ProductHeader id={id} />
+      <ProductHeader id={id} productStatus={product.status} />
 
       <div className="space-y-8">
         <ProductEditForm 

@@ -33,6 +33,7 @@ import { Card, CardContent, CardFooter } from "../ui/card"
 import Link from "next/link"
 import { Table, TableHeader, TableRow, TableBody, TableCell } from "../ui/table"
 import { productSchema } from "../../lib/models/product"
+import { toast } from "react-hot-toast"
 
 
 export default function ProductEditForm({ product, repairs }: { product: z.infer<typeof productSchema>, repairs: Array<{ _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }> }) {
@@ -107,8 +108,15 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
             });
             
             if (!response.ok) {
-                throw new Error('Failed to save product');
+                const errorData = await response.json();
+                const errorMessage = errorData.error || 'Failed to save product';
+                toast.error(errorMessage);
+                setSubmitError(errorMessage);
+                return;
             }
+            
+            // Show success toast
+            toast.success(`Product ${product ? 'updated' : 'created'} successfully!`);
             
             //const savedProduct = await response.json();
             
@@ -119,7 +127,9 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
         } catch (error) {
             console.error('Error saving product:', error);
             // On failure, stay on the current page and show error
-            setSubmitError('Failed to save product. Please try again.');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to save product. Please try again.';
+            toast.error(errorMessage);
+            setSubmitError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -279,8 +289,16 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                     <FormItem>
                                         <FormLabel>Item Number <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="" {...field} value={field.value || ""} />
+                                            <Input 
+                                                placeholder="" 
+                                                {...field} 
+                                                value={field.value || ""} 
+                                                readOnly={!isNewProduct}
+                                                disabled={!isNewProduct}
+                                                className={!isNewProduct ? "cursor-not-allowed" : ""}
+                                            />
                                         </FormControl>
+
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -683,16 +701,16 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                             <Table>
                                                 <TableHeader>
                                                     <TableRow>
+                                                    <TableCell>Date</TableCell>
                                                         <TableCell>User</TableCell>
-                                                        <TableCell>Date</TableCell>
-                                                        <TableCell>Action</TableCell>
+                                                        <TableCell>Activity</TableCell>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {(product.history || []).map((historyEvent) => (
-                                                        <TableRow key={historyEvent._id}>
+                                                    {(product.history || []).map((historyEvent, index) => (
+                                                        <TableRow key={index}>
+                                                            <TableCell>{new Date(historyEvent.date).toISOString().split('T')[0]}</TableCell>
                                                             <TableCell className="font-medium">{historyEvent.user}</TableCell>
-                                                            <TableCell>{historyEvent.user}</TableCell>
                                                             <TableCell>{historyEvent.action}
                                                                 {historyEvent.action === "sold item" ? (
                                                                     <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/dashboard/invoices/${historyEvent.refDoc}/view`}>
@@ -734,7 +752,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                 <TableBody>
                                                     {repairs.map((repair: { _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }) => (
                                                         <TableRow key={repair._id}>
-                                                            <TableCell className="font-medium">{repair.returnDate ? new Date(repair.dateOut).toISOString().split('T')[0] : ''}</TableCell>
+                                                            <TableCell className="font-medium">{repair.dateOut ? new Date(repair.dateOut).toISOString().split('T')[0] : ''}</TableCell>
                                                             <TableCell>{repair.returnDate ? new Date(repair.returnDate).toISOString().split('T')[0] : ''}</TableCell>
                                                             <TableCell>{repair.repairNotes}</TableCell>
                                                             <TableCell>{repair.vendor}</TableCell>

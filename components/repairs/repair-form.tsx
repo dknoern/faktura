@@ -46,15 +46,25 @@ interface RepairFormProps {
     phone?: string;
     company?: string;
   } | null;
+
+  initialSelectedProduct: Product | null;
 }
 
-export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
+export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }: RepairFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [customerApproved, setCustomerApproved] = useState(!!repair?.customerApprovedDate);
   const [warrantyService, setWarrantyService] = useState(repair?.warrantyService || false);
+
+  const handleProductSelect = (product: Product) => {
+    setSelectedProduct(product);
+  };
+
+  if (initialSelectedProduct !== null && selectedProduct === null) {
+    setSelectedProduct(initialSelectedProduct);
+  }
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
@@ -63,13 +73,21 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
       if (!customerApproved) {
         formData.set('customerApprovedDate', '');
       }
-      
+
       // Set warranty service value
       formData.set('warrantyService', warrantyService ? 'true' : 'false');
-      
+
       if (repair) {
         await updateRepair(repair.repairNumber, formData);
-      } else {
+      } else if (selectedProduct) {
+        // add hidden form elements for productId and customerId
+        formData.set('productId', selectedProduct?._id || initialSelectedProduct?._id || '');
+
+        if (selectedCustomer) {
+          const customerId = selectedCustomer._id;
+          formData.set('customerId', customerId.toString());
+        }
+
         await createRepair(formData);
       }
       router.push("/dashboard/repairs");
@@ -81,19 +99,29 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
     }
   };
 
-  const handleProductSelect = (product: Product) => {
-    setSelectedProduct(product);
-  };
-
   return (
+
     <form action={handleSubmit} className="space-y-4">
+
+      {/* Hidden form elements for product and customer IDs */}
+      <input 
+        type="hidden" 
+        name="selectedProductId" 
+        defaultValue={selectedProduct?._id || initialSelectedProduct?._id || ''} 
+      />
+      <input 
+        type="hidden" 
+        name="selectedCustomerId" 
+        defaultValue={selectedCustomer?._id.toString() || ''} 
+      />
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="repairNumber">Repair No *</Label>
           <Input
             id="repairNumber"
             name="repairNumber"
-            defaultValue={repair?.repairNumber}
+            defaultValue={initialSelectedProduct?.itemNumber || repair?.repairNumber}
             required
           />
         </div>
@@ -112,45 +140,53 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
         <Input
           id="dateOut"
           name="dateOut"
-          type="date"
-          defaultValue={repair?.dateOut?.split("T")[0]}
+          type="text"
+          defaultValue={repair?.dateOut?.split("T")[0] || new Date().toISOString().split("T")[0]}
+          readOnly 
+          className="cursor-not-allowed bg-gray-100"
         />
       </div>
 
       <div className="flex items-center space-x-2 py-2">
-        <Checkbox 
-          id="customerApproved" 
+        <Checkbox
+          id="customerApproved"
           checked={customerApproved}
-          onCheckedChange={(checked) => setCustomerApproved(checked as boolean)}
+          onCheckedChange={(checked) => {
+            setCustomerApproved(checked as boolean);
+            if (checked && repair && !repair?.customerApprovedDate) {
+              repair.customerApprovedDate = new Date().toISOString();
+            }
+          }}
         />
         <Label htmlFor="customerApproved" className="cursor-pointer">Customer Approved</Label>
       </div>
 
-      {customerApproved && (
-        <div className="space-y-2">
+      <div className="space-y-2">
           <Label htmlFor="customerApprovedDate">Customer Approved Date</Label>
           <Input
             id="customerApprovedDate"
             name="customerApprovedDate"
-            type="date"
-            defaultValue={repair?.customerApprovedDate?.split("T")[0]}
+            defaultValue={repair?.customerApprovedDate?.split("T")[0] || ""}
+            type="text"
+            readOnly
+            className="cursor-not-allowed bg-gray-100"
           />
         </div>
-      )}
 
       <div className="space-y-2">
         <Label htmlFor="returnDate">Return Date</Label>
         <Input
           id="returnDate"
           name="returnDate"
-          type="date"
-          defaultValue={repair?.returnDate?.split("T")[0]}
+          type="text"
+          readOnly
+          className="cursor-not-allowed bg-gray-100"
         />
       </div>
 
       <div className="flex items-center space-x-2 py-2">
-        <Checkbox 
-          id="warrantyService" 
+        <Checkbox
+          id="warrantyService"
           checked={warrantyService}
           onCheckedChange={(checked) => setWarrantyService(checked as boolean)}
           name="warrantyService"
@@ -179,8 +215,8 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
               readOnly
               className="rounded-r-none"
             />
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={() => setIsProductModalOpen(true)}
               className="rounded-l-none"
             >
@@ -289,5 +325,6 @@ export function RepairForm({ repair, selectedCustomer }: RepairFormProps) {
         modalTitle="Select Available Product"
       />
     </form>
+    
   );
 } 

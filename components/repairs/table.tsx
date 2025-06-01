@@ -25,6 +25,7 @@ interface PaginationProps {
 }
 
 interface Repair {
+    _id: string;
     repairNumber: string;
     itemNumber: string;
     description: string;
@@ -143,9 +144,9 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                 <TableBody>
                     {repairsList.map((repair: Repair) => (
                         <TableRow 
-                            key={repair.repairNumber}
+                            key={repair._id}
                             className="cursor-pointer hover:bg-gray-50"
-                            onClick={() => handleRowClick(repair.repairNumber)}
+                            onClick={() => handleRowClick(repair._id)}
                         >
                             <TableCell>{repair.repairNumber}</TableCell>
                             <TableCell>{repair.itemNumber}</TableCell>
