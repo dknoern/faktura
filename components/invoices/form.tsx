@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { LineItems, LineItem } from "./line-items"
-import { createInvoice, updateInvoice } from "@/lib/invoiceActions"
+import { upsertInvoice } from "@/lib/invoiceActions"
 
 const formatDateTime = (input: string) => {
   const dateObj = new Date(input);
@@ -147,7 +147,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
   }, [formData.lineItems, formData.shipping, formData.tax])
 
   // Require that all line items have a description and amount before allowing save
-  const allItemsValid = formData.lineItems.length > 0 && formData.lineItems.every(item => item.name.trim() !== "" && item.amount > 0);
+  const allItemsValid = formData.lineItems.length > 0 && formData.lineItems.every(item => item.name.trim() !== "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -159,13 +159,8 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
     try {
       let result;
       
-      if (formData._id) {
-        // Update existing invoice
-        result = await updateInvoice(formData._id, formData)
-      } else {
-        // Create new invoice
-        result = await createInvoice(formData)
-      }
+      // Use upsertInvoice for both create and update
+      result = await upsertInvoice(formData, formData._id)
       
       if (!result.success) {
         throw new Error(result.error || "Failed to save invoice")

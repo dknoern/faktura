@@ -5,6 +5,9 @@ import dbConnect from "./dbConnect";
 import { Invoice } from "./models/invoice";
 import { Counter } from "./models/counter";
 import { calcTax } from "./utils/tax";
+import { updateProductHistory } from "./utils/product-history";
+import { getShortUserFromToken } from "./auth-utils";
+import { format } from "date-fns";
 
 export interface LineItem {
   productId?: string;
@@ -56,69 +59,103 @@ export interface InvoiceData {
   status?: string;
 }
 
-export async function createInvoice(data: InvoiceData) {
+export async function upsertInvoice(data: InvoiceData, id?: number) {
   try {
     await dbConnect();
     
-    // Generate a new invoice number using Counter
-    const newInvoiceNumber = await Counter.findByIdAndUpdate(
-      { _id: 'invoiceNumber' },
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true }
-    );
+    let invoiceId: number;
+    let invoiceData: any;
     
-    // Ensure date is a Date object and add the ID
-    const invoiceData = {
-      ...data,
-      _id: newInvoiceNumber.seq,
-      date: new Date(data.date),
-      // Generate search field for better search functionality
-      search: `${data.customerFirstName} ${data.customerLastName} ${data.invoiceNo || ''}`
-    };
+    // Check if we're updating an existing invoice or creating a new one
+    const isUpdate = id !== undefined;
     
-    // Create the invoice
-    const invoice = new Invoice(invoiceData);
+    if (isUpdate) {
+      // Update existing invoice
+      invoiceId = id;
+      invoiceData = {
+        ...data,
+        date: new Date(data.date)
+      };
+    } else {
+      // Create new invoice
+      // Generate a new invoice number using Counter
+      const newInvoiceNumber = await Counter.findByIdAndUpdate(
+        { _id: 'invoiceNumber' },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+      
+      invoiceId = newInvoiceNumber.seq;
+      invoiceData = {
+        ...data,
+        _id: invoiceId,
+        date: new Date(data.date)
+      };
+    }
+    
+    // Calculate tax
+    const calculatedTax = await calcTax(invoiceData as any);
+    invoiceData.tax = calculatedTax;
+    invoiceData.total = (invoiceData.subtotal || 0) + (invoiceData.tax || 0) + (invoiceData.shipping || 0);
+    
+    // Update item status to sold, but only if NOT Partner and NOT Estimate
+    if (invoiceData.invoiceType !== "Partner" && invoiceData.invoiceType !== "Estimate") {
+      let itemStatus = "Sold";
+      let itemAction = "sold item";
 
-    // calculate tax
-    const calculatedTax = await calcTax(invoice as any);
-    invoice.tax = calculatedTax;
-    invoice.total = (invoice.subtotal || 0) + (invoice.tax || 0) + (invoice.shipping || 0);  
+      if ("Memo" === invoiceData.invoiceType) {
+        itemStatus = "Memo";
+        itemAction = "item memo";
+      }
+
+      const user = await getShortUserFromToken();
+      // Use the invoice ID for product history
+      const invoiceIdString = invoiceData._id ? invoiceData._id.toString() : '';
+      updateProductHistory(invoiceData.lineItems, itemStatus, itemAction, user, invoiceIdString);
+    }
     
-    await invoice.save();
+    // Update search field
+    invoiceData.search = buildSearchField(invoiceData);
+    
+    if (isUpdate) {
+      // Update existing invoice
+      await Invoice.findByIdAndUpdate(id, invoiceData);
+    } else {
+      // Create new invoice
+      const invoice = new Invoice(invoiceData);
+      await invoice.save();
+    }
     
     revalidatePath('/dashboard/invoices');
-    // Return only the ID of the created invoice to avoid circular references
-    return { success: true, invoiceId: newInvoiceNumber.seq };
+    return { success: true, invoiceId };
   } catch (error) {
-    console.error("Error creating invoice:", error);
-    return { success: false, error: "Failed to create invoice" };
+    console.error(`Error ${id ? 'updating' : 'creating'} invoice:`, error);
+    return { 
+      success: false, 
+      error: `Failed to ${id ? 'update' : 'create'} invoice${id ? ': ' + (error instanceof Error ? error.message : String(error)) : ''}` 
+    };
   }
 }
 
-export async function updateInvoice(id: number, data: InvoiceData) {
-  try {
-    await dbConnect();
-    
-    // Ensure date is a Date object and update search field
-    const invoiceData = {
-      ...data,
-      date: new Date(data.date),
-      search: `${data.customerFirstName} ${data.customerLastName} ${data.invoiceNo || ''}`
-    };
-    
 
-    // calculate tax
-    const calculatedTax = await calcTax(invoiceData as any);
-    invoiceData.tax = calculatedTax;
-    invoiceData.total = (invoiceData.subtotal || 0) + (invoiceData.tax || 0) + (invoiceData.shipping || 0);  
-    
-    // Update the invoice
-    await Invoice.findByIdAndUpdate(id, invoiceData);
-    
-    revalidatePath('/dashboard/invoices');
-    return { success: true, invoiceId: id };
-  } catch (error) {
-    console.error("Error updating invoice:", error);
-    return { success: false, error: "Failed to update invoice: " + (error instanceof Error ? error.message : String(error)) };
+function buildSearchField(doc: InvoiceData){
+
+  var search = "";
+  if(doc._id != null){
+      search += doc._id.toString() + " ";
   }
+
+  const formattedDate = format(doc.date, 'yyyy-MM-dd');
+
+
+  search += doc.customerFirstName + " " + doc.customerLastName + " " + formattedDate + " ";
+
+  if (doc.lineItems != null) {
+      for (var i = 0; i < doc.lineItems.length; i++) {
+          if(doc.lineItems[i] != null){
+              search += " " + doc.lineItems[i].itemNumber + " " + doc.lineItems[i].name;
+          }
+      }
+  }
+  return search;
 }

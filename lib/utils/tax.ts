@@ -35,6 +35,9 @@ export async function calcTax(invoice: Invoice): Promise<number> {
   } else if (invoice.taxExempt) {
     console.log("Tax exempt, no tax");
     return 0;
+  }else if (invoice.methodOfSale == 'Ebay') {
+    console.log("ebay, no tax");
+    return 0;
   } else if (invoice.shipState === 'TX') {
     // Manual Texas tax calculation
     const totalTax = invoice.subtotal * 0.0825;
