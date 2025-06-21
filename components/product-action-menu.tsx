@@ -8,8 +8,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ImagePlus, FileText } from "lucide-react";
+import { ChevronDown, ImagePlus, FileText, Copy, Wrench } from "lucide-react";
 import { CustomerSelectModalWrapper } from "./customers/select-modal-wrapper";
+import { toast } from "react-hot-toast";
 
 interface ProductActionMenuProps {
     id: string;
@@ -93,6 +94,36 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
         // This ensures a complete page refresh and proper scroll behavior
         window.location.href = `/dashboard/repairs/new?customerId=${customer._id}&productId=${id}`;
     };
+
+    const handleCloneItem = async () => {
+        try {
+            // Fetch the current product data
+            const response = await fetch(`/api/products/${id}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch product data');
+            }
+            const productData = await response.json();
+            
+            // Clear out the fields we don't want to copy
+            const clonedData = {
+                ...productData,
+                id: undefined, // Will get a new ID when saved
+                seller: '', // Clear seller
+                serialNo: '', // Clear serial number
+                itemNumber: '', // Clear item number
+                status: 'In Stock',
+                cost: undefined // Clear cost as mentioned in the requirement
+            };
+            // Store the cloned data in sessionStorage to pass to the new product page
+            sessionStorage.setItem('clonedProductData', JSON.stringify(clonedData));
+            
+            // Navigate to new product page
+            window.location.href = '/dashboard/products/new?cloned=true';
+        } catch (error) {
+            console.error('Error cloning product:', error);
+            toast.error('Failed to clone item');
+        }
+    };
     
     return (
         <>
@@ -121,10 +152,14 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
                 )}
                 {productStatus != "Repair" && (
                 <DropdownMenuItem onSelect={() => setShowCustomerSelectModalForRepair(true)} className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
+                    <Wrench className="h-4 w-4" />
                     Repair
                 </DropdownMenuItem>                
                 )}
+                <DropdownMenuItem onSelect={handleCloneItem} className="flex items-center gap-2">
+                    <Copy className="h-4 w-4" />
+                    Clone Item
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
         {/* Hidden input for capturing images */}

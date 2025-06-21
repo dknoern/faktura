@@ -157,10 +157,9 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
     }
     
     try {
-      let result;
       
       // Use upsertInvoice for both create and update
-      result = await upsertInvoice(formData, formData._id)
+      const result = await upsertInvoice(formData, formData._id)
       
       if (!result.success) {
         throw new Error(result.error || "Failed to save invoice")
