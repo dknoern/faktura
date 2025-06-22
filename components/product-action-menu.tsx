@@ -393,7 +393,7 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
                     Create Invoice
                 </DropdownMenuItem>
                 )}
-                {productStatus != "Repair" && (
+                {productStatus != "Repair" && productStatus != "Sale Pending" && productStatus != "At Show" && productStatus != "Incoming" && (
                 <DropdownMenuItem onSelect={() => setShowCustomerSelectModalForRepair(true)} className="flex items-center gap-2">
                     <Wrench className="h-4 w-4" />
                     Repair
