@@ -9,7 +9,7 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ImagePlus, FileText, Copy, Wrench, Trash2 } from "lucide-react";
+import { ChevronDown, ImagePlus, FileText, Copy, Wrench, Trash2, Plane, Clock, ArrowDown, Unlock } from "lucide-react";
 import { CustomerSelectModalWrapper } from "./customers/select-modal-wrapper";
 import { toast } from "react-hot-toast";
 import {
@@ -154,6 +154,186 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
         }
     };
 
+    const handleReturnToStock = async () => {
+        if (!productData) {
+            toast.error('Product data not loaded');
+            return;
+        }
+
+        try {
+            // Update only the status field
+            const updatedData = {
+                ...productData,
+                status: 'In Stock'
+            };
+
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update product status');
+            }
+
+            // Store success message in sessionStorage to show after reload
+            sessionStorage.setItem('statusUpdateSuccess', `Product ${productData.itemNumber} - ${productData.title} returned to stock`);
+            
+            // Reload the page to reflect the status change
+            window.location.reload();
+        } catch (error) {
+            console.error('Error updating product status:', error);
+            toast.error('Failed to update product status');
+        }
+    };
+
+    const handleOutToShow = async () => {
+        if (!productData) {
+            toast.error('Product data not loaded');
+            return;
+        }
+
+        try {
+            // Update only the status field
+            const updatedData = {
+                ...productData,
+                status: 'At Show'
+            };
+
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update product status');
+            }
+
+            // Store success message in sessionStorage to show after reload
+            sessionStorage.setItem('statusUpdateSuccess', `Product ${productData.itemNumber} - ${productData.title} sent to show`);
+            
+            // Reload the page to reflect the status change
+            window.location.reload();
+        } catch (error) {
+            console.error('Error updating product status:', error);
+            toast.error('Failed to update product status');
+        }
+    };
+
+    const handleHoldForSalePending = async () => {
+        if (!productData) {
+            toast.error('Product data not loaded');
+            return;
+        }
+
+        try {
+            // Update only the status field
+            const updatedData = {
+                ...productData,
+                status: 'Sale Pending'
+            };
+
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update product status');
+            }
+
+            // Store success message in sessionStorage to show after reload
+            sessionStorage.setItem('statusUpdateSuccess', `Product ${productData.itemNumber} - ${productData.title} held for sale pending`);
+            
+            // Reload the page to reflect the status change
+            window.location.reload();
+        } catch (error) {
+            console.error('Error updating product status:', error);
+            toast.error('Failed to update product status');
+        }
+    };
+
+    const handleIncoming = async () => {
+        if (!productData) {
+            toast.error('Product data not loaded');
+            return;
+        }
+
+        try {
+            // Update only the status field
+            const updatedData = {
+                ...productData,
+                status: 'Incoming'
+            };
+
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update product status');
+            }
+
+            // Store success message in sessionStorage to show after reload
+            sessionStorage.setItem('statusUpdateSuccess', `Product ${productData.itemNumber} - ${productData.title} marked as incoming`);
+            
+            // Reload the page to reflect the status change
+            window.location.reload();
+        } catch (error) {
+            console.error('Error updating product status:', error);
+            toast.error('Failed to update product status');
+        }
+    };
+
+    const handleReleaseFromSalePending = async () => {
+        if (!productData) {
+            toast.error('Product data not loaded');
+            return;
+        }
+
+        try {
+            // Update only the status field
+            const updatedData = {
+                ...productData,
+                status: 'In Stock'
+            };
+
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update product status');
+            }
+
+            // Store success message in sessionStorage to show after reload
+            sessionStorage.setItem('statusUpdateSuccess', `Product ${productData.itemNumber} - ${productData.title} released from sale pending`);
+            
+            // Reload the page to reflect the status change
+            window.location.reload();
+        } catch (error) {
+            console.error('Error updating product status:', error);
+            toast.error('Failed to update product status');
+        }
+    };
+
     const handleDeleteClick = () => {
         setShowDeleteDialog(true);
     };
@@ -223,6 +403,36 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
                     <Copy className="h-4 w-4" />
                     Clone Item
                 </DropdownMenuItem>
+                {productStatus === "In Stock" && (
+                <DropdownMenuItem onSelect={handleOutToShow} className="flex items-center gap-2">
+                    <Plane className="h-4 w-4" />
+                    Out to Show
+                </DropdownMenuItem>
+                )}
+                {productStatus === "In Stock" && (
+                <DropdownMenuItem onSelect={handleHoldForSalePending} className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Hold for Sale Pending
+                </DropdownMenuItem>
+                )}
+                {productStatus === "In Stock" && (
+                <DropdownMenuItem onSelect={handleIncoming} className="flex items-center gap-2">
+                    <ArrowDown className="h-4 w-4" />
+                    Incoming
+                </DropdownMenuItem>
+                )}
+                {productStatus === "At Show" && (
+                <DropdownMenuItem onSelect={handleReturnToStock} className="flex items-center gap-2">
+                    <Plane className="h-4 w-4" />
+                    Return to Stock
+                </DropdownMenuItem>
+                )}
+                {productStatus === "Sale Pending" && (
+                <DropdownMenuItem onSelect={handleReleaseFromSalePending} className="flex items-center gap-2">
+                    <Unlock className="h-4 w-4" />
+                    Release from Sale Pending
+                </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                     onSelect={handleDeleteClick} 

@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { productModel } from '@/lib/models/product';
 import mongoose from 'mongoose';
-
-
-
+import { getShortUserFromToken } from '@/lib/auth-utils';
 
 export async function GET(
   request: NextRequest,
@@ -45,6 +43,15 @@ export async function PUT(
     const _id = new mongoose.Types.ObjectId(id);
     const data = await request.json();
     
+    // Get the current product to check if status is changing
+    const currentProduct = await productModel.findById(_id);
+    if (!currentProduct) {
+      return NextResponse.json(
+        { error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+    
     // Update the lastUpdated timestamp
     data.lastUpdated = new Date();
     
@@ -59,6 +66,47 @@ export async function PUT(
     
     // Make sure the id field matches the MongoDB _id
     data.id = id;
+
+
+    // Check if status is changing to "At Show" or "In Stock" and add history entry
+    if (data.status && data.status !== currentProduct.status) {
+      const username = await getShortUserFromToken();
+      if (data.status === 'At Show' || data.status === 'In Stock' || data.status === 'Sale Pending' || data.status === 'Incoming') {
+        let action = '';
+        switch (data.status) {
+          case 'At Show':
+            action = 'Sent to show';
+            break;
+          case 'In Stock':
+            // Check if coming from Sale Pending status
+            if (currentProduct.status === 'Sale Pending') {
+              action = 'Released from sale pending';
+            } else {
+              action = 'Returned to stock';
+            }
+            break;
+          case 'Sale Pending':
+            action = 'Item held for sale pending';
+            break;
+          case 'Incoming':
+            action = 'Marked as incoming';
+            break;
+        }
+        
+        const historyEntry = {
+          user: username,
+          date: new Date(),
+          action: action,
+          refDoc: null
+        };
+        
+        // Add history entry to the data
+        if (!data.history) {
+          data.history = currentProduct.history || [];
+        }
+        data.history.push(historyEntry);
+      }
+    }
     
     const updatedProduct = await productModel.findOneAndUpdate(
       { _id },
