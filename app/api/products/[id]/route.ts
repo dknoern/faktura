@@ -92,16 +92,24 @@ export async function DELETE(
     const id = (await params).id;
     const _id = new mongoose.Types.ObjectId(id);
     
-    const deletedProduct = await productModel.findOneAndDelete({ _id });
+    // Instead of deleting, update the status to "Deleted"
+    const updatedProduct = await productModel.findOneAndUpdate(
+      { _id },
+      { 
+        status: 'Deleted',
+        lastUpdated: new Date()
+      },
+      { new: true, runValidators: true }
+    );
     
-    if (!deletedProduct) {
+    if (!updatedProduct) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
     
-    return NextResponse.json({ message: 'Product deleted successfully' });
+    return NextResponse.json({ message: 'Product marked as deleted successfully', product: updatedProduct });
   } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json(

@@ -1,16 +1,25 @@
 "use client"
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ImagePlus, FileText, Copy, Wrench } from "lucide-react";
+import { ChevronDown, ImagePlus, FileText, Copy, Wrench, Trash2 } from "lucide-react";
 import { CustomerSelectModalWrapper } from "./customers/select-modal-wrapper";
 import { toast } from "react-hot-toast";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ProductActionMenuProps {
     id: string;
@@ -29,7 +38,27 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
     const [isUploading, setIsUploading] = useState(false);
     const [showCustomerSelectModal, setShowCustomerSelectModal] = useState(false);
     const [showCustomerSelectModalForRepair, setShowCustomerSelectModalForRepair] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [productData, setProductData] = useState<any>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
+
+    // Fetch product data when component mounts
+    useEffect(() => {
+        const fetchProductData = async () => {
+            try {
+                const response = await fetch(`/api/products/${id}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setProductData(data);
+                }
+            } catch (error) {
+                console.error('Error fetching product data:', error);
+            }
+        };
+        
+        fetchProductData();
+    }, [id]);
     
     const handleFileUpload = async (file: File) => {
         try {
@@ -124,10 +153,44 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
             toast.error('Failed to clone item');
         }
     };
+
+    const handleDeleteClick = () => {
+        setShowDeleteDialog(true);
+    };
+
+    const handleDeleteCancel = () => {
+        // Simple solution: just reload the page to reset any state issues
+        window.location.reload();
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!productData) return;
+        
+        setIsDeleting(true);
+        try {
+            const response = await fetch(`/api/products/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete product');
+            }
+
+            // Store success message in sessionStorage to show after navigation
+            sessionStorage.setItem('deleteSuccess', `Product ${productData.itemNumber} - ${productData.title} deleted successfully`);
+            
+            // Navigate to product list
+            window.location.href = '/dashboard/products';
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            toast.error('Failed to delete product');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
     
     return (
         <>
-        <div>status: {productStatus}</div>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button 
@@ -160,8 +223,17 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
                     <Copy className="h-4 w-4" />
                     Clone Item
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                    onSelect={handleDeleteClick} 
+                    className="flex items-center gap-2"
+                >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+        
         {/* Hidden input for capturing images */}
         <input
             type="file"
@@ -179,6 +251,7 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
             }}
             disabled={isUploading}
         />
+        
         {/* Customer selection modal for invoice creation */}
         <CustomerSelectModalWrapper
             isOpen={showCustomerSelectModal}
@@ -187,14 +260,47 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
             customers={customers}
             pagination={pagination}
         />
+        
         {/* Customer selection modal for repair creation */}
         <CustomerSelectModalWrapper
             isOpen={showCustomerSelectModalForRepair}
-            onClose={() => setShowCustomerSelectModalForRepair(false)}
+            onClose={() => window.location.reload()}
             onSelect={handleCustomerSelectForRepair}
             customers={customers}
             pagination={pagination}
         />
+
+        {/* Delete confirmation dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={(open) => !open && handleDeleteCancel()}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Confirm Delete</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to delete{' '}
+                        <strong>
+                            {productData?.itemNumber} - {productData?.title}
+                        </strong>
+                        ?
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button
+                        variant="outline"
+                        onClick={handleDeleteCancel}
+                        disabled={isDeleting}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        onClick={handleDeleteConfirm}
+                        disabled={isDeleting}
+                    >
+                        {isDeleting ? 'Deleting...' : 'Delete'}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
         </>
     );
 }

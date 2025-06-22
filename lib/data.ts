@@ -47,9 +47,15 @@ export async function fetchProducts(page = 1, limit = 10, search = '') {
         await dbConnect();
         const skip = (page - 1) * limit;
 
-        let query = {};
+        let query: any = {
+            status: { $ne: 'Deleted' } // Exclude items with status "Deleted"
+        };
+        
         if (search) {
-            query = { search: { $regex: search, $options: 'i' } };
+            query = { 
+                search: { $regex: search, $options: 'i' },
+                status: { $ne: 'Deleted' } // Also exclude deleted items when searching
+            };
         }
 
         const products = await productModel.find(query)
