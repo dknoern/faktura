@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Loader2 } from "lucide-react"
 import { searchInventoryItems } from "@/app/actions/inventory"
+import { Badge } from "../ui/badge"
 
 interface Product {
   _id: string
@@ -15,6 +16,7 @@ interface Product {
   sellingPrice?: number
   serialNo?: string
   longDesc?: string
+  status?: string
 }
 
 interface ProductSelectModalProps {
@@ -155,6 +157,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
                 <TableHead>Item Number</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Price</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -188,6 +191,16 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
                     <TableCell>{product.itemNumber}</TableCell>
                     <TableCell>{product.title}</TableCell>
                     <TableCell>${product.sellingPrice?.toFixed(2) || "0.00"}</TableCell>
+                    <TableCell>{product.status}</TableCell>
+
+
+                    <TableCell style={{ whiteSpace: 'nowrap' }}>
+                                <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : product.status === 'Incoming' ? 'teal' : product.status === 'Sale Pending' ? 'red' : 'orange' }}>
+                                    {product.status}
+                                </Badge>
+                            </TableCell>
+
+
                   </TableRow>
                 ))
               )}
