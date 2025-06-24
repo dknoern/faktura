@@ -3,17 +3,17 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SignaturePad } from "@/components/ui/signature-pad";
+import { format } from "date-fns";
 
 interface OutItem {
     _id?: string;
-    itemNumber: string;
     name: string;
     date: string;
     sentTo: string;
     description: string;
-    sentBy: string;
+    user: string;
     comments: string;
     customerFirstName: string;
     customerLastName: string;
@@ -25,14 +25,13 @@ interface OutItem {
 
 export function OutForm({ out }: { out?: OutItem }) {
     const router = useRouter();
-    const [formData, setFormData] = useState<OutItem>(
-        out || {
-            itemNumber: "",
+    const [formData, setFormData] = useState<OutItem>(() => {
+        const defaultData = {
             name: "",
             date: new Date().toISOString().split("T")[0],
             sentTo: "",
             description: "",
-            sentBy: "",
+            user: "",
             comments: "",
             customerFirstName: "",
             customerLastName: "",
@@ -40,8 +39,40 @@ export function OutForm({ out }: { out?: OutItem }) {
             signature: "",
             signatureDate: "",
             signatureUser: ""
+        };
+
+        if (out) {
+            return {
+                ...defaultData,
+                ...out,
+                // Ensure optional fields are strings, not undefined
+                signature: out.signature || "",
+                signatureDate: out.signatureDate || "",
+                signatureUser: out.signatureUser || ""
+            };
         }
-    );
+
+        return defaultData;
+    });
+
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            // Only set default user if user is empty (new item)
+            if (formData.user || formData._id) return;
+            
+            try {
+                const response = await fetch("/api/user");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch current user");
+                }
+                const data = await response.json();
+                setFormData(prev => ({ ...prev, user: data.username }));
+            } catch (error) {
+                console.error("Error fetching current user:", error);
+            }
+        };
+        fetchCurrentUser();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,14 +107,6 @@ export function OutForm({ out }: { out?: OutItem }) {
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium mb-1">Item Number</label>
-                    <Input
-                        value={formData.itemNumber}
-                        onChange={(e) => setFormData({ ...formData, itemNumber: e.target.value })}
-                        required
-                    />
-                </div>
-                <div>
                     <label className="block text-sm font-medium mb-1">Sent To</label>
                     <Input
                         value={formData.sentTo}
@@ -94,15 +117,17 @@ export function OutForm({ out }: { out?: OutItem }) {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1">Date</label>
-                    <Input
-                        type="date"
-                        value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        required
-                    />
-                </div>
+                {formData._id && (
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Date</label>
+                        <Input
+                            type="text"
+                            value={formData.date ? format(new Date(formData.date), "yyyy-MM-dd") : ""}
+                            readOnly
+                            className="bg-gray-50 cursor-not-allowed"
+                        />
+                    </div>
+                )}
                 <div>
                     <label className="block text-sm font-medium mb-1">Description</label>
                     <Input
@@ -117,17 +142,16 @@ export function OutForm({ out }: { out?: OutItem }) {
                 <div>
                     <label className="block text-sm font-medium mb-1">Sent By</label>
                     <Input
-                        value={formData.sentBy}
-                        onChange={(e) => setFormData({ ...formData, sentBy: e.target.value })}
-                        required
+                        value={formData.user}
+                        onChange={(e) => setFormData({ ...formData, user: e.target.value })}
+                        
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1">Comments</label>
+                    <label className="block text-sm font-medium mb-1">Note/Comment</label>
                     <Input
                         value={formData.comments}
                         onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
-                        required
                     />
                 </div>
             </div>
@@ -153,7 +177,7 @@ export function OutForm({ out }: { out?: OutItem }) {
                         ...formData,
                         signature,
                         signatureDate: new Date().toISOString(),
-                        signatureUser: formData.sentBy || "User"
+                        signatureUser: formData.user || "User"
                     })}
                     label="eSignature (optional)"
                 />

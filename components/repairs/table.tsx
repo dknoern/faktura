@@ -113,9 +113,8 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
     };
 
     // Filter repairs based on selected filter type
-    const filteredRepairs = filterType === 'outstanding' 
-        ? repairsList.filter(repair => !repair.returnDate)
-        : repairsList;
+    // Filtering is now handled server-side, so we use all repairs
+    const filteredRepairs = repairsList;
 
     return (
         <div>

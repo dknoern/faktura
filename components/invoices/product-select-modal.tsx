@@ -36,15 +36,17 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
   const [error, setError] = useState<string | null>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (searchTerm?: string) => {
     try {
       setLoading(true)
       setError(null)
       
+      const searchValue = searchTerm !== undefined ? searchTerm : search
+      
       // Use either the custom search function or the default one
       const result = customSearchFunction 
-        ? await customSearchFunction(search)
-        : await searchInventoryItems(search)
+        ? await customSearchFunction(searchValue)
+        : await searchInventoryItems(searchValue)
       
       if (result.success && result.data) {
         setProducts(result.data)
@@ -107,15 +109,15 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
     // Set a new timeout to delay the search
     searchTimeoutRef.current = setTimeout(() => {
       setPage(1)
-      fetchProducts()
-    }, 300) // 300ms debounce delay
+      fetchProducts(value)
+    }, 150) // Reduced debounce delay for more responsive search
   }
   
   // Handle form submit
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setPage(1)
-    fetchProducts()
+    fetchProducts(search)
   }
 
   const handleProductSelect = (product: Product) => {
@@ -175,7 +177,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
                   <TableCell colSpan={4} className="text-center py-8">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <p>No products found</p>
-                      <Button variant="outline" size="sm" onClick={() => fetchProducts()}>
+                      <Button variant="outline" size="sm" onClick={() => fetchProducts(search)}>
                         Refresh
                       </Button>
                     </div>
@@ -191,16 +193,11 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
                     <TableCell>{product.itemNumber}</TableCell>
                     <TableCell>{product.title}</TableCell>
                     <TableCell>${product.sellingPrice?.toFixed(2) || "0.00"}</TableCell>
-                    <TableCell>{product.status}</TableCell>
-
-
-                    <TableCell style={{ whiteSpace: 'nowrap' }}>
+                    <TableCell>
                                 <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : product.status === 'Incoming' ? 'teal' : product.status === 'Sale Pending' ? 'red' : 'orange' }}>
                                     {product.status}
                                 </Badge>
                             </TableCell>
-
-
                   </TableRow>
                 ))
               )}

@@ -172,14 +172,21 @@ export async function fetchReturns(page = 1, limit = 10, search = '') {
 }
 
 
-export async function fetchRepairs(page = 1, limit = 10, search = '') {
+export async function fetchRepairs(page = 1, limit = 10, search = '', filter = 'outstanding') {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
 
-        let query = {};
+        let query: any = {};
+        
+        // Apply filter first
+        if (filter === 'outstanding') {
+            query.returnDate = { $eq: null };
+        }
+        // If filter is 'all', we don't add any filter condition
+        
         if (search) {
-            query = {
+            const searchConditions = {
                 $or: [
                     { repairNumber: { $regex: search, $options: 'i' } },
                     { itemNumber: { $regex: search, $options: 'i' } },
@@ -189,6 +196,18 @@ export async function fetchRepairs(page = 1, limit = 10, search = '') {
                     { vendor: { $regex: search, $options: 'i' } }
                 ]
             };
+            
+            // Combine filter and search conditions
+            if (filter === 'outstanding') {
+                query = {
+                    $and: [
+                        { returnDate: { $eq: null } },
+                        searchConditions
+                    ]
+                };
+            } else {
+                query = searchConditions;
+            }
         }
 
         const repairs = await Repair.find(query)

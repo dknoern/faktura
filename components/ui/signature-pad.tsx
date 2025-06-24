@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PenLine, Save, Trash2 } from "lucide-react";
@@ -43,8 +45,36 @@ export function SignaturePad({ value, onChange, label = "Signature" }: Signature
     }
   }, [isOpen, value]);
 
+  // Helper function to get correct coordinates accounting for canvas scaling
+  const getCoordinates = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return { x: 0, y: 0 };
+    
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    
+    let clientX, clientY;
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    
+    // Calculate the actual coordinates accounting for canvas scaling
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+    
+    return { x, y };
+  };
+
   // Handle drawing
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    
     if (!canvasRef.current) return;
     
     const canvas = canvasRef.current;
@@ -53,38 +83,22 @@ export function SignaturePad({ value, onChange, label = "Signature" }: Signature
     
     setIsDrawing(true);
     
-    // Get coordinates
-    let x, y;
-    if ('touches' in e) {
-      const rect = canvas.getBoundingClientRect();
-      x = e.touches[0].clientX - rect.left;
-      y = e.touches[0].clientY - rect.top;
-    } else {
-      x = e.nativeEvent.offsetX;
-      y = e.nativeEvent.offsetY;
-    }
+    const { x, y } = getCoordinates(e);
     
     context.beginPath();
     context.moveTo(x, y);
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    
     if (!isDrawing || !canvasRef.current) return;
     
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
     if (!context) return;
     
-    // Get coordinates
-    let x, y;
-    if ('touches' in e) {
-      const rect = canvas.getBoundingClientRect();
-      x = e.touches[0].clientX - rect.left;
-      y = e.touches[0].clientY - rect.top;
-    } else {
-      x = e.nativeEvent.offsetX;
-      y = e.nativeEvent.offsetY;
-    }
+    const { x, y } = getCoordinates(e);
     
     context.lineTo(x, y);
     context.stroke();
@@ -149,7 +163,10 @@ export function SignaturePad({ value, onChange, label = "Signature" }: Signature
               {hasSignature ? "Update Signature" : "Add Signature"}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md" title="Signature">
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Signature</DialogTitle>
+            </DialogHeader>
             <div className="mb-4">
               <p className="text-sm text-gray-500">
                 Sign using your finger, mouse, or stylus.
