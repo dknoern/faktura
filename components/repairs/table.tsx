@@ -16,6 +16,13 @@ import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
 import { CustomerSelectModalWrapper } from "../customers/select-modal-wrapper";
 import { PlusCircle } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface PaginationProps {
     total: number;
@@ -47,6 +54,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+    const [filterType, setFilterType] = useState(searchParams.get('filter') || 'outstanding');
 
     const handlePageChange = (newPage: number) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -75,6 +83,14 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
             router.push(`${pathname}?${params.toString()}`);
         }, 300); // 300ms debounce delay
     };
+
+    const handleFilterChange = (value: string) => {
+        setFilterType(value);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('filter', value);
+        params.set('page', '1'); // Reset to first page when filtering
+        router.push(`${pathname}?${params.toString()}`);
+    };
     
     // Cleanup timeout on unmount
     useEffect(() => {
@@ -96,16 +112,32 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
         router.push(`/dashboard/repairs/new?customerId=${customer._id}`);
     };
 
+    // Filter repairs based on selected filter type
+    const filteredRepairs = filterType === 'outstanding' 
+        ? repairsList.filter(repair => !repair.returnDate)
+        : repairsList;
+
     return (
         <div>
-            <div className="mb-4 flex justify-between items-center">
-                <Input
-                    type="text"
-                    placeholder="Search repairs..."
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    className="max-w-sm"
-                />
+            <div className="mb-4 flex justify-between items-center gap-4">
+                <div className="flex items-center gap-4">
+                    <Input
+                        type="text"
+                        placeholder="Search repairs..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        className="max-w-sm"
+                    />
+                    <Select value={filterType} onValueChange={handleFilterChange}>
+                        <SelectTrigger className="w-48">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="outstanding">Outstanding Repairs</SelectItem>
+                            <SelectItem value="all">All Repairs</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
                 <Button 
                     onClick={() => setIsCustomerModalOpen(true)}
                     className="ml-auto"
@@ -142,7 +174,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {repairsList.map((repair: Repair) => (
+                    {filteredRepairs.map((repair: Repair) => (
                         <TableRow 
                             key={repair._id}
                             className="cursor-pointer hover:bg-gray-50"
@@ -164,7 +196,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
 
             <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                    Showing {repairsList.length} of {pagination.total} repairs
+                    Showing {filteredRepairs.length} of {pagination.total} repairs
                 </div>
                 <div className="flex space-x-2">
                     <Button

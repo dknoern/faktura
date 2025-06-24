@@ -5,7 +5,7 @@ import { Return } from "./models/return";
 import { productModel } from "./models/product";
 import dbConnect from "./dbConnect";
 import { getShortUserFromToken } from "./auth-utils";
-
+import { format } from "date-fns";
 
 export type State = {
   errors?: {
@@ -18,6 +18,12 @@ export type State = {
   message?: string | null;
 };
 
+function formatDate(date: string | null) {
+  if (date == null) return "";
+  else {
+      return format(new Date(date), 'yyyy-MM-dd');
+  }
+}
 
 export async function createRepair(formData: FormData) {
   try {
@@ -50,6 +56,19 @@ export async function createRepair(formData: FormData) {
       itemId: productId,
       customerId: customerId,
     });
+
+    console.log('dateOut', repair.dateOut);
+    console.log('returnDate', repair.returnDate);
+    
+    repair.search = repair.repairNumber 
+    + " " + repair.itemNumber 
+    + " " + repair.description 
+    + " " + formatDate(repair.dateOut)
+    + " " + formatDate(repair.returnDate)
+    + " " + repair.customerFirstName 
+    + " " + repair.customerLastName 
+    + " " + repair.vendor;
+
 
     console.log("creating this repair", repair);
 
