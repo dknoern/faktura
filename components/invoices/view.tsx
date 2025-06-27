@@ -96,7 +96,7 @@ export function ViewInvoice({invoice, tenant, imageBaseUrl}:  {invoice: Invoice,
                     onClick={handleReturn}
                 >
                     <RotateCcw className="h-4 w-4" />
-                    Return
+                    Create Return
                 </Button>
             </div>
             
