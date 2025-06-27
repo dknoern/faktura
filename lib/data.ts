@@ -518,3 +518,14 @@ export async function fetchReturnById(id: number) {
         throw error;
     }
 }
+
+export async function fetchReturnByInvoiceId(invoiceId: string) {
+    try {
+        await dbConnect();
+        const returnItem = await Return.findOne({ invoiceId });
+        return returnItem ? JSON.parse(JSON.stringify(returnItem)) : null;
+    } catch (error) {
+        console.error("Error fetching return by invoice ID:", error);
+        throw error;
+    }
+}

@@ -1,17 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { Printer, Edit, Mail } from "lucide-react";
+import { Printer, Edit, Mail, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Invoice, Tenant, generateInvoiceHtml } from "@/lib/invoice-renderer";
+import { checkReturnByInvoiceId } from "@/lib/actions";
 
 export function ViewInvoice({invoice, tenant, imageBaseUrl}:  {invoice: Invoice, tenant: Tenant, imageBaseUrl: string}) {
 
     const router = useRouter();
     const [isEmailSending, setIsEmailSending] = useState(false);
     const [emailStatus, setEmailStatus] = useState<string | null>(null);
+
+    const [isCheckingReturn, setIsCheckingReturn] = useState(false);
+    
 
     
     // Function to handle printing
@@ -22,6 +26,11 @@ export function ViewInvoice({invoice, tenant, imageBaseUrl}:  {invoice: Invoice,
     // Function to navigate to edit page
     const handleEdit = () => {
         router.push(`/dashboard/invoices/${invoice._id}/edit`);
+    };
+    
+    // Function to handle return
+    const handleReturn = () => {
+        router.push(`/dashboard/returns/new?invoiceId=${invoice._id}`);
     };
     
     // Function to send email
@@ -59,7 +68,8 @@ export function ViewInvoice({invoice, tenant, imageBaseUrl}:  {invoice: Invoice,
     return (
         <div className="container mx-auto py-6 px-8 max-w-4xl">
             {/* Action Buttons */}
-            <div className="flex justify-end gap-4 mb-4 print:hidden">
+            <div className="flex justify-center gap-4 mt-6 print:hidden">
+
                 <Button 
                     variant="outline" 
                     className="flex items-center gap-2" 
@@ -84,6 +94,14 @@ export function ViewInvoice({invoice, tenant, imageBaseUrl}:  {invoice: Invoice,
                 >
                     <Mail className="h-4 w-4" />
                     {isEmailSending ? 'Sending...' : 'Email'}
+                </Button>
+                <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2" 
+                    onClick={handleReturn}
+                >
+                    <RotateCcw className="h-4 w-4" />
+                    Return
                 </Button>
             </div>
             
@@ -103,34 +121,8 @@ export function ViewInvoice({invoice, tenant, imageBaseUrl}:  {invoice: Invoice,
                 />
             </div>
             
-            {/* Action Buttons (Bottom) */}
-            <div className="flex justify-center gap-4 mt-6 print:hidden">
-                <Button 
-                    variant="outline" 
-                    className="flex items-center gap-2" 
-                    onClick={handlePrint}
-                >
-                    <Printer className="h-4 w-4" />
-                    Print
-                </Button>
-                <Button 
-                    variant="outline" 
-                    className="flex items-center gap-2" 
-                    onClick={handleEdit}
-                >
-                    <Edit className="h-4 w-4" />
-                    Edit
-                </Button>
-                <Button 
-                    variant="outline" 
-                    className="flex items-center gap-2" 
-                    onClick={handleEmail}
-                    disabled={isEmailSending}
-                >
-                    <Mail className="h-4 w-4" />
-                    {isEmailSending ? 'Sending...' : 'Email'}
-                </Button>
-            </div>
+
+
         </div>
     );
 }

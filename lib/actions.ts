@@ -6,6 +6,7 @@ import { productModel } from "./models/product";
 import dbConnect from "./dbConnect";
 import { getShortUserFromToken } from "./auth-utils";
 import { format } from "date-fns";
+import { Counter } from "./models/counter";
 
 export type State = {
   errors?: {
@@ -168,7 +169,19 @@ export async function createReturn(data: ReturnData) {
   try {
     await dbConnect();
     
-    const returnDoc = new Return(data);
+    // Get the next return number from the counter collection
+    const newReturnNumber = await Counter.findByIdAndUpdate(
+      { _id: 'returnNumber' },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    
+    // Create a new return document with the generated ID
+    const returnDoc = new Return({
+      ...data,
+      _id: newReturnNumber.seq
+    });
+    
     await returnDoc.save();
     
     return { success: true, data: returnDoc };
@@ -197,6 +210,28 @@ export async function updateReturn(returnId: number, data: ReturnData) {
     return { success: true, data: JSON.parse(JSON.stringify(updatedReturn)) };
   } catch (error) {
     console.error("Error updating return:", error);
+    throw error;
+  }
+}
+
+/**
+ * Check if a return exists for a specific invoice ID
+ * @param invoiceId The invoice ID to check
+ * @returns Object with returnId if found, null if not found
+ */
+export async function checkReturnByInvoiceId(invoiceId: string) {
+  try {
+    await dbConnect();
+    
+    const returnItem = await Return.findOne({ invoiceId });
+    
+    if (returnItem) {
+      return { returnId: returnItem._id };
+    } else {
+      return { returnId: null };
+    }
+  } catch (error) {
+    console.error("Error checking for return:", error);
     throw error;
   }
 }
