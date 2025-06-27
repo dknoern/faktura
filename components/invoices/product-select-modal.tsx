@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,7 +36,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
   const [error, setError] = useState<string | null>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchProducts = async (searchTerm?: string) => {
+  const fetchProducts = useCallback(async (searchTerm?: string) => {
     try {
       setLoading(true)
       setError(null)
@@ -62,7 +62,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
     } finally {
       setLoading(false)
     }
-  }
+  }, [search, customSearchFunction])
 
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
         clearTimeout(searchTimeoutRef.current)
       }
     }
-  }, [isOpen, page])
+  }, [isOpen, page, fetchProducts])
   
   // Fix for scrolling issues - ensure body scroll is restored
   useEffect(() => {

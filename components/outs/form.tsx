@@ -73,7 +73,7 @@ export function OutForm({ out }: { out?: OutItem }) {
             }
         };
         fetchCurrentUser();
-    }, []);
+    }, [formData.user, formData._id]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

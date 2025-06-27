@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,7 +36,7 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
   const [error, setError] = useState<string | null>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchRepairs = async () => {
+  const fetchRepairs = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -64,7 +64,7 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, search])
 
   useEffect(() => {
     if (isOpen) {
@@ -77,7 +77,7 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
         clearTimeout(searchTimeoutRef.current)
       }
     }
-  }, [isOpen, page])
+  }, [isOpen, fetchRepairs])
 
   // Handle search input changes with debouncing
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

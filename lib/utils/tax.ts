@@ -46,9 +46,7 @@ export async function calcTax(invoice: Invoice): Promise<number> {
   }
 
   try {
-    // Create Avatax client
 
-    console.log('Creating Avatax client, config:', avataxConfig, 'credentials:', avataxCredentials);
     const client = new Avatax(avataxConfig).withSecurity(avataxCredentials);
 
     // Prepare line items for tax calculation
@@ -82,13 +80,7 @@ export async function calcTax(invoice: Invoice): Promise<number> {
       lines: lines
     };
 
-
-  
-
-
     // Call Avatax API to calculate tax
-
-
 
     const createOrAdjustTransactionModel = {
       createTransactionModel: transactionModel,
@@ -96,7 +88,6 @@ export async function calcTax(invoice: Invoice): Promise<number> {
       adjustmentDescription: 'Invoice Creation or Update'
     };
 
-    //const result = await client.createTransaction({ model: transactionModel });
     const result = await client.createOrAdjustTransaction({ model: createOrAdjustTransactionModel });
     // Calculate total tax from result
     let totalTax = 0;
