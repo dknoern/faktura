@@ -15,13 +15,14 @@ const ReturnSchema = new Schema({
   customerName: { type: String, required: true },
   customerId: Number,
   invoiceId: { type: String, required: true },
-  returnDate: { type: String, required: true },
+  returnDate: { type: Date, required: true },
   subTotal: { type: Number, required: true },
   taxable: { type: Boolean, default: false },
   salesTax: { type: Number, required: true },
   shipping: { type: Number, default: 0 },
   totalReturnAmount: { type: Number, required: true },
   salesPerson: String,
+  search: String,
   lineItems: [LineItemSchema]
 }, {
   timestamps: true

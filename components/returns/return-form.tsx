@@ -70,15 +70,16 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
     // Calculate total
     const totalReturnAmount = subTotal + salesTax + (formData.shipping || 0);
 
-    // Proper way to update state - no direct mutations
-    setFormData(prev => ({
-      ...prev,
-      subTotal,
-      salesTax,
-      totalReturnAmount
-    }));
-  }, [formData.lineItems, formData.shipping, formData.taxable]);
-
+    // Only update if values have actually changed to prevent infinite loops
+    if (formData.subTotal !== subTotal || formData.salesTax !== salesTax || formData.totalReturnAmount !== totalReturnAmount) {
+      setFormData(prev => ({
+        ...prev,
+        subTotal,
+        salesTax,
+        totalReturnAmount
+      }));
+    }
+  }, [formData.lineItems, formData.shipping, formData.taxable, formData.subTotal, formData.salesTax, formData.totalReturnAmount]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -187,7 +188,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
             id="returnDate"
             name="returnDate"
             type="text"
-            value={formData.returnDate?.toString().split('T')[0] || ''}
+            value={formData.returnDate?.split('T')[0] || ''}
             onChange={handleInputChange}
             disabled
           />
@@ -239,10 +240,10 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100">
-              <th className="text-left p-2">DESCRIPTION</th>
-              <th className="text-left p-2">ITEM NUMBER</th>
-              <th className="text-left p-2">AMOUNT</th>
-              <th className="text-left p-2">INCLUDED</th>
+              <th className="text-left p-2">Description</th>
+              <th className="text-left p-2">Item Number</th>
+              <th className="text-left p-2">Amount</th>
+              <th className="text-left p-2">Returned</th>
             </tr>
           </thead>
           <tbody>
@@ -273,7 +274,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
                 </td>
                 <td className="p-2 text-center">
                   <Checkbox
-                    checked={item.included || false}
+                    checked={formData._id ? item.included || false : true}
                     onCheckedChange={(checked) => 
                       handleLineItemChange(index, 'included', checked === true)
                     }
@@ -290,11 +291,6 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
             )}
           </tbody>
           <tfoot>
-
-
-
-
-
             <tr className="bg-gray-50">
               <td colSpan={2} className="p-2 text-right font-medium">Subtotal</td>
               <td className="p-2">${formData.subTotal?.toFixed(2) || '0.00'}</td>

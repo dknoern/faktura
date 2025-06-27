@@ -7,6 +7,7 @@ import dbConnect from "./dbConnect";
 import { getShortUserFromToken } from "./auth-utils";
 import { format } from "date-fns";
 import { Counter } from "./models/counter";
+import { updateProductHistory } from "./utils/product-history";
 
 export type State = {
   errors?: {
@@ -168,7 +169,7 @@ type ReturnData = {
 export async function createReturn(data: ReturnData) {
   try {
     await dbConnect();
-    
+  
     // Get the next return number from the counter collection
     const newReturnNumber = await Counter.findByIdAndUpdate(
       { _id: 'returnNumber' },
@@ -176,18 +177,48 @@ export async function createReturn(data: ReturnData) {
       { new: true, upsert: true }
     );
     
-    // Create a new return document with the generated ID
-    const returnDoc = new Return({
-      ...data,
-      _id: newReturnNumber.seq
-    });
+    // Clean the data to avoid any potential circular references or undefined values
+    const cleanData = {
+      _id: newReturnNumber.seq,
+      customerName: data.customerName || '',
+      customerId: data.customerId || undefined,
+      invoiceId: data.invoiceId || '',
+      returnDate: new Date(),
+      subTotal: Number(data.subTotal) || 0,
+      taxable: Boolean(data.taxable),
+      salesTax: Number(data.salesTax) || 0,
+      shipping: Number(data.shipping) || 0,
+      totalReturnAmount: Number(data.totalReturnAmount) || 0,
+      salesPerson: data.salesPerson || undefined,
+      lineItems: (data.lineItems || []).map(item => ({
+        productId: item.productId || undefined,
+        itemNumber: item.itemNumber || '',
+        name: item.name || '',
+        amount: Number(item.amount) || 0,
+        serialNo: item.serialNo || undefined,
+        longDesc: item.longDesc || undefined,
+        included: Boolean(item.included)
+      })),
+      search: newReturnNumber.seq + " " + data.invoiceId + " " + formatDate(data.returnDate) + " " + data.customerName + " " + data.salesPerson + " " + data.totalReturnAmount,
+    };
+    
+    // Create a new return document with the cleaned data
+    const returnDoc = new Return(cleanData);
     
     await returnDoc.save();
     
-    return { success: true, data: returnDoc };
-  } catch (error) {
+    // Update product history for returned items
+    const user = await getShortUserFromToken();
+    const refDoc = newReturnNumber.seq.toString();
+    const action = 'item returned';
+    const status = 'In Stock';
+    
+    await updateProductHistory(cleanData.lineItems, status, action, user, refDoc);
+ 
+    return { success: true, data: JSON.parse(JSON.stringify(returnDoc)) };
+  } catch (error: any) {
     console.error("Error creating return:", error);
-    throw error;
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
   }
 }
 
@@ -206,6 +237,14 @@ export async function updateReturn(returnId: number, data: ReturnData) {
     if (!updatedReturn) {
       throw new Error(`Return with ID ${returnId} not found`);
     }
+    
+    // Update product history for returned items
+    const user = await getShortUserFromToken();
+    const refDoc = returnId.toString();
+    const action = 'return';
+    const status = 'In Stock';
+    
+    await updateProductHistory(data.lineItems || [], status, action, user, refDoc);
     
     return { success: true, data: JSON.parse(JSON.stringify(updatedReturn)) };
   } catch (error) {

@@ -240,8 +240,6 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
 
         <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
 
-
-          
           <div className="grid grid-cols-[120px_1fr] items-center">
             <label className="text-sm font-medium">Date <span className="text-red-500">*</span></label>
             <Input
@@ -264,12 +262,6 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
               disabled
             />
           </div>
-
-
-
-
-
-
 
           <div className="grid grid-cols-[120px_1fr] items-center">
             <label className="text-sm font-medium">Received From <span className="text-red-500">*</span></label>

@@ -26,6 +26,7 @@ interface PaginationProps {
 
 interface LineItem {
     itemNumber: string;
+    included: boolean;
 }
 
 interface Return {
@@ -111,27 +112,21 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
                 </TableHeader>
                 <TableBody>
                     {returns.map((ret: Return) => {
-
-                        let itemNumbers = ''
-
-                        if (ret.lineItems != null) {
-                            itemNumbers = ret.lineItems
-                                .filter((lineItem: { itemNumber: string; }) => lineItem.itemNumber !== '')
-                                .map((lineItem: { itemNumber: string; }) => lineItem.itemNumber)
-                                .join('<br/>');
-                        }
-
                         return (
                             <TableRow key={ret._id} onClick={() => router.push(`/dashboard/returns/${ret._id}`)} className="cursor-pointer">
                                 <TableCell>{ret._id}</TableCell>
                                 <TableCell>{ret.invoiceId}</TableCell>
                                 <TableCell>
-                                    {itemNumbers.split("<br/>").map((line, index, array) => (
-                                        <React.Fragment key={index}>
-                                            {line}
-                                            {index < array.length - 1 && <br />}
-                                        </React.Fragment>
-                                    ))}
+                                    {ret.lineItems
+                                        .filter((lineItem: LineItem) => lineItem.itemNumber !== '')
+                                        .map((lineItem: LineItem, index: number) => (
+                                            <React.Fragment key={index}>
+                                                <span className={!lineItem.included ? 'line-through text-gray-500' : ''}>
+                                                    {lineItem.itemNumber}
+                                                </span>
+                                                {index < ret.lineItems.filter(item => item.itemNumber !== '').length - 1 && <br />}
+                                            </React.Fragment>
+                                        ))}
                                 </TableCell>
                                 <TableCell>{ret.returnDate ? new Date(ret.returnDate).toISOString().split('T')[0] : ''}</TableCell>
                                 <TableCell>{ret.customerName}</TableCell>

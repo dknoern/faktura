@@ -6,18 +6,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Invoice, Tenant, generateInvoiceHtml } from "@/lib/invoice-renderer";
-import { checkReturnByInvoiceId } from "@/lib/actions";
 
 export function ViewInvoice({invoice, tenant, imageBaseUrl}:  {invoice: Invoice, tenant: Tenant, imageBaseUrl: string}) {
 
     const router = useRouter();
     const [isEmailSending, setIsEmailSending] = useState(false);
     const [emailStatus, setEmailStatus] = useState<string | null>(null);
-
-    const [isCheckingReturn, setIsCheckingReturn] = useState(false);
-    
-
-    
+ 
     // Function to handle printing
     const handlePrint = () => {
         window.print();

@@ -11,10 +11,13 @@ interface InvoiceLineItem {
   longDesc?: string;
 }
 
-export default async function NewReturnPage({ searchParams }: { searchParams: { invoiceId?: string } }) {
+export default async function NewReturnPage({ searchParams }: { searchParams: Promise<{ invoiceId?: string }> }) {
+  // Await the searchParams promise
+  const params = await searchParams;
+  
   // If we have an invoice ID, fetch the invoice to pre-populate the form
-  if (searchParams.invoiceId) {
-    const invoiceId = parseInt(searchParams.invoiceId);
+  if (params.invoiceId) {
+    const invoiceId = parseInt(params.invoiceId);
     const invoice = await fetchInvoiceById(invoiceId);
     
     if (!invoice) {
