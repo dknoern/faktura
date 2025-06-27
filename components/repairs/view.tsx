@@ -24,7 +24,7 @@ export function ViewRepair({repair, tenant}:  {repair: Repair, tenant: Tenant}) 
   
   // Function to navigate to edit page
   const handleEdit = () => {
-    router.push(`/dashboard/repairs/${repairNumber}/edit`);
+    router.push(`/repairs/${repairNumber}/edit`);
   };
   
   // Function to send email

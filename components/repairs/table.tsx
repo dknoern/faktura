@@ -102,14 +102,14 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
     }, []);
 
     const handleRowClick = (repairNumber: string) => {
-        router.push(`/dashboard/repairs/${repairNumber}/view`);
+        router.push(`/repairs/${repairNumber}/view`);
     };
 
     // Handle customer selection for new repair
     const handleCustomerSelect = (customer: any) => {
         setIsCustomerModalOpen(false);
         // Navigate to the new repair page with the selected customer ID
-        router.push(`/dashboard/repairs/new?customerId=${customer._id}`);
+        router.push(`/repairs/new?customerId=${customer._id}`);
     };
 
     // Filter repairs based on selected filter type

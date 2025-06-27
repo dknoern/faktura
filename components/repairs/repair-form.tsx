@@ -90,7 +90,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
 
         await createRepair(formData);
       }
-      router.push("/dashboard/repairs");
+      router.push("/repairs");
       router.refresh();
     } catch (error) {
       console.error("Error saving repair:", error);
@@ -307,7 +307,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/dashboard/repairs")}
+          onClick={() => router.push("/repairs")}
         >
           Cancel
         </Button>

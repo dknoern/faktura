@@ -128,15 +128,15 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
   };
 
   const navigateToInvoice = (invoiceId: number) => {
-    router.push(`/dashboard/invoices/${invoiceId}/view`);
+    router.push(`/invoices/${invoiceId}/view`);
   };
 
   const navigateToRepair = (repairNumber: string) => {
-    router.push(`/dashboard/repairs/${repairNumber}/view`);
+    router.push(`/repairs/${repairNumber}/view`);
   };
 
   const navigateToReturn = (returnId: number) => {
-    router.push(`/dashboard/returns/${returnId}`);
+    router.push(`/returns/${returnId}`);
   };
 
   return (

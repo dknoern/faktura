@@ -15,12 +15,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     authorized({ auth, request: { nextUrl } }) {
 
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
-      if (isOnDashboard) {
+      const isOnProtectedRoute = nextUrl.pathname.startsWith('/products') || 
+                                 nextUrl.pathname.startsWith('/customers') ||
+                                 nextUrl.pathname.startsWith('/invoices') ||
+                                 nextUrl.pathname.startsWith('/returns') ||
+                                 nextUrl.pathname.startsWith('/repairs') ||
+                                 nextUrl.pathname.startsWith('/loginitems') ||
+                                 nextUrl.pathname.startsWith('/logoutitems') ||
+                                 nextUrl.pathname.startsWith('/reports') ||
+                                 nextUrl.pathname.startsWith('/profile') ||
+                                 nextUrl.pathname.startsWith('/proposals');
+      if (isOnProtectedRoute) {
         if (isLoggedIn) return true;
         return Response.redirect(new URL('/', nextUrl));
-      } else if (isLoggedIn) {
-        return Response.redirect(new URL('/dashboard', nextUrl));
+      } else if (isLoggedIn && nextUrl.pathname === '/') {
+        return Response.redirect(new URL('/products', nextUrl));
       }
       return true;
 

@@ -35,7 +35,7 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
       search: `${data.firstName} ${data.lastName} ${data.company} ${data.email} ${data.phone}`.toLowerCase(),
     });
 
-    revalidatePath('/dashboard/customers');
+    revalidatePath('/customers');
     return { success: true, data: customer.toObject() };
   } catch (error) {
     console.error("Error creating customer:", error);
@@ -61,7 +61,7 @@ export async function updateCustomer(id: number, data: CustomerFormData): Promis
       return { success: false, error: "Customer not found" };
     }
 
-    revalidatePath('/dashboard/customers');
+    revalidatePath('/customers');
     return { success: true, data: customer.toObject() };
   } catch (error) {
     console.error("Error updating customer:", error);

@@ -126,7 +126,7 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
       await invoice.save();
     }
     
-    revalidatePath('/dashboard/invoices');
+    revalidatePath('/invoices');
     return { success: true, invoiceId };
   } catch (error) {
     console.error(`Error ${id ? 'updating' : 'creating'} invoice:`, error);

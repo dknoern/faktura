@@ -82,7 +82,7 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
     await canonicalCustomer.save();
     
     // Revalidate the customers page to refresh the data
-    revalidatePath('/dashboard/customers');
+    revalidatePath('/customers');
     
     return { 
       success: true, 

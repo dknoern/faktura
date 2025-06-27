@@ -97,7 +97,7 @@ export function OutForm({ out }: { out?: OutItem }) {
                 throw new Error("Failed to save out item");
             }
 
-            router.push("/dashboard/logoutitems");
+            router.push("/logoutitems");
             router.refresh();
         } catch (error) {
             console.error("Error saving out item:", error);

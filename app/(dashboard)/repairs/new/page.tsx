@@ -14,7 +14,7 @@ export default async function NewRepairPage({ searchParams }: { searchParams: Se
 
     // If no customer ID is provided, redirect back to repairs page
     if (!params.customerId) {
-        redirect("/dashboard/repairs");
+        redirect("/`repairs");
     }
 
     let product = null;
@@ -29,7 +29,7 @@ export default async function NewRepairPage({ searchParams }: { searchParams: Se
 
     // If customer not found, redirect back to repairs page
     if (!customerData) {
-        redirect("/dashboard/repairs");
+        redirect("/repairs");
     }
 
     // Serialize the customer data to avoid passing Mongoose objects to client components

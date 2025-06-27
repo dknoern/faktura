@@ -7,7 +7,7 @@ export default function Page() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push('/dashboard/products');
+    router.push('/products');
   }, [router]);
 
   return <p>Loading...</p>;

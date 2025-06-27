@@ -50,7 +50,7 @@ export async function createLog(data: LogData) {
     }
 
 
-    revalidatePath('/dashboard/loginitems');
+    revalidatePath('/loginitems');
     return { success: true, data: JSON.parse(JSON.stringify(log)) };
   } catch (error) {
     console.error('Error creating log:', error);
@@ -81,7 +81,7 @@ export async function updateLog(id: string, data: LogData) {
       }
     }
     
-    revalidatePath('/dashboard/loginitems');
+    revalidatePath('/loginitems');
     return { success: true, data: JSON.parse(JSON.stringify(log)) };
   } catch (error) {
     console.error('Error updating log:', error);

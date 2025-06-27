@@ -131,7 +131,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
         return;
       }
 
-      router.push("/dashboard/loginitems");
+      router.push("/loginitems");
     } catch (error) {
       console.error('Error saving log item:', error);
       setError("An unexpected error occurred. Please try again.");
@@ -381,13 +381,13 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                           </TableCell>
                           <TableCell>
                             <a 
-                              href={`/dashboard/products/${item.productId}/edit`}
+                              href={`/products/${item.productId}/edit`}
                               className="text-[rgb(98,90,250)] hover:text-black"
                             >
                               {item.itemNumber || ""}
                             </a>
                           </TableCell>
-                          <TableCell><a href={`/dashboard/repairs/${item.repairNumber}/view`} className="text-[rgb(98,90,250)] hover:text-black">{item.repairNumber || ""}</a></TableCell>
+                          <TableCell><a href={`/repairs/${item.repairNumber}/view`} className="text-[rgb(98,90,250)] hover:text-black">{item.repairNumber || ""}</a></TableCell>
                           <TableCell className="text-right">
                             {/* Only show repair cost input if it's a repair item */}
                             {(item.repairId || item.repairNumber) ? (
@@ -479,7 +479,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/dashboard/loginitems")}
+            onClick={() => router.push("/loginitems")}
             disabled={isSubmitting}
           >
             Cancel

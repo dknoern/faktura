@@ -165,7 +165,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
         throw new Error(result.error || "Failed to save invoice")
       }
       
-      router.push("/dashboard/invoices")
+      router.push("/invoices")
     } catch (error) {
       console.error("Error saving invoice:", error)
     }

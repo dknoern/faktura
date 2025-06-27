@@ -28,38 +28,38 @@ const data = {
   navMain: [
     {
       title: "Products",
-      url: "/dashboard/products",
+      url: "/products",
       icon: ShoppingCart,
     },
     {
       title: "Customers",
-      url: "/dashboard/customers",
+      url: "/customers",
       icon: Users,
     },
     {
       title: "Invoices",
-      url: "/dashboard/invoices",
+      url: "/invoices",
       icon: FileText,
     },
 
     {
       title: "Returns",
-      url: "/dashboard/returns",
+      url: "/returns",
       icon: Repeat2,
     },
     {
       title: "Repairs",
-      url: "/dashboard/repairs",
+      url: "/repairs",
       icon: Wrench,
     },
     {
       title: "Log In Items",
-      url: "/dashboard/loginitems",
+      url: "/loginitems",
       icon: SquarePen,
     },
     {
       title: "Log Out Items",
-      url: "/dashboard/logoutitems",
+      url: "/logoutitems",
       icon: SquareArrowOutUpRight,
     },
     {
@@ -69,47 +69,47 @@ const data = {
       items: [
         {
           title: "Outstanding repairs",
-          url: "/dashboard/reports/outstanding-repairs",
+          url: "/reports/outstanding-repairs",
         },
         {
           title: "Items on memo",
-          url: "/dashboard/reports/items-on-memo",
+          url: "/reports/items-on-memo",
         },
         {
           title: "Daily sales",
-          url: "/dashboard/reports/daily-sales",
+          url: "/reports/daily-sales",
         },
         {
           title: "Returns summary",
-          url: "/dashboard/reports/returns-summary",
+          url: "/reports/returns-summary",
         },
         {
           title: "Partnership items",
-          url: "/dashboard/reports/partnership-items",
+          url: "/reports/partnership-items",
         },
         {
           title: "Consignment items",
-          url: "/dashboard/reports/consignment-items",
+          url: "/reports/consignment-items",
         },
         {
           title: "Monthly sales",
-          url: "/dashboard/reports/monthly-sales",
+          url: "/reports/monthly-sales",
         },
         {
           title: "Out at Show",
-          url: "/dashboard/reports/out-at-show",
+          url: "/reports/out-at-show",
         },
         {
           title: "Show report",
-          url: "/dashboard/reports/show-report",
+          url: "/reports/show-report",
         },
         {
           title: "In stock",
-          url: "/dashboard/reports/in-stock",
+          url: "/reports/in-stock",
         },
         {
           title: "Customers",
-          url: "/dashboard/reports/customers",
+          url: "/reports/customers",
         },
       ],
     },

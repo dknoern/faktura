@@ -105,7 +105,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
         return;
       }
 
-      router.push("/dashboard/customers");
+      router.push("/customers");
     } catch (error) {
       console.error('Error saving customer:', error);
       setError("An unexpected error occurred. Please try again.");
@@ -523,7 +523,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/dashboard/customers")}
+            onClick={() => router.push("/customers")}
             disabled={isSubmitting}
           >
             Cancel

@@ -22,7 +22,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
       <div className="flex items-center justify-between mb-6">
         <h2 className='text-2xl font-bold tracking-tight'>Customers</h2>
         <Link
-          href="/dashboard/customers/new"
+          href="/customers/new"
           className={buttonVariants({ variant: "default" })}
         >
           <PlusCircle className="w-4 h-4" />

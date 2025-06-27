@@ -176,7 +176,7 @@ export function InvoicesTable({
                         return (
                             <TableRow 
                                 key={invoice._id} 
-                                onClick={() => router.push(`/dashboard/invoices/${invoice._id}/view`)}
+                                onClick={() => router.push(`/invoices/${invoice._id}/view`)}
                                 className="cursor-pointer hover:bg-gray-100">
                                 <TableCell>{invoice._id}</TableCell>
                                 <TableCell> {invoice.customerFirstName + ' ' + invoice.customerLastName}</TableCell>
@@ -237,7 +237,7 @@ export function InvoicesTable({
                 isOpen={isCustomerModalOpen}
                 onClose={() => setIsCustomerModalOpen(false)}
                 onSelect={(customer) => {
-                    router.push(`/dashboard/invoices/new?customerId=${customer._id}`);
+                    router.push(`/invoices/new?customerId=${customer._id}`);
                     setIsCustomerModalOpen(false);
                 }}
                 customers={customers}

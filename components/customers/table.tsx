@@ -94,10 +94,10 @@ export function CustomersTable({
             onSelectCustomer(customer);
         } else if (selectForInvoice) {
             // If in selection mode, navigate to new invoice with customer ID
-            router.push(`/dashboard/invoices/new?customerId=${customer._id}`);
+            router.push(`/invoices/new?customerId=${customer._id}`);
         } else {
             // Otherwise, navigate to customer edit page as usual
-            router.push(`/dashboard/customers/${customer._id}/edit`);
+            router.push(`/customers/${customer._id}/edit`);
         }
     }, [router, selectForInvoice, isModal, onSelectCustomer]);
 

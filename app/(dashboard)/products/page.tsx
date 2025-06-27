@@ -53,7 +53,7 @@ export default function Page() {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className='text-2xl font-bold tracking-tight pl-1.5'>Products</h2>
-        <Link href="/dashboard/products/new">
+        <Link href="/products/new">
           <Button className="flex items-center gap-1">
             <PlusCircle size={18} />
             <span>New Product</span>

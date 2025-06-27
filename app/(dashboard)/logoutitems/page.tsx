@@ -20,7 +20,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className='text-2xl font-bold tracking-tight pl-1.5'>Log Out Items</h2>
-        <Link href="/dashboard/logoutitems/new">
+        <Link href="/logoutitems/new">
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
             New Item

@@ -20,12 +20,12 @@ export function ViewInvoice({invoice, tenant, imageBaseUrl}:  {invoice: Invoice,
     
     // Function to navigate to edit page
     const handleEdit = () => {
-        router.push(`/dashboard/invoices/${invoice._id}/edit`);
+        router.push(`/invoices/${invoice._id}/edit`);
     };
     
     // Function to handle return
     const handleReturn = () => {
-        router.push(`/dashboard/returns/new?invoiceId=${invoice._id}`);
+        router.push(`/returns/new?invoiceId=${invoice._id}`);
     };
     
     // Function to send email

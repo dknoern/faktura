@@ -9,7 +9,7 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: S
 
     // If no customer ID is provided, redirect back to invoices page
     if (!params.customerId) {
-        redirect("/dashboard/invoices");
+        redirect("/invoices");
     }
 
     const customerId = parseInt(params.customerId);
@@ -17,7 +17,7 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: S
 
     // If customer not found, redirect back to invoices page
     if (!customerData) {
-        redirect("/dashboard/invoices");
+        redirect("/invoices");
     }
 
     // Serialize the customer data to avoid passing Mongoose objects to client components

@@ -109,7 +109,7 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
         
         // Use window.location for a full page navigation instead of router.push
         // This ensures a complete page refresh and proper scroll behavior
-        window.location.href = `/dashboard/invoices/new?customerId=${customer._id}&productId=${id}`;
+        window.location.href = `/invoices/new?customerId=${customer._id}&productId=${id}`;
     };
 
     const handleCustomerSelectForRepair = (customer: any) => {
@@ -121,7 +121,7 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
         
         // Use window.location for a full page navigation instead of router.push
         // This ensures a complete page refresh and proper scroll behavior
-        window.location.href = `/dashboard/repairs/new?customerId=${customer._id}&productId=${id}`;
+        window.location.href = `/repairs/new?customerId=${customer._id}&productId=${id}`;
     };
 
     const handleCloneItem = async () => {
@@ -147,7 +147,7 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
             sessionStorage.setItem('clonedProductData', JSON.stringify(clonedData));
             
             // Navigate to new product page
-            window.location.href = '/dashboard/products/new?cloned=true';
+            window.location.href = '/products/new?cloned=true';
         } catch (error) {
             console.error('Error cloning product:', error);
             toast.error('Failed to clone item');
@@ -360,7 +360,7 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
             sessionStorage.setItem('deleteSuccess', `Product ${productData.itemNumber} - ${productData.title} deleted successfully`);
             
             // Navigate to product list
-            window.location.href = '/dashboard/products';
+            window.location.href = '/products';
         } catch (error) {
             console.error('Error deleting product:', error);
             toast.error('Failed to delete product');

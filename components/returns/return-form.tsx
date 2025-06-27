@@ -144,7 +144,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
       }
 
       toast.success(`Return ${isEditing ? 'updated' : 'created'} successfully`);
-      router.push('/dashboard/returns');
+      router.push('/returns');
       router.refresh();
     } catch (error) {
       console.error('Error saving return:', error);
@@ -326,7 +326,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/dashboard/returns')}
+          onClick={() => router.push('/returns')}
           className="border-gray-300"
         >
           Cancel

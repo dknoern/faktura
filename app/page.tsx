@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { signIn, signOut } from "@/auth"
 import Image from 'next/image'
@@ -23,7 +22,7 @@ export default async function Page() {
           <form
       action={async () => {
         "use server"
-        await signIn('auth0', { redirectTo: "/dashboard" }) 
+        await signIn('auth0', { redirectTo: "/products" }) 
       }}
     >
       <Button>Sign In</Button>

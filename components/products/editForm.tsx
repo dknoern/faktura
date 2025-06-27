@@ -121,7 +121,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
             //const savedProduct = await response.json();
             
             // On success, redirect to the product list page
-            router.push('/dashboard/products');
+            router.push('/products');
             router.refresh();
             
         } catch (error) {
@@ -500,7 +500,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                             />
 
 
-                            {product.sellerType === "Partner" && product.id != null && <div style={{ fontSize: '14px', cursor: 'pointer' }} className="text-blue-500 hover:underline"><Link href={`/dashboard/invoices/${product.id}/partner`}>Partner Invoice</Link></div>}
+                            {product.sellerType === "Partner" && product.id != null && <div style={{ fontSize: '14px', cursor: 'pointer' }} className="text-blue-500 hover:underline"><Link href={`/invoices/${product.id}/partner`}>Partner Invoice</Link></div>}
 
                             <FormField
                                 control={form.control}
@@ -713,12 +713,12 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                             <TableCell className="font-medium">{historyEvent.user}</TableCell>
                                                             <TableCell>{historyEvent.action}
                                                                 {historyEvent.action === "sold item" ? (
-                                                                    <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/dashboard/invoices/${historyEvent.refDoc}/view`}>
+                                                                    <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${historyEvent.refDoc}/view`}>
                                                                         {historyEvent.refDoc}
                                                                     </Link>
                                                                     </span>
                                                                 ) : historyEvent.action === "received" && historyEvent.refDoc ? (
-                                                                    <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/dashboard/loginitems/${historyEvent.refDoc}/edit`}>
+                                                                    <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/loginitems/${historyEvent.refDoc}/edit`}>
                                                                         log
                                                                     </Link>
                                                                     </span>
@@ -779,7 +779,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                             <Button type="submit" disabled={isSubmitting}>
                                 {isSubmitting ? 'Saving...' : isNewProduct ? 'Create Product' : 'Update Product'}
                             </Button>
-                            <Link href="/dashboard/products"><Button variant="secondary" type="button" disabled={isSubmitting}>Cancel</Button></Link>
+                            <Link href="/products"><Button variant="secondary" type="button" disabled={isSubmitting}>Cancel</Button></Link>
                         </div>
                         
                     </div>
