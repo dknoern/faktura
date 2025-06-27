@@ -15,7 +15,7 @@ interface ActionMenuProps {
     onUploadComplete?: () => void;
 }
 
-export function LogActionMenu({ id, onUploadComplete }: ActionMenuProps) {
+export function OutActionMenu({ id, onUploadComplete }: ActionMenuProps) {
     const [isUploading, setIsUploading] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
 

@@ -3,7 +3,7 @@ import { fetchOutById } from '@/lib/data';
 import { OutForm } from '@/components/outs/form'
 import { ImageGallery } from '@/components/products/image-gallery';
 import { getProductImages } from '@/lib/utils/storage';
-import { LogHeader } from '@/components/logs/log-header';
+import { OutHeader } from '@/components/outs/out-header';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -20,7 +20,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   return (
     <div className="container mx-auto py-1">
-      <LogHeader id={id} />
+      <OutHeader id={id} />
 
       <div className="space-y-8">
         <OutForm out={JSON.parse(JSON.stringify(outItem))} />

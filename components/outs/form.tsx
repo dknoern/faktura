@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { SignaturePad } from "@/components/ui/signature-pad";
 import { format } from "date-fns";
+import { Textarea } from "../ui/textarea";
 
 interface OutItem {
     _id?: string;
@@ -59,7 +60,7 @@ export function OutForm({ out }: { out?: OutItem }) {
         const fetchCurrentUser = async () => {
             // Only set default user if user is empty (new item)
             if (formData.user || formData._id) return;
-            
+
             try {
                 const response = await fetch("/api/user");
                 if (!response.ok) {
@@ -76,11 +77,11 @@ export function OutForm({ out }: { out?: OutItem }) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        const url = formData._id 
+
+        const url = formData._id
             ? `/api/outs/${formData._id}`
             : "/api/outs";
-            
+
         const method = formData._id ? "PUT" : "POST";
 
         try {
@@ -105,16 +106,7 @@ export function OutForm({ out }: { out?: OutItem }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1">Sent To</label>
-                    <Input
-                        value={formData.sentTo}
-                        onChange={(e) => setFormData({ ...formData, sentTo: e.target.value })}
-                        required
-                    />
-                </div>
-            </div>
+
 
             <div className="grid grid-cols-2 gap-4">
                 {formData._id && (
@@ -128,6 +120,21 @@ export function OutForm({ out }: { out?: OutItem }) {
                         />
                     </div>
                 )}
+
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">Sent To</label>
+                    <Input
+                        value={formData.sentTo}
+                        onChange={(e) => setFormData({ ...formData, sentTo: e.target.value })}
+                        required
+                    />
+                </div>
+            </div>
+
+
+            <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium mb-1">Description</label>
                     <Input
@@ -137,23 +144,35 @@ export function OutForm({ out }: { out?: OutItem }) {
                     />
                 </div>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium mb-1">Sent By</label>
                     <Input
                         value={formData.user}
                         onChange={(e) => setFormData({ ...formData, user: e.target.value })}
-                        
+
                     />
                 </div>
+
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium mb-1">Note/Comment</label>
-                    <Input
+                    <Textarea rows={4}
                         value={formData.comments}
                         onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
                     />
                 </div>
+            </div>
+
+            <div className="flex justify-center gap-4 mt-6">
+                <Button type="button" variant="outline" onClick={() => router.back()}>
+                    Cancel
+                </Button>
+                <Button type="submit">
+                    {formData._id ? "Update Item" : "Create Item"}
+                </Button>
             </div>
 
             {formData.signature && (
@@ -170,27 +189,21 @@ export function OutForm({ out }: { out?: OutItem }) {
                 </div>
             )}
 
-            <div className="mt-6">
-                <SignaturePad
-                    value={formData.signature}
-                    onChange={(signature) => setFormData({
-                        ...formData,
-                        signature,
-                        signatureDate: new Date().toISOString(),
-                        signatureUser: formData.user || "User"
-                    })}
-                    label="eSignature (optional)"
-                />
-            </div>
+            {formData._id && (
+                <div className="mt-6">
+                    <SignaturePad
+                        value={formData.signature}
+                        onChange={(signature) => setFormData({
+                            ...formData,
+                            signature,
+                            signatureDate: new Date().toISOString(),
+                            signatureUser: formData.user || "User"
+                        })}
+                        label="eSignature (optional)"
+                    />
+                </div>
+            )}
 
-            <div className="flex justify-end gap-4 mt-6">
-                <Button type="button" variant="outline" onClick={() => router.back()}>
-                    Cancel
-                </Button>
-                <Button type="submit">
-                    {formData._id ? "Update Item" : "Create Item"}
-                </Button>
-            </div>
         </form>
     );
 }

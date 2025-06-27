@@ -220,13 +220,6 @@ export function SignaturePad({ value, onChange, label = "Signature" }: Signature
               <Trash2 size={16} />
               Remove
             </Button>
-            <div className="border rounded-md p-2 bg-white">
-              <img 
-                src={value} 
-                alt="Signature" 
-                className="h-12 object-contain" 
-              />
-            </div>
           </>
         )}
       </div>
