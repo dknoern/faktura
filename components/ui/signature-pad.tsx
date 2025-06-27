@@ -14,10 +14,9 @@ import { PenLine, Save, Trash2 } from "lucide-react";
 interface SignaturePadProps {
   value?: string;
   onChange: (signature: string) => void;
-  label?: string;
 }
 
-export function SignaturePad({ value, onChange, label = "Signature" }: SignaturePadProps) {
+export function SignaturePad({ value, onChange }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -149,8 +148,6 @@ export function SignaturePad({ value, onChange, label = "Signature" }: Signature
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium mb-1">{label}</label>
-      
       <div className="flex items-center gap-2">
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>

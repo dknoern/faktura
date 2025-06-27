@@ -199,7 +199,6 @@ export function OutForm({ out }: { out?: OutItem }) {
                             signatureDate: new Date().toISOString(),
                             signatureUser: formData.user || "User"
                         })}
-                        label="eSignature (optional)"
                     />
                 </div>
             )}
