@@ -2,14 +2,7 @@ import localFont from "next/font/local";
 import "../globals.css";
 
 import { AppSidebar } from "@/components/app-sidebar"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import { DynamicBreadcrumb } from "@/components/dynamic-breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
@@ -47,19 +40,7 @@ export default function Layout({
               <div className="flex items-center gap-2 px-2 sm:px-4 flex-1 min-w-0 overflow-hidden">
                 <SidebarTrigger className="-ml-1 shrink-0" />
                 <Separator orientation="vertical" className="mr-2 h-4 shrink-0" />
-                <Breadcrumb className="min-w-0 overflow-hidden">
-                  <BreadcrumbList className="flex-nowrap">
-                    <BreadcrumbItem className="hidden sm:block">
-                      <BreadcrumbLink href="#" className="truncate">
-                        Inventory
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator className="hidden sm:block" />
-                    <BreadcrumbItem className="min-w-0">
-                      <BreadcrumbPage className="truncate">Dashboard</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
+                <DynamicBreadcrumb />
 
               </div>
               <div className="px-2 sm:px-4 shrink-0">
