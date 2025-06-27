@@ -16,6 +16,7 @@ import { productSchema } from "@/lib/models/product";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef } from "react";
+import { PlusCircle } from "lucide-react";
 
 interface PaginationProps {
     total: number;
@@ -42,12 +43,12 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
-        
+
         // Clear any existing timeout
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
-        
+
         // Set a new timeout
         searchTimeoutRef.current = setTimeout(() => {
             const params = new URLSearchParams(searchParams.toString());
@@ -60,7 +61,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
             router.push(`${pathname}?${params.toString()}`);
         }, 300); // 300ms debounce delay
     };
-    
+
     // Cleanup timeout on unmount
     useEffect(() => {
         return () => {
@@ -72,15 +73,28 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
 
     return (
         <div>
-            <div className="mb-4">
-                <Input
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    className="max-w-sm"
-                />
+
+
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex-1">
+                    <Input
+                        type="text"
+                        placeholder="Search products..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        className="max-w-sm"
+                    />
+                </div>
+
+                    <Button variant="outline" onClick={() => router.push('/products/new')}
+                        className="ml-4 flex items-center gap-1"
+                    >
+                        <PlusCircle size={18} />
+                        <span>New Product</span>
+                    </Button>
+
             </div>
+
             <Table>
                 <TableHeader>
                     <TableRow>

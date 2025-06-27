@@ -11,6 +11,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "../ui/input";
+import { PlusCircle } from "lucide-react";
 
 interface LineItem {
     itemNumber?: string;
@@ -54,12 +55,12 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
-        
+
         // Clear any existing timeout
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
-        
+
         // Set a new timeout
         searchTimeoutRef.current = setTimeout(() => {
             const params = new URLSearchParams(searchParams.toString());
@@ -72,7 +73,7 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
             router.push(`${pathname}?${params.toString()}`);
         }, 300); // 300ms debounce delay
     };
-    
+
     // Cleanup timeout on unmount
     useEffect(() => {
         return () => {
@@ -83,15 +84,25 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
     }, []);
     return (
         <div>
-            <div className="mb-4">
-                <Input
-                    type="text"
-                    placeholder="Search logs..."
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    className="max-w-sm"
-                />
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex-1">
+                    <Input
+                        type="text"
+                        placeholder="Search log in items..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        className="max-w-sm"
+                    />
+                </div>
+
+                <Button variant="outline" onClick={() => router.push('/loginitems/new')}
+                    className="ml-4 flex items-center gap-1"
+                >
+                    <PlusCircle size={18} />
+                    <span>New Item</span>
+                </Button>
             </div>
+
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -121,11 +132,11 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
 
                         return (
 
-                            <TableRow 
-                                key={log._id} 
+                            <TableRow
+                                key={log._id}
                                 onClick={() => router.push(`/loginitems/${log._id}/edit`)}
                                 className="cursor-pointer hover:bg-gray-100">
-                        
+
 
                                 <TableCell style={{ whiteSpace: 'nowrap' }}>
                                     {log.date ? new Date(log.date).toLocaleDateString('en-US', {

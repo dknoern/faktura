@@ -15,9 +15,9 @@ export default async function Page() {
 
       
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold tracking-tight">New Log Item</h2>
+    <div className="container mx-auto py-1">
+      <div className="mb-2">
+        <h2 className="text-2xl font-bold tracking-tight">New Log In Item</h2>
       </div>
       <LogForm user={user} />
     </div>

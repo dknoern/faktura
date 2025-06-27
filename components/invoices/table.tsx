@@ -140,7 +140,7 @@ export function InvoicesTable({
                     className="max-w-sm"
                 />
                 </div>
-                <Button
+                <Button variant="outline"
                     onClick={() => setIsCustomerModalOpen(true)}
                     className="ml-4 flex items-center gap-1"
                 >

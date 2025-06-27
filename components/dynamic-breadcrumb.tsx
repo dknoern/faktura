@@ -12,36 +12,32 @@ import {
 
 const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
   "/": [
-    { label: "Inventory", href: "#" },
     { label: "Dashboard" }
   ],
   "/products": [
-    { label: "Inventory", href: "#" },
     { label: "Products" }
   ],
   "/repairs": [
-    { label: "Inventory", href: "#" },
     { label: "Repairs" }
   ],
   "/customers": [
-    { label: "Inventory", href: "#" },
     { label: "Customers" }
   ],
   "/invoices": [
-    { label: "Inventory", href: "#" },
     { label: "Invoices" }
   ],
   "/returns": [
-    { label: "Inventory", href: "#" },
     { label: "Returns" }
   ],
   "/logoutitems": [
-    { label: "Inventory", href: "#" },
-    { label: "Outs" }
+    { label: "Log Out Items" }
   ],
   "/loginitems": [
-    { label: "Inventory", href: "#" },
-    { label: "Logs" }
+    { label: "Log In Items" }
+  ],
+  "/reports": [
+    { label: "Reports", href: "#" }
+
   ]
 }
 
@@ -52,7 +48,6 @@ export function DynamicBreadcrumb() {
   const basePath = pathname.split('/').slice(0, 2).join('/') || '/'
   
   const breadcrumbs = breadcrumbMap[basePath] || [
-    { label: "Inventory", href: "#" },
     { label: "Dashboard" }
   ]
 
@@ -61,16 +56,16 @@ export function DynamicBreadcrumb() {
       <BreadcrumbList className="flex-nowrap">
         {breadcrumbs.map((breadcrumb, index) => (
           <div key={index} className="flex items-center">
-            {index > 0 && <BreadcrumbSeparator className="hidden sm:block mr-2" />}
-            <BreadcrumbItem className={index === 0 ? "hidden sm:block" : "min-w-0"}>
+            <BreadcrumbItem className={index === 0 && breadcrumbs.length > 1 ? "hidden sm:block" : "min-w-0"}>
               {breadcrumb.href ? (
-                <BreadcrumbLink href={breadcrumb.href} className="truncate">
+                <BreadcrumbLink href={breadcrumb.href} className="truncate text-lg font-bold">
                   {breadcrumb.label}
                 </BreadcrumbLink>
               ) : (
-                <BreadcrumbPage className="truncate">{breadcrumb.label}</BreadcrumbPage>
+                <BreadcrumbPage className="truncate text-lg font-bold">{breadcrumb.label}</BreadcrumbPage>
               )}
             </BreadcrumbItem>
+            {index < breadcrumbs.length - 1 && breadcrumbs.length > 1 && <BreadcrumbSeparator className="hidden sm:block mr-2" />}
           </div>
         ))}
       </BreadcrumbList>

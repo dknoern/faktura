@@ -13,8 +13,8 @@ export default async function Page() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-8">
+    <div className="container mx-auto py-1">
+      <div className="mb-2">
         <h2 className="text-2xl font-bold tracking-tight">New Log Out Item</h2>
       </div>
       <OutForm />

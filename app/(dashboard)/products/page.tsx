@@ -2,10 +2,7 @@
 
 import { ProductsTable } from "@/components/products/table";
 import { SkeletonTable } from "@/components/skeletons";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 
@@ -13,7 +10,7 @@ export default function Page() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, pages: 1, currentPage: 1, limit: 10 });
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -50,23 +47,15 @@ export default function Page() {
   }, []);
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className='text-2xl font-bold tracking-tight pl-1.5'>Products</h2>
-        <Link href="/products/new">
-          <Button className="flex items-center gap-1">
-            <PlusCircle size={18} />
-            <span>New Product</span>
-          </Button>
-        </Link>
-      </div>
-      <div>
-        {isLoading ? (
-          <SkeletonTable />
-        ) : (
-          <ProductsTable products={products} pagination={pagination} />
-        )}
-      </div>
-    </div>
+<div>
+<div>
+  <Suspense fallback={<SkeletonTable />}>
+    <ProductsTable products={products} pagination={pagination} />
+  </Suspense>
+</div>
+</div>
+
+
+
   );
 }

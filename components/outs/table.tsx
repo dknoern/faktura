@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { PlusCircle } from "lucide-react";
 
 interface PaginationProps {
     total: number;
@@ -82,14 +83,23 @@ export function OutsTable({ outs, pagination }: { outs: Out[], pagination: Pagin
 
     return (
         <div>
-            <div className="mb-4">
-                <Input
-                    type="text"
-                    placeholder="Search log outs..."
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    className="max-w-sm"
-                />
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex-1">
+                    <Input
+                        type="text"
+                        placeholder="Search log out items..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        className="max-w-sm"
+                    />
+                </div>
+
+                <Button variant="outline" onClick={() => router.push('/logoutitems/new')}
+                    className="ml-4 flex items-center gap-1"
+                >
+                    <PlusCircle size={18} />
+                    <span>New Item</span>
+                </Button>
             </div>
             <Table>
                 <TableHeader>

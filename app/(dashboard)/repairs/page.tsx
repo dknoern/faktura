@@ -15,9 +15,6 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
 
   return (
     <div>
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold tracking-tight pl-1.5">Repairs</h2>
-      </div>
       <div>
         <Suspense fallback={<SkeletonTable />}>
           <RepairsTable repairs={repairs} pagination={pagination} />

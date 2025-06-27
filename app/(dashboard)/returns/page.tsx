@@ -14,9 +14,6 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
   const { returns, pagination } = await fetchReturns(page, limit, search);
   return (
     <div>
-      <div className="mb-4">
-        <h2 className='text-2xl font-bold tracking-tight pl-1.5'>Returns</h2>
-      </div>
       <div>
         <Suspense fallback={<SkeletonTable />}>
           <ReturnsTable returns={returns} pagination={pagination} />

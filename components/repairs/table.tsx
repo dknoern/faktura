@@ -137,7 +137,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                         </SelectContent>
                     </Select>
                 </div>
-                <Button 
+                <Button variant="outline"
                     onClick={() => setIsCustomerModalOpen(true)}
                     className="ml-auto"
                 >

@@ -35,6 +35,7 @@ type Customer = z.infer<typeof customerSchema>;
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useCallback } from "react";
+import { PlusCircle } from "lucide-react";
 interface CustomersTableProps {
     customers: Customer[]
     pagination: PaginationProps
@@ -178,8 +179,11 @@ export function CustomersTable({
 
     return (
         <div>
-            <div className="mb-4 flex justify-between items-center">
-                <div className="flex items-center gap-4">
+
+
+
+<div className="flex justify-between items-center mb-4 space-x-2">
+                <div className="flex-1">
                     <Input
                         type="text"
                         placeholder="Search customers..."
@@ -187,6 +191,15 @@ export function CustomersTable({
                         onChange={handleSearch}
                         className="max-w-sm"
                     />
+                </div>
+
+                    <Button variant="outline" onClick={() => router.push('/customers/new')}
+                        className="ml-4 flex items-center gap-1"
+                    >
+                        <PlusCircle size={18} />
+                        <span>New Customer</span>
+                    </Button>
+
                     {!isModal && selectedCustomers.length >= 2 && (
                         <Button 
                             onClick={handleShowMergeConfirmation}
@@ -195,15 +208,15 @@ export function CustomersTable({
                             Merge Customers
                         </Button>
                     )}
-                </div>
-                <div>
-                    {!isModal && selectedCustomers.length > 0 && (
-                        <span className="text-sm text-gray-500">
-                            {selectedCustomers.length} customer{selectedCustomers.length !== 1 ? 's' : ''} selected
-                        </span>
-                    )}
-                </div>
+
             </div>
+
+
+
+
+
+
+
             <Table>
                 <TableHeader>
                     <TableRow>
