@@ -243,7 +243,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
               <th className="text-left p-2">Description</th>
               <th className="text-left p-2">Item Number</th>
               <th className="text-left p-2">Amount</th>
-              <th className="text-left p-2">Returned</th>
+              <th className="text-left p-2">Included</th>
             </tr>
           </thead>
           <tbody>
