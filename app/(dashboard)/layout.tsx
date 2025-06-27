@@ -41,7 +41,7 @@ export default function Layout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="flex flex-col h-full w-full min-w-0">
-          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background border-b w-full">
+          <header className="flex h-16 shrink-0 items-center gap-2 bg-background border-b w-full sticky top-0 z-10">
 
             <div className="flex items-center gap-2 px-2 sm:px-4 flex-1 min-w-0 overflow-hidden">
               <SidebarTrigger className="-ml-1 shrink-0" />
@@ -66,7 +66,7 @@ export default function Layout({
             </div>
 
           </header>
-          <main className="flex-1 overflow-y-auto min-h-0">
+          <main className="flex-1 overflow-y-auto" style={{ height: 'calc(100% - 4rem)' }}>
             <div className="p-6">{children}</div>
           </main>
         </SidebarInset>
