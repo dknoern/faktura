@@ -36,37 +36,39 @@ export default function Layout({
 }>) {
   return (
     <div
-      className={`flex h-screen flex-col md:flex-row md:overflow-hidden ${geistSans.variable} ${geistMono.variable} antialiased`}
+      className={`flex h-screen flex-col md:flex-row ${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2">
+        <SidebarInset className="flex flex-col h-full w-full min-w-0">
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background border-b w-full">
 
-            <div className="flex items-center gap-2 px-4 grow ...">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
+            <div className="flex items-center gap-2 px-2 sm:px-4 flex-1 min-w-0 overflow-hidden">
+              <SidebarTrigger className="-ml-1 shrink-0" />
+              <Separator orientation="vertical" className="mr-2 h-4 shrink-0" />
+              <Breadcrumb className="min-w-0 overflow-hidden">
+                <BreadcrumbList className="flex-nowrap">
+                  <BreadcrumbItem className="hidden sm:block">
+                    <BreadcrumbLink href="#" className="truncate">
                       Inventory
                     </BreadcrumbLink>
                   </BreadcrumbItem>
-                  <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                  <BreadcrumbSeparator className="hidden sm:block" />
+                  <BreadcrumbItem className="min-w-0">
+                    <BreadcrumbPage className="truncate">Dashboard</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
 
             </div>
-            <div className="p-4">
+            <div className="px-2 sm:px-4 shrink-0">
             <UserButton/>
             </div>
 
           </header>
-          <div className="flex-grow p-6 md:overflow-y-auto md:p-6">{children}</div>
+          <main className="flex-1 overflow-y-auto min-h-0">
+            <div className="p-6">{children}</div>
+          </main>
         </SidebarInset>
       </SidebarProvider>
 
