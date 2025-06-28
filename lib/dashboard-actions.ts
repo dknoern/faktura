@@ -66,10 +66,10 @@ export async function getMonthlySalesData(): Promise<MonthlySalesData[]> {
   try {
     await dbConnect();
     
-    // Get the last 12 months
+    // Get the last 24 months (2 years)
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - 11);
+    startDate.setMonth(startDate.getMonth() - 23);
     
     // Aggregate sales by month from invoices
     const salesData = await Invoice.aggregate([
@@ -92,11 +92,11 @@ export async function getMonthlySalesData(): Promise<MonthlySalesData[]> {
       }
     ]);
     
-    // Create array for all 12 months with proper formatting
+    // Create array for all 24 months with proper formatting
     const months = [];
     const currentDate = new Date(startDate);
     
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 24; i++) {
       const monthName = currentDate.toLocaleDateString('en-US', { month: 'short' });
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
@@ -107,7 +107,7 @@ export async function getMonthlySalesData(): Promise<MonthlySalesData[]> {
       );
       
       months.push({
-        month: monthName,
+        month: `${monthName} ${year.toString().slice(-2)}`,
         sales: salesRecord ? salesRecord.totalSales : 0
       });
       
@@ -117,21 +117,8 @@ export async function getMonthlySalesData(): Promise<MonthlySalesData[]> {
     return months;
   } catch (error) {
     console.error('Error fetching monthly sales data:', error);
-    // Return mock data as fallback
-    return [
-      { month: 'Jan', sales: 12500 },
-      { month: 'Feb', sales: 15200 },
-      { month: 'Mar', sales: 18700 },
-      { month: 'Apr', sales: 16800 },
-      { month: 'May', sales: 21300 },
-      { month: 'Jun', sales: 19500 },
-      { month: 'Jul', sales: 23100 },
-      { month: 'Aug', sales: 25600 },
-      { month: 'Sep', sales: 22400 },
-      { month: 'Oct', sales: 27800 },
-      { month: 'Nov', sales: 24900 },
-      { month: 'Dec', sales: 31200 }
-    ];
+    // Return mock data as fallback (24 months)
+    return [];
   }
 }
 

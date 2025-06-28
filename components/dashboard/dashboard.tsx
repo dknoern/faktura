@@ -1,9 +1,10 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip} from "@/components/ui/chart";
 import {  type DashboardStats, type MonthlySalesData, type RecentTransaction } from "@/lib/dashboard-actions";
-import { Package, Wrench, MapPin, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Package, Wrench, Plane, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 
 interface DashboardProps {
@@ -86,7 +87,7 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
             <CardTitle className="text-sm font-medium">
               Total Items Out at Show
             </CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <Plane className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalItemsAtShow.toLocaleString()}</div>
@@ -102,10 +103,10 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Monthly Sales - Past 12 Months
+            Monthly Sales - Past 2 Years
           </CardTitle>
           <CardDescription>
-            Sales performance over the last year
+            Sales performance over the last 24 months
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,44 +173,61 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {transactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  {getTransactionIcon(transaction.type)}
-                  <div>
-                    <div className="font-medium">{transaction.description}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatTransactionType(transaction.type)} • {new Date(transaction.date).toLocaleDateString()}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12"></TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transactions.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell>
+                    {getTransactionIcon(transaction.type)}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {transaction.description}
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {formatTransactionType(transaction.type)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      {new Date(transaction.date).toLocaleDateString()}
                     </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  {transaction.amount && (
-                    <div className="font-medium text-green-600">
-                      ${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(transaction.date).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
                     </div>
-                  )}
-                  {transaction.itemNumber && (
-                    <div className="text-sm text-muted-foreground">
-                      #{transaction.itemNumber}
-                    </div>
-                  )}
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(transaction.date).toLocaleTimeString('en-US', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {transactions.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No recent transactions found
-              </div>
-            )}
-          </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {transaction.amount ? (
+                      <span className="font-medium text-green-600">
+                        ${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {transactions.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    No recent transactions found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
