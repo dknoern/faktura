@@ -9,7 +9,7 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ImagePlus, FileText, Copy, Wrench, Trash2, Plane, Clock, ArrowDown, Unlock } from "lucide-react";
+import { ChevronDown, ImagePlus, FileText, Copy, Wrench, Trash2, Plane, Clock, ArrowDown, Unlock, Edit } from "lucide-react";
 import { CustomerSelectModalWrapper } from "./customers/select-modal-wrapper";
 import { toast } from "react-hot-toast";
 import {
@@ -383,6 +383,10 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => window.location.href = `/products/${id}/edit`} className="flex items-center gap-2">
+                    <Edit className="h-4 w-4" />
+                    Edit
+                </DropdownMenuItem>
                 <DropdownMenuItem onSelect={captureImage} className="flex items-center gap-2">
                     <ImagePlus className="h-4 w-4" />
                     Add Image

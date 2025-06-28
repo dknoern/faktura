@@ -110,7 +110,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                 <TableBody>
                     {productsList.map((product) => (
                         <TableRow key={product._id} onClick={() => {
-                            router.push(`/products/${product._id}/edit`)
+                            router.push(`/products/${product._id}/view`)
                         }} className="cursor-pointer">
                             <TableCell>{product.itemNumber}</TableCell>
                             <TableCell>{product.title}</TableCell>

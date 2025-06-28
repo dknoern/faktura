@@ -11,6 +11,7 @@ import {
   SquarePen,
   SquareArrowOutUpRight,
   ChartColumn,
+  Home,
 } from "lucide-react"
 
 import {
@@ -26,6 +27,11 @@ import { NavMain } from "./nav-main"
 
 const data = {
   navMain: [
+    {
+      title: "Home",
+      url: "/home",
+      icon: Home,
+    },
     {
       title: "Products",
       url: "/products",
