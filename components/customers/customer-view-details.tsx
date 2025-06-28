@@ -1,0 +1,147 @@
+"use client";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { customerSchema } from "@/lib/models/customer";
+import { z } from "zod";
+import { CustomerActionMenu } from "./customer-action-menu";
+
+type Customer = z.infer<typeof customerSchema>;
+
+interface CustomerViewDetailsProps {
+    customer: Customer;
+}
+
+export function CustomerViewDetails({ customer }: CustomerViewDetailsProps) {
+    return (
+        <div className="space-y-6">
+            {/* Header with Action Menu */}
+            <div className="flex justify-between items-start">
+                <div>
+                    <h1 className="text-3xl font-bold">
+                        {customer.firstName} {customer.lastName}
+                    </h1>
+                    {customer.company && (
+                        <p className="text-lg text-muted-foreground mt-1">
+                            {customer.company}
+                        </p>
+                    )}
+                </div>
+                <CustomerActionMenu customer={customer} />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Basic Information */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Basic Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div>
+                            <label className="text-sm font-medium text-muted-foreground">Customer ID</label>
+                            <p className="text-sm">{customer._id}</p>
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-muted-foreground">Name</label>
+                            <p className="text-sm">{customer.firstName} {customer.lastName}</p>
+                        </div>
+                        {customer.company && (
+                            <div>
+                                <label className="text-sm font-medium text-muted-foreground">Company</label>
+                                <p className="text-sm">{customer.company}</p>
+                            </div>
+                        )}
+                        <div>
+                            <label className="text-sm font-medium text-muted-foreground">Customer Type</label>
+                            <div className="mt-1">
+                                <Badge variant={customer.customerType === 'Direct' ? 'default' : 'secondary'}>
+                                    {customer.customerType}
+                                </Badge>
+                            </div>
+                        </div>
+                        {customer.status && (
+                            <div>
+                                <label className="text-sm font-medium text-muted-foreground">Status</label>
+                                <div className="mt-1">
+                                    <Badge variant={customer.status === 'Active' ? 'default' : 'secondary'}>
+                                        {customer.status}
+                                    </Badge>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Contact Information */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Contact Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {customer.email && (
+                            <div>
+                                <label className="text-sm font-medium text-muted-foreground">Email</label>
+                                <p className="text-sm">{customer.email}</p>
+                            </div>
+                        )}
+                        {customer.phone && (
+                            <div>
+                                <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                                <p className="text-sm">{customer.phone}</p>
+                            </div>
+                        )}
+                        {customer.cell && (
+                            <div>
+                                <label className="text-sm font-medium text-muted-foreground">Cell</label>
+                                <p className="text-sm">{customer.cell}</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Address Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Shipping Address */}
+                {(customer.address1 || customer.city || customer.state || customer.zip || customer.country) && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Shipping Address</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            {customer.address1 && <p className="text-sm">{customer.address1}</p>}
+                            {customer.address2 && <p className="text-sm">{customer.address2}</p>}
+                            {customer.address3 && <p className="text-sm">{customer.address3}</p>}
+                            {(customer.city || customer.state || customer.zip) && (
+                                <p className="text-sm">
+                                    {[customer.city, customer.state, customer.zip].filter(Boolean).join(', ')}
+                                </p>
+                            )}
+                            {customer.country && <p className="text-sm">{customer.country}</p>}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Billing Address */}
+                {(customer.billingAddress1 || customer.billingCity || customer.billingState || customer.billingZip || customer.billingCountry) && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Billing Address</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            {customer.billingAddress1 && <p className="text-sm">{customer.billingAddress1}</p>}
+                            {customer.billingAddress2 && <p className="text-sm">{customer.billingAddress2}</p>}
+                            {customer.billingAddress3 && <p className="text-sm">{customer.billingAddress3}</p>}
+                            {(customer.billingCity || customer.billingState || customer.billingZip) && (
+                                <p className="text-sm">
+                                    {[customer.billingCity, customer.billingState, customer.billingZip].filter(Boolean).join(', ')}
+                                </p>
+                            )}
+                            {customer.billingCountry && <p className="text-sm">{customer.billingCountry}</p>}
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+        </div>
+    );
+}

@@ -1,5 +1,4 @@
 import { CustomerForm } from "@/components/customers/form";
-import { CustomerRecordsTabs } from "@/components/customers/customer-records-tabs";
 import { fetchCustomerById } from "@/lib/data";
 import { notFound } from 'next/navigation';
 export default async function EditCustomerPage(props: { params: Promise<{ id: number }> }) {
@@ -20,7 +19,6 @@ export default async function EditCustomerPage(props: { params: Promise<{ id: nu
             </div>
             <div>
                 <CustomerForm customer={JSON.parse(JSON.stringify(customer))} />
-                <CustomerRecordsTabs customerId={customer._id} />
             </div>
         </div>
     );
