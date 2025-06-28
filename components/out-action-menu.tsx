@@ -64,7 +64,7 @@ export function OutActionMenu({ id, onUploadComplete }: ActionMenuProps) {
                 <DropdownMenuTrigger asChild>
                     <Button 
                         variant="outline" 
-                        className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
+                        className="flex items-center gap-2"
                         disabled={isUploading}
                     >
                         Action

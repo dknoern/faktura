@@ -108,7 +108,7 @@ export function OutForm({ out }: { out?: OutItem }) {
         <form onSubmit={handleSubmit} className="space-y-6">
 
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid ">
                 {formData._id && (
                     <div>
                         <label className="block text-sm font-medium mb-1">Date</label>
@@ -122,7 +122,7 @@ export function OutForm({ out }: { out?: OutItem }) {
                 )}
 
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid ">
                 <div>
                     <label className="block text-sm font-medium mb-1">Sent To</label>
                     <Input
@@ -134,7 +134,7 @@ export function OutForm({ out }: { out?: OutItem }) {
             </div>
 
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid">
                 <div>
                     <label className="block text-sm font-medium mb-1">Description</label>
                     <Input
@@ -144,7 +144,7 @@ export function OutForm({ out }: { out?: OutItem }) {
                     />
                 </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid">
                 <div>
                     <label className="block text-sm font-medium mb-1">Sent By</label>
                     <Input
@@ -156,7 +156,7 @@ export function OutForm({ out }: { out?: OutItem }) {
 
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid">
                 <div>
                     <label className="block text-sm font-medium mb-1">Note/Comment</label>
                     <Textarea rows={4}

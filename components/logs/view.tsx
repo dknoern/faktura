@@ -145,7 +145,7 @@ export function ViewLog({ log }: { log: Log }) {
         </div>
 
         {/* Log Details */}
-        <div className="grid grid-cols-2 gap-8 mb-8 space-y-6">
+        <div className="grid gap-8 mb-8 space-y-6">
           <div className="space-y-6">
 
 
