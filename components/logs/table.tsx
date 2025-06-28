@@ -134,7 +134,7 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
 
                             <TableRow
                                 key={log._id}
-                                onClick={() => router.push(`/loginitems/${log._id}/edit`)}
+                                onClick={() => router.push(`/loginitems/${log._id}/view`)}
                                 className="cursor-pointer hover:bg-gray-100">
 
 

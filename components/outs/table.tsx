@@ -116,7 +116,7 @@ export function OutsTable({ outs, pagination }: { outs: Out[], pagination: Pagin
                         return (
                             <TableRow 
                                 key={out._id} 
-                                onClick={() => router.push(`/logoutitems/${out._id}/edit`)}
+                                onClick={() => router.push(`/logoutitems/${out._id}/view`)}
                                 className="cursor-pointer hover:bg-gray-100">
                                 <TableCell style={{ whiteSpace: 'nowrap' }}>{out.date ? new Date(out.date).toISOString().split('T')[0] : ''}</TableCell>
                                 <TableCell> {out.sentTo}</TableCell>
