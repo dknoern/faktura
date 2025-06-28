@@ -8,21 +8,31 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Edit, ChevronDown } from "lucide-react";
-import { customerSchema } from "@/lib/models/customer";
-import { z } from "zod";
 import { useRouter } from "next/navigation";
 
-type Customer = z.infer<typeof customerSchema>;
-
-interface CustomerActionMenuProps {
-    customer: Customer;
+interface Return {
+    _id: string;
+    customerName: string;
+    customerId?: number;
+    invoiceId: string;
+    returnDate: string;
+    subTotal: number;
+    taxable: boolean;
+    salesTax: number;
+    shipping: number;
+    totalReturnAmount: number;
+    salesPerson?: string;
 }
 
-export function CustomerActionMenu({ customer }: CustomerActionMenuProps) {
+interface ReturnActionMenuProps {
+    returnData: Return;
+}
+
+export function ReturnActionMenu({ returnData }: ReturnActionMenuProps) {
     const router = useRouter();
 
     const handleEdit = () => {
-        router.push(`/customers/${customer._id}/edit`);
+        router.push(`/returns/${returnData._id}/edit`);
     };
 
     return (

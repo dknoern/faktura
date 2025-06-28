@@ -166,7 +166,7 @@ export function OutForm({ out }: { out?: OutItem }) {
                 </div>
             </div>
 
-            <div className="flex justify-center gap-4 mt-6">
+            <div className="flex justify-end gap-4 mt-6">
                 <Button type="button" variant="outline" onClick={() => router.back()}>
                     Cancel
                 </Button>
