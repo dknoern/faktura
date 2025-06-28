@@ -29,7 +29,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (isLoggedIn) return true;
         return Response.redirect(new URL('/', nextUrl));
       } else if (isLoggedIn && nextUrl.pathname === '/') {
-        return Response.redirect(new URL('/products', nextUrl));
+        return Response.redirect(new URL('/home', nextUrl));
       }
       return true;
 

@@ -22,7 +22,7 @@ export default async function Page() {
           <form
       action={async () => {
         "use server"
-        await signIn('auth0', { redirectTo: "/products" }) 
+        await signIn('auth0', { redirectTo: "/home" }) 
       }}
     >
       <Button>Sign In</Button>

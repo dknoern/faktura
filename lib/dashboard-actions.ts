@@ -138,7 +138,7 @@ export async function getRecentTransactions(): Promise<RecentTransaction[]> {
       transactions.push({
         id: String(invoice._id),
         type: 'sale',
-        description: `Sale to ${invoice.customerFirstName} ${invoice.customerLastName}`,
+        description: `Sold to ${invoice.customerFirstName} ${invoice.customerLastName}`,
         amount: invoice.total,
         date: invoice.date,
         customer: `${invoice.customerFirstName} ${invoice.customerLastName}`
@@ -152,13 +152,12 @@ export async function getRecentTransactions(): Promise<RecentTransaction[]> {
       .lean();
     
     for (const log of recentLogs) {
-      const product = await productModel.findById(log.productId).lean();
+      //const product = await productModel.findById(log.productId).lean();
       transactions.push({
         id: String(log._id),
         type: log.action === 'Log In' ? 'log_in' : 'log_out',
-        description: `${log.action}: ${(product as any)?.title || 'Unknown Item'}`,
+        description: `Received from ${log.customerName}`,
         date: log.date,
-        itemNumber: (product as any)?.itemNumber
       });
     }
     
@@ -169,45 +168,6 @@ export async function getRecentTransactions(): Promise<RecentTransaction[]> {
   } catch (error) {
     console.error('Error fetching recent transactions:', error);
     // Return mock data as fallback
-    return [
-      {
-        id: '1',
-        type: 'sale',
-        description: 'Sale to John Smith',
-        amount: 1250.00,
-        date: new Date('2024-06-27T10:30:00'),
-        customer: 'John Smith'
-      },
-      {
-        id: '2',
-        type: 'log_out',
-        description: 'Log Out: Vintage Guitar',
-        date: new Date('2024-06-27T09:15:00'),
-        itemNumber: 'VG-001'
-      },
-      {
-        id: '3',
-        type: 'sale',
-        description: 'Sale to Mary Johnson',
-        amount: 850.00,
-        date: new Date('2024-06-26T16:45:00'),
-        customer: 'Mary Johnson'
-      },
-      {
-        id: '4',
-        type: 'log_in',
-        description: 'Log In: Antique Clock',
-        date: new Date('2024-06-26T14:20:00'),
-        itemNumber: 'AC-045'
-      },
-      {
-        id: '5',
-        type: 'sale',
-        description: 'Sale to Robert Davis',
-        amount: 2100.00,
-        date: new Date('2024-06-26T11:30:00'),
-        customer: 'Robert Davis'
-      }
-    ];
+    return [];
   }
 }
