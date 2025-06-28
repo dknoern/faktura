@@ -74,11 +74,11 @@ const data = {
       icon: ChartColumn,
       items: [
         {
-          title: "Outstanding repairs",
+          title: "Repairs",
           url: "/reports/outstanding-repairs",
         },
         {
-          title: "Items on memo",
+          title: "Memo Items",
           url: "/reports/items-on-memo",
         },
         {
@@ -86,15 +86,15 @@ const data = {
           url: "/reports/daily-sales",
         },
         {
-          title: "Returns summary",
+          title: "Returns",
           url: "/reports/returns-summary",
         },
         {
-          title: "Partnership items",
+          title: "Partnership",
           url: "/reports/partnership-items",
         },
         {
-          title: "Consignment items",
+          title: "Consignment",
           url: "/reports/consignment-items",
         },
         {

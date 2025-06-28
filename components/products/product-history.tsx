@@ -52,7 +52,7 @@ export function ProductHistory({ history }: ProductHistoryProps) {
                 </Link></span>
               ) : historyEvent.action === "received" && historyEvent.refDoc ? (
                 <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/loginitems/${historyEvent.refDoc}/edit`}>
-                  {historyEvent.refDoc}
+                  log
                 </Link></span>
               ) : null}
             </TableCell>

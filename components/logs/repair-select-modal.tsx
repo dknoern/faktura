@@ -19,6 +19,7 @@ interface Repair {
   dateOut?: string
   customerFirstName?: string
   customerLastName?: string
+  vendor?: string
 }
 
 interface RepairSelectModalProps {
@@ -146,13 +147,14 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
                 <TableHead>Item</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Customer</TableHead>
+                <TableHead>Vendor</TableHead>
                 <TableHead>Out</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8">
+                  <TableCell colSpan={6} className="text-center py-8">
                     <div className="flex justify-center items-center">
                       <Loader2 className="h-6 w-6 animate-spin mr-2" />
                       <span>Loading repairs...</span>
@@ -161,7 +163,7 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
                 </TableRow>
               ) : repairs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8">
+                  <TableCell colSpan={6} className="text-center py-8">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <p>No repairs found</p>
                       <Button variant="outline" size="sm" onClick={() => fetchRepairs()}>
@@ -181,6 +183,7 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
                     <TableCell>{repair.itemNumber}</TableCell>
                     <TableCell>{repair.description}</TableCell>
                     <TableCell>{repair.customerFirstName} {repair.customerLastName}</TableCell>
+                    <TableCell>{repair.vendor || ''}</TableCell>
                     <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.dateOut ? format(new Date(repair.dateOut), 'yyyy-MM-dd') : ''}</TableCell>
                   </TableRow>
                 ))

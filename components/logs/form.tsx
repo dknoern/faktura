@@ -60,7 +60,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
-  
+
   // Modals state
   const [inventoryModalOpen, setInventoryModalOpen] = useState(false);
   const [miscModalOpen, setMiscModalOpen] = useState(false);
@@ -79,6 +79,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
       comments: log?.comments || "",
       user: log?.user || user || "",
       customerName: log?.customerName || "",
+      vendor: log?.vendor || "",
       lineItems: [],
     },
   });
@@ -160,6 +161,20 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
       repairId: repair._id,
     };
     setLineItems([...lineItems, newItem]);
+    
+    // Handle vendor field - append if not already present
+    if (repair.vendor) {
+      const currentVendor = form.getValues("vendor") || "";
+      const vendorsArray = currentVendor.split(",").map(v => v.trim()).filter(v => v.length > 0);
+      
+      // Check if the vendor already exists (case-insensitive)
+      const vendorExists = vendorsArray.some(v => v.toLowerCase() === repair.vendor.toLowerCase());
+      
+      if (!vendorExists) {
+        const newVendorValue = currentVendor ? `${currentVendor}, ${repair.vendor}` : repair.vendor;
+        form.setValue("vendor", newVendorValue);
+      }
+    }
     // Modal is closed automatically by RepairSelectModal
   }
   
@@ -292,6 +307,14 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
 
 
           <div className="grid grid-cols-[120px_1fr] items-center">
+            <label className="text-sm font-medium">Vendor</label>
+            <Input
+              value={form.watch("vendor") || ""}
+              onChange={(e) => form.setValue("vendor", e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-[120px_1fr] items-center">
             <label className="text-sm font-medium">Received By</label>
             <Input
               value={form.watch("user") || ""}
@@ -326,7 +349,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                       setInventoryModalOpen(true);
                     }}
                   >
-                    <ShoppingBag className="mr-2 h-4 w-4" /> Inventory Item
+                    <ShoppingBag className="mr-2 h-4 w-4" /> Inventory
                   </Button>
                   <Button 
                     size="sm" 
@@ -337,7 +360,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                       setMiscModalOpen(true);
                     }}
                   >
-                    <FileText className="mr-2 h-4 w-4" /> Misc Item
+                    <FileText className="mr-2 h-4 w-4" /> Misc
                   </Button>
                   <Button 
                     size="sm" 
@@ -348,7 +371,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                       setRepairModalOpen(true);
                     }}
                   >
-                    <Wrench className="mr-2 h-4 w-4" /> Repair Return
+                    <Wrench className="mr-2 h-4 w-4" /> Repair
                   </Button>
                 </div>
               )}
@@ -524,3 +547,4 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
     </Form>
   );
 } 
+

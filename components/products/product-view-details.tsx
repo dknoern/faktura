@@ -29,7 +29,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
           <CardTitle>Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-500">Type</label>
               <div className="mt-1"><Badge> {product.productType}</Badge></div>
@@ -47,7 +47,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
                 </Badge>
               </div>
             </div>
-            <div className="md:col-span-2">
+            <div className="col-span-2">
               <label className="text-sm font-medium text-gray-500">Title</label>
               <p>{product.title}</p>
             </div>
@@ -110,7 +110,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
               <p>{product.bracelet || 'N/A'}</p>
             </div>
 
-            <div className="md:col-span-2">
+            <div className="col-span-2">
               <label className="text-sm font-medium text-gray-500">Long Desc</label>
               <p>{product.longDesc || 'N/A'}</p>
             </div>

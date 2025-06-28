@@ -22,6 +22,7 @@ export const logSchema = z.object({
   comments: z.string().optional(),
   user: z.string().optional(),
   customerName: z.string().optional(),
+  vendor: z.string().optional(),
   search: z.string().optional(),
   lineItems: z.array(lineItemSchema).optional(),
 });
