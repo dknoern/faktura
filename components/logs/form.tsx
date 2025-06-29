@@ -498,7 +498,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
           }}
         />
 
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-end space-x-4">
           <Button
             type="button"
             variant="outline"

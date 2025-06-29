@@ -1,11 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Printer, Mail, Edit } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { LogActionMenu } from "./log-action-menu";
+import { ImageGallery } from "@/components/products/image-gallery";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface LineItem {
   itemNumber?: string;
@@ -29,55 +37,12 @@ interface Log {
   lineItems?: LineItem[];
 }
 
+interface ViewLogProps {
+  log: Log;
+  initialImages?: string[];
+}
 
-export function ViewLog({ log }: { log: Log }) {
-  const router = useRouter();
-  const [isEmailSending, setIsEmailSending] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<string | null>(null);
-
-  // Function to handle printing
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // Function to navigate to edit page
-  const handleEdit = () => {
-    const logId = log.id || log._id;
-    router.push(`/loginitems/${logId}/edit`);
-  };
-
-  // Function to send email
-  const handleEmail = async () => {
-    setIsEmailSending(true);
-    setEmailStatus(null);
-
-    try {
-      const response = await fetch('/api/email/send-log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          logId: log.id || log._id,
-          email: 'david@seattleweb.com',
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setEmailStatus('Email sent successfully!');
-      } else {
-        setEmailStatus(`Error: ${data.error || 'Failed to send email'}`);
-      }
-    } catch (error) {
-      console.error('Error sending email:', error);
-      setEmailStatus('Error: Failed to send email');
-    } finally {
-      setIsEmailSending(false);
-    }
-  };
-
+export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
 
   const formatDateTime = (date: Date | string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -99,49 +64,15 @@ export function ViewLog({ log }: { log: Log }) {
   };
 
   return (
-    <div className="container mx-auto py-6 px-8 max-w-4xl">
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-4 mt-6 print:hidden">
-        <Button
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={handlePrint}
-        >
-          <Printer className="h-4 w-4" />
-          Print
-        </Button>
-        <Button
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={handleEdit}
-        >
-          <Edit className="h-4 w-4" />
-          Edit
-        </Button>
-        <Button
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={handleEmail}
-          disabled={isEmailSending}
-        >
-          <Mail className="h-4 w-4" />
-          {isEmailSending ? 'Sending...' : 'Email'}
-        </Button>
-      </div>
-
-      {/* Email Status Message */}
-      {emailStatus && (
-        <div className={`mb-4 p-2 rounded text-sm print:hidden ${emailStatus.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-          {emailStatus}
-        </div>
-      )}
+    <div className="container mx-auto px-8 max-w-4xl">
 
       <div className="bg-white p-8 rounded-lg shadow print:shadow-none">
 
 
         {/* Log Header */}
-        <div className="text-left mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">{formatDateTime(log.date)}</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Log Entry</h1>
+          <LogActionMenu log={log} />
         </div>
 
         {/* Log Details */}
@@ -202,47 +133,60 @@ export function ViewLog({ log }: { log: Log }) {
         </div>
 
         {/* Line Items Table */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Items Logged</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2 text-left">Item Number</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Description</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Repair Number</th>
-                  <th className="border border-gray-300 px-4 py-2 text-right">Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {log.lineItems && log.lineItems.length > 0 ? (
-                  log.lineItems.map((item, index) => (
-                    <tr key={index}>
-                      <td className="border border-gray-300 px-4 py-2">
-                        {item.itemNumber || '-'}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        {item.name || '-'}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2">
-                        {item.repairNumber || '-'}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-2 text-right">
-                        {item.repairCost ? formatCurrency(item.repairCost) : '-'}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="border border-gray-300 px-4 py-8 text-center text-gray-500">
-                      No items logged
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Items Logged</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item Number</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Repair Number</TableHead>
+                    <TableHead className="text-right">Cost</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {log.lineItems && log.lineItems.length > 0 ? (
+                    log.lineItems.map((item, index) => (
+                      <TableRow key={index} className="hover:bg-muted/50 transition-colors">
+                        <TableCell className="font-medium">
+                          {item.itemNumber || '-'}
+                        </TableCell>
+                        <TableCell>
+                          {item.name || '-'}
+                        </TableCell>
+                        <TableCell>
+                          {item.repairNumber || '-'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.repairCost ? formatCurrency(item.repairCost) : '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                        No items logged
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Image Gallery */}
+        {initialImages.length > 0 && (
+          <Card>
+            <CardContent className="pt-6">
+              <ImageGallery images={initialImages} />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

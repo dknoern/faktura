@@ -23,7 +23,6 @@ import {
 
 interface ProductActionMenuProps {
     id: string;
-    onUploadComplete?: () => void;
     customers?: any[];
     pagination?: {
         total: number;
@@ -34,7 +33,7 @@ interface ProductActionMenuProps {
     productStatus: string;
 }
 
-export function ProductActionMenu({ id, onUploadComplete, customers = [], productStatus, pagination = { total: 0, pages: 1, currentPage: 1, limit: 10 } }: ProductActionMenuProps) {
+export function ProductActionMenu({ id, customers = [], productStatus, pagination = { total: 0, pages: 1, currentPage: 1, limit: 10 } }: ProductActionMenuProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [showCustomerSelectModal, setShowCustomerSelectModal] = useState(false);
     const [showCustomerSelectModalForRepair, setShowCustomerSelectModalForRepair] = useState(false);
@@ -79,8 +78,9 @@ export function ProductActionMenu({ id, onUploadComplete, customers = [], produc
             // Show success notification
             console.log(`Upload successful: ${file.name}`);
             // You could implement a custom notification here if needed
-            
-            onUploadComplete?.();
+        
+            // Reload the page to show the new image
+            window.location.reload();
         } catch (error) {
             console.error('Error uploading:', error);
             // Show error notification

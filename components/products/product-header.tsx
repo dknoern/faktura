@@ -50,7 +50,6 @@ export function ProductHeader({ id, productStatus }: ProductHeaderProps) {
             <h2 className="text-2xl font-bold tracking-tight">Product</h2>
             <ProductActionMenu 
                 id={id} 
-                onUploadComplete={() => window.location.reload()} 
                 customers={customers}
                 pagination={pagination}
                 productStatus={productStatus}

@@ -87,7 +87,7 @@ export function NavMain({
                 {item.items?.length ? (
                   <>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuAction className="data-[state=open]:rotate-90">
+                      <SidebarMenuAction className="data-[state=open]:rotate-90" style={{ color: "#B8860B" }}>
                         <ChevronRight />
                         <span className="sr-only">Toggle</span>
                       </SidebarMenuAction>
@@ -105,7 +105,7 @@ export function NavMain({
                                 isActive={isSubItemActive}
                               >
                                 {/* Use div instead of Link to handle navigation manually */}
-                                <div className="cursor-pointer">
+                                <div className="cursor-pointer" style={{ color: "#B8860B" }}>
                                   <span>{subItem.title}</span>
                                 </div>
                               </SidebarMenuSubButton>
