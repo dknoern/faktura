@@ -6,6 +6,7 @@ import { ChartContainer, ChartTooltip} from "@/components/ui/chart";
 import {  type DashboardStats, type MonthlySalesData, type RecentTransaction } from "@/lib/dashboard-actions";
 import { Package, Wrench, Plane, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { BRAND_CONFIG } from "@/lib/constants";
 
 interface DashboardProps {
   stats: DashboardStats;
@@ -18,7 +19,7 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
   const chartConfig = {
     sales: {
       label: "Sales",
-      color: "#B8860B",
+      color: BRAND_CONFIG.colors.primary,
     },
   };
 

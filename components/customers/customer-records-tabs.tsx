@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -58,63 +59,68 @@ type Return = {
   }>;
 };
 
+type Wanted = {
+  _id: string;
+  title: string;
+  description: string;
+  customerName: string;
+  customerId: number;
+  createdDate: string;
+  foundDate: string | null;
+  createdBy?: string;
+  foundBy?: string;
+};
+
 export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [repairs, setRepairs] = useState<Repair[]>([]);
   const [returns, setReturns] = useState<Return[]>([]);
+  const [wanted, setWanted] = useState<Wanted[]>([]);
   const [invoiceLoading, setInvoiceLoading] = useState(true);
   const [repairLoading, setRepairLoading] = useState(true);
   const [returnsLoading, setReturnsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("invoices");
+  const [wantedLoading, setWantedLoading] = useState(true);
 
+  // Fetch counts for badges
   useEffect(() => {
-    const fetchInvoices = async () => {
+    const fetchAllCounts = async () => {
+      if (!customerId) return;
+      
       try {
-        const response = await fetch(`/api/customers/${customerId}/invoices`);
-        const data = await response.json();
-        setInvoices(data.invoices);
+        // Fetch invoice count
+        const invoiceResponse = await fetch(`/api/customers/${customerId}/invoices`);
+        const invoiceData = await invoiceResponse.json();
+        setInvoices(invoiceData.invoices || []);
+        
+        // Fetch repair count
+        const repairResponse = await fetch(`/api/customers/${customerId}/repairs`);
+        const repairData = await repairResponse.json();
+        setRepairs(repairData.repairs || []);
+        
+        // Fetch returns count
+        const returnsResponse = await fetch(`/api/customers/${customerId}/returns`);
+        const returnsData = await returnsResponse.json();
+        setReturns(returnsData.returns || []);
+        
+        // Fetch wanted count
+        const wantedResponse = await fetch(`/api/wanted?customerId=${customerId}`);
+        const wantedData = await wantedResponse.json();
+        setWanted(wantedData.wanted || []);
       } catch (error) {
-        console.error("Error fetching invoices:", error);
+        console.error("Error fetching counts:", error);
       } finally {
         setInvoiceLoading(false);
-      }
-    };
-
-    const fetchRepairs = async () => {
-      try {
-        const response = await fetch(`/api/customers/${customerId}/repairs`);
-        const data = await response.json();
-        setRepairs(data.repairs);
-      } catch (error) {
-        console.error("Error fetching repairs:", error);
-      } finally {
         setRepairLoading(false);
-      }
-    };
-
-    const fetchReturns = async () => {
-      try {
-        const response = await fetch(`/api/customers/${customerId}/returns`);
-        const data = await response.json();
-        setReturns(data.returns);
-      } catch (error) {
-        console.error("Error fetching returns:", error);
-      } finally {
         setReturnsLoading(false);
+        setWantedLoading(false);
       }
     };
+    
+    fetchAllCounts();
+  }, [customerId]);
 
-    if (customerId) {
-      if (activeTab === "invoices") {
-        fetchInvoices();
-      } else if (activeTab === "repairs") {
-        fetchRepairs();
-      } else if (activeTab === "returns") {
-        fetchReturns();
-      }
-    }
-  }, [customerId, activeTab]);
+
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
@@ -139,18 +145,42 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
     router.push(`/returns/${returnId}`);
   };
 
+  const navigateToWanted = (wantedId: string) => {
+    router.push(`/wanted/${wantedId}/view`);
+  };
+
   return (
     <div className="mt-8 space-y-4">
       <h3 className="text-xl font-bold tracking-tight">Customer Records</h3>
       <Tabs
         defaultValue="invoices"
-        onValueChange={(value) => setActiveTab(value)}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="repairs">Repairs</TabsTrigger>
-          <TabsTrigger value="returns">Returns</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="invoices" className="flex items-center gap-2">
+            Invoices
+            <Badge variant="secondary" className="text-xs">
+              {invoices.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="repairs" className="flex items-center gap-2">
+            Repairs
+            <Badge variant="secondary" className="text-xs">
+              {repairs.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="returns" className="flex items-center gap-2">
+            Returns
+            <Badge variant="secondary" className="text-xs">
+              {returns.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="wanted" className="flex items-center gap-2">
+            Wanted
+            <Badge variant="secondary" className="text-xs">
+              {wanted.length}
+            </Badge>
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="invoices" className="mt-4">
           {invoiceLoading ? (
@@ -278,6 +308,48 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                       </TableCell>
                       <TableCell>{returnItem.lineItems?.[0]?.longDesc || 'N/A'}</TableCell>
                       <TableCell>{formatCurrency(returnItem.totalReturnAmount)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="wanted" className="mt-4">
+          {wantedLoading ? (
+            <div className="text-center py-4">Loading wanted items...</div>
+          ) : wanted.length === 0 ? (
+            <div className="text-center py-4">No wanted items found for this customer.</div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Created Date</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {wanted.map((wantedItem) => (
+                    <TableRow 
+                      key={wantedItem._id} 
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => navigateToWanted(wantedItem._id)}
+                    >
+                      <TableCell className="font-medium">{wantedItem.title}</TableCell>
+                      <TableCell className="max-w-xs truncate">{wantedItem.description}</TableCell>
+                      <TableCell style={{ whiteSpace: 'nowrap' }}>{formatDate(wantedItem.createdDate)}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          wantedItem.foundDate 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {wantedItem.foundDate ? 'Found' : 'Wanted'}
+                        </span>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

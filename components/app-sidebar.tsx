@@ -3,7 +3,7 @@
 import * as React from "react"
 import {
   ShoppingCart,
-  Watch,
+  Package,
   Users,
   FileText,
   Repeat2,
@@ -12,6 +12,7 @@ import {
   SquareArrowOutUpRight,
   ChartColumn,
   Home,
+  Gift,
 } from "lucide-react"
 
 import {
@@ -24,6 +25,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { NavMain } from "./nav-main"
+import { BRAND_CONFIG } from "@/lib/constants"
 
 const data = {
   navMain: [
@@ -57,6 +59,11 @@ const data = {
       title: "Repairs",
       url: "/repairs",
       icon: Wrench,
+    },
+    {
+      title: "Wanted",
+      url: "/wanted",
+      icon: Gift,
     },
     {
       title: "Log In Items",
@@ -130,12 +137,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="/home">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Watch className="size-4" />
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-transparent">
+                  <Package className="size-6" style={{ color: BRAND_CONFIG.colors.primary }} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Inventory</span>
-                  <span className="truncate text-xs">Management</span>
+                  <span className="truncate font-semibold">{BRAND_CONFIG.name}</span>
+                  <span className="truncate text-xs">{BRAND_CONFIG.tagline}</span>
                 </div>
               </a>
             </SidebarMenuButton>

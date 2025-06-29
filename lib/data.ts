@@ -8,6 +8,7 @@ import { Repair } from './models/repair';
 import { Out } from './models/out';
 import { customerModel } from './models/customer'; import { logModel } from './models/log';
 import { Counter } from './models/counter';
+import { Wanted } from './models/wanted';
 
 export async function fetchCustomers(page = 1, limit = 10, search = '') {
     try {
@@ -526,6 +527,56 @@ export async function fetchReturnByInvoiceId(invoiceId: string) {
         return returnItem ? JSON.parse(JSON.stringify(returnItem)) : null;
     } catch (error) {
         console.error("Error fetching return by invoice ID:", error);
+        throw error;
+    }
+}
+
+export async function fetchWanted(page = 1, limit = 10, search = '') {
+    try {
+        await dbConnect();
+        const skip = (page - 1) * limit;
+
+        let query: any = {};
+        
+        if (search) {
+            const searchConditions = {
+                $or: [
+                    { title: { $regex: search, $options: 'i' } },
+                    { description: { $regex: search, $options: 'i' } },
+                    { customerName: { $regex: search, $options: 'i' } }
+                ]
+            };
+            query = searchConditions;
+        }
+
+        const wanted = await Wanted.find(query)
+            .sort({ createdDate: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalCount = await Wanted.countDocuments(query);
+        return {
+            wanted: JSON.parse(JSON.stringify(wanted)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching wanted items:', error);
+        throw error;
+    }
+}
+
+export async function fetchWantedById(id: string) {
+    try {
+        await dbConnect();
+        const wanted = await Wanted.findById(id);
+        return JSON.parse(JSON.stringify(wanted));
+    } catch (error) {
+        console.error('Error fetching wanted item:', error);
         throw error;
     }
 }

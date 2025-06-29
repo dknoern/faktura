@@ -16,13 +16,6 @@ import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
 import { CustomerSelectModalWrapper } from "../customers/select-modal-wrapper";
 import { PlusCircle } from "lucide-react";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 
 interface PaginationProps {
     total: number;
@@ -31,22 +24,18 @@ interface PaginationProps {
     limit: number;
 }
 
-interface Repair {
+interface Wanted {
     _id: string;
-    repairNumber: string;
-    itemNumber: string;
+    title: string;
     description: string;
-    dateOut: string | null;
-    customerApprovedDate: string | null;
-    returnDate: string | null;
-    customerFirstName: string;
-    customerLastName: string;
-    vendor: string;
-    repairCost: number;
+    customerName: string;
+    customerId: number;
+    createdDate: string;
+    foundDate: string | null;
 }
 
-export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagination: PaginationProps }) {
-    const repairsList = Array.isArray(repairs) ? repairs : [];
+export function WantedTable({ wanted, pagination }: { wanted: Wanted[], pagination: PaginationProps }) {
+    const wantedList = Array.isArray(wanted) ? wanted : [];
 
     const router = useRouter();
     const pathname = usePathname();
@@ -54,7 +43,6 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
-    const [filterType, setFilterType] = useState(searchParams.get('filter') || 'outstanding');
 
     const handlePageChange = (newPage: number) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -83,14 +71,6 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
             router.push(`${pathname}?${params.toString()}`);
         }, 300); // 300ms debounce delay
     };
-
-    const handleFilterChange = (value: string) => {
-        setFilterType(value);
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('filter', value);
-        params.set('page', '1'); // Reset to first page when filtering
-        router.push(`${pathname}?${params.toString()}`);
-    };
     
     // Cleanup timeout on unmount
     useEffect(() => {
@@ -101,20 +81,16 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
         };
     }, []);
 
-    const handleRowClick = (repairNumber: string) => {
-        router.push(`/repairs/${repairNumber}/view`);
+    const handleRowClick = (id: string) => {
+        router.push(`/wanted/${id}/view`);
     };
 
-    // Handle customer selection for new repair
+    // Handle customer selection for new wanted item
     const handleCustomerSelect = (customer: any) => {
         setIsCustomerModalOpen(false);
-        // Navigate to the new repair page with the selected customer ID
-        router.push(`/repairs/new?customerId=${customer._id}`);
+        // Navigate to the new wanted page with the selected customer ID
+        router.push(`/wanted/new?customerId=${customer._id}`);
     };
-
-    // Filter repairs based on selected filter type
-    // Filtering is now handled server-side, so we use all repairs
-    const filteredRepairs = repairsList;
 
     return (
         <div>
@@ -122,26 +98,17 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                 <div className="flex items-center gap-4">
                     <Input
                         type="text"
-                        placeholder="Search repairs..."
+                        placeholder="Search wanted items..."
                         value={searchQuery}
                         onChange={handleSearch}
-                        className="max-w-sm"
+                        className="w-64"
                     />
-                    <Select value={filterType} onValueChange={handleFilterChange}>
-                        <SelectTrigger className="w-48">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="outstanding">Outstanding</SelectItem>
-                            <SelectItem value="all">All Repairs</SelectItem>
-                        </SelectContent>
-                    </Select>
                 </div>
                 <Button variant="outline"
                     onClick={() => setIsCustomerModalOpen(true)}
                     className="ml-auto"
                 >
-                    <PlusCircle className="mr-2 h-4 w-4" /> New Repair
+                    <PlusCircle className="mr-2 h-4 w-4" /> New Wanted Item
                 </Button>
             </div>
             
@@ -161,33 +128,37 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead style={{ whiteSpace: 'nowrap' }}>Repair</TableHead>
-                        <TableHead>Item</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Out</TableHead>
-                        <TableHead>Approved</TableHead>
-                        <TableHead>Returned</TableHead>
+                        <TableHead>Title</TableHead>
                         <TableHead>Customer</TableHead>
-                        <TableHead>Vendor</TableHead>
-                        <TableHead>Cost</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Found</TableHead>
+                        <TableHead>Status</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {filteredRepairs.map((repair: Repair) => (
+                    {wantedList.map((item: Wanted) => (
                         <TableRow 
-                            key={repair._id}
+                            key={item._id}
                             className="cursor-pointer hover:bg-gray-50"
-                            onClick={() => handleRowClick(repair._id)}
+                            onClick={() => handleRowClick(item._id)}
                         >
-                            <TableCell>{repair.repairNumber}</TableCell>
-                            <TableCell>{repair.itemNumber}</TableCell>
-                            <TableCell>{repair.description}</TableCell>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.dateOut ? new Date(repair.dateOut).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.customerApprovedDate ? new Date(repair.customerApprovedDate).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.returnDate ? new Date(repair.returnDate).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.customerFirstName + ' ' + repair.customerLastName}</TableCell>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.vendor}</TableCell>
-                            <TableCell>{repair.repairCost}</TableCell>
+                            <TableCell className="font-medium">{item.title}</TableCell>
+                            <TableCell>{item.customerName}</TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>
+                                {item.createdDate ? new Date(item.createdDate).toISOString().split('T')[0] : ''}
+                            </TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>
+                                {item.foundDate ? new Date(item.foundDate).toISOString().split('T')[0] : ''}
+                            </TableCell>
+                            <TableCell>
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                    item.foundDate 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                    {item.foundDate ? 'Found' : 'Wanted'}
+                                </span>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -195,7 +166,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
 
             <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                    Showing {filteredRepairs.length} of {pagination.total} repairs
+                    Showing {wantedList.length} of {pagination.total} wanted items
                 </div>
                 <div className="flex space-x-2">
                     <Button
