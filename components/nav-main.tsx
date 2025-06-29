@@ -11,7 +11,7 @@ import {
 import {
   SidebarGroup,
   SidebarMenu,
-  SidebarMenuAction,
+
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -72,25 +72,17 @@ export function NavMain({
           return (
             <Collapsible key={item.title} asChild defaultOpen={isActive}>
               <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  tooltip={item.title}
-                  onClick={item.items?.length ? undefined : () => handleNavigation(item.url)}
-                  isActive={isActive}
-                >
-                  {/* Use div instead of Link to handle navigation manually */}
-                  <div className="cursor-pointer">
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </div>
-                </SidebarMenuButton>
                 {item.items?.length ? (
                   <>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuAction className="data-[state=open]:rotate-90" style={{ color: "#B8860B" }}>
-                        <ChevronRight />
-                        <span className="sr-only">Toggle</span>
-                      </SidebarMenuAction>
+                      <SidebarMenuButton 
+                        tooltip={item.title}
+                        isActive={isActive}
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      </SidebarMenuButton>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
@@ -105,7 +97,7 @@ export function NavMain({
                                 isActive={isSubItemActive}
                               >
                                 {/* Use div instead of Link to handle navigation manually */}
-                                <div className="cursor-pointer" style={{ color: "#B8860B" }}>
+                                <div className="cursor-pointer">
                                   <span>{subItem.title}</span>
                                 </div>
                               </SidebarMenuSubButton>
@@ -115,7 +107,20 @@ export function NavMain({
                       </SidebarMenuSub>
                     </CollapsibleContent>
                   </>
-                ) : null}
+                ) : (
+                  <SidebarMenuButton 
+                    asChild 
+                    tooltip={item.title}
+                    onClick={() => handleNavigation(item.url)}
+                    isActive={isActive}
+                  >
+                    {/* Use div instead of Link to handle navigation manually */}
+                    <div className="cursor-pointer">
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </div>
+                  </SidebarMenuButton>
+                )}
               </SidebarMenuItem>
             </Collapsible>
           );
