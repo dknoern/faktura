@@ -28,13 +28,9 @@ import { useRouter } from "next/navigation"
 
 import { Textarea } from "../ui/textarea"
 import { Checkbox } from "../ui/checkbox"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardContent, CardFooter } from "../ui/card"
 import Link from "next/link"
-import { Table, TableHeader, TableRow, TableBody, TableCell } from "../ui/table"
 import { productSchema } from "../../lib/models/product"
 import { toast } from "react-hot-toast"
-
 
 export default function ProductEditForm({ product, repairs }: { product: z.infer<typeof productSchema>, repairs: Array<{ _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }> }) {
     const router = useRouter();
@@ -185,7 +181,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
-                    <div className='grid gap-4 sm:grid-cols-1 lg:grid-cols-2'>
+                    <div className='grid gap-4'>
                         <div className='space-y-3'>
 
                             <input name="id" type="hidden" value={product.id} />
@@ -463,7 +459,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                     <FormItem>
                                         <FormLabel>Long Desc</FormLabel>
                                         <FormControl>
-                                            <Textarea placeholder="Long description" {...field} value={field.value || ""} />
+                                            <Textarea rows={4} placeholder="Long description" {...field} value={field.value || ""} />
 
                                         </FormControl>
                                         <FormMessage />
@@ -580,192 +576,6 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
 
                             />
 
-                            <Tabs defaultValue="financials" className="w-[400px]">
-                                <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="financials">Financials</TabsTrigger>
-                                    <TabsTrigger value="history">History</TabsTrigger>
-                                    <TabsTrigger value="repairs">Repairs</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="financials">
-                                    <Card>
-
-                                        <CardContent className="space-y-2">
-
-                                            <FormField
-                                                control={form.control}
-                                                name="sellingPrice"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Our price</FormLabel>
-                                                        <FormControl>
-                                                            <Input 
-                                                                type="number"
-                                                                {...field} 
-                                                                value={field.value === undefined || field.value === null ? "" : field.value} 
-                                                                onChange={e => {
-                                                                    const value = e.target.value === "" ? 0 : Number(e.target.value);
-                                                                    field.onChange(value);
-                                                                }}
-                                                            />
-
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <FormField
-                                                control={form.control}
-                                                name="listPrice"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>List price</FormLabel>
-                                                        <FormControl>
-                                                            <Input 
-                                                                type="number"
-                                                                {...field} 
-                                                                value={field.value === undefined || field.value === null ? "" : field.value} 
-                                                                onChange={e => {
-                                                                    const value = e.target.value === "" ? 0 : Number(e.target.value);
-                                                                    field.onChange(value);
-                                                                }}
-                                                            />
-
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-
-                                            />
-
-                                            <FormField
-                                                control={form.control}
-                                                name="cost"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Cost</FormLabel>
-                                                        <FormControl>
-                                                            <Input 
-                                                                type="number"
-                                                                {...field} 
-                                                                value={field.value === undefined || field.value === null ? "" : field.value} 
-                                                                onChange={e => {
-                                                                    const value = e.target.value === "" ? 0 : Number(e.target.value);
-                                                                    field.onChange(value);
-                                                                }}
-                                                            />
-
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                            <FormField
-                                                control={form.control}
-                                                name="totalRepairCost"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Repair Cost</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="" {...field} value={field.value || "0"} disabled />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-
-                                            <FormField
-                                                control={form.control}
-                                                name="totalCost"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Total Cost</FormLabel>
-                                                        <FormControl>
-                                                            <Input placeholder="" {...field} value={field.value || "0"} disabled />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-                                        </CardContent>
-                                        <CardFooter />
-                                    </Card>
-                                </TabsContent>
-
-                                <TabsContent value="history">
-                                    <Card>
-                                        <CardContent className="space-y-2">
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                    <TableCell>Date</TableCell>
-                                                        <TableCell>User</TableCell>
-                                                        <TableCell>Activity</TableCell>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {(product.history || []).map((historyEvent, index) => (
-                                                        <TableRow key={index}>
-                                                            <TableCell>{new Date(historyEvent.date).toISOString().split('T')[0]}</TableCell>
-                                                            <TableCell className="font-medium">{historyEvent.user}</TableCell>
-                                                            <TableCell>{historyEvent.action}
-                                                                {historyEvent.action === "sold item" ? (
-                                                                    <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${historyEvent.refDoc}/view`}>
-                                                                        {historyEvent.refDoc}
-                                                                    </Link>
-                                                                    </span>
-                                                                ) : historyEvent.action === "received" && historyEvent.refDoc ? (
-                                                                    <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/loginitems/${historyEvent.refDoc}/edit`}>
-                                                                        log
-                                                                    </Link>
-                                                                    </span>
-                                                                ) : (
-                                                                    ''
-                                                                )}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </CardContent>
-                                        <CardFooter />
-                                    </Card>
-                                </TabsContent>
-
-                                <TabsContent value="repairs">
-                                    <Card>
-                                        <CardContent className="space-y-2">
-
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableCell>Date Out</TableCell>
-                                                        <TableCell>Returned</TableCell>
-                                                        <TableCell>Noteds</TableCell>
-                                                        <TableCell>Vendor</TableCell>
-                                                        <TableCell>Cost</TableCell>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {repairs.map((repair: { _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }) => (
-                                                        <TableRow key={repair._id}>
-                                                            <TableCell className="font-medium">{repair.dateOut ? new Date(repair.dateOut).toISOString().split('T')[0] : ''}</TableCell>
-                                                            <TableCell>{repair.returnDate ? new Date(repair.returnDate).toISOString().split('T')[0] : ''}</TableCell>
-                                                            <TableCell>{repair.repairNotes}</TableCell>
-                                                            <TableCell>{repair.vendor}</TableCell>
-                                                            <TableCell>{repair.repairCost}</TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </CardContent>
-                                        <CardFooter />
-                                    </Card>
-                                </TabsContent>
-                            </Tabs>
                         </div>
                     </div>
 
