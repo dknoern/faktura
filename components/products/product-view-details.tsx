@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductHistory } from "./product-history";
+import { Watch, Gem, BriefcaseBusiness, Clock } from "lucide-react";
 interface ProductViewDetailsProps {
   product: any;
   repairs: any[];
@@ -21,6 +22,22 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
     return new Date(dateString).toLocaleDateString();
   };
 
+  const getProductTypeIcon = (productType: string) => {
+    const className="size-4 ml-0 mr-2"
+    switch (productType) {
+      case 'Watch':
+        return <Watch className={className} />;
+      case 'PocketWatch':
+        return <Clock className={className} />;
+      case 'Jewelry':
+        return <Gem className={className} />;
+      case 'Accessories':
+        return <BriefcaseBusiness className={className} />;
+      default:
+        return <Watch className={className} />;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Basic Information */}
@@ -32,7 +49,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-500">Type</label>
-              <div className="mt-1"><Badge> {product.productType}</Badge></div>
+              <div className="mt-1"><Badge>{getProductTypeIcon(product.productType)} {product.productType}</Badge></div>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">Status</label>

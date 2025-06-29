@@ -3,9 +3,8 @@ import { fetchProductById, getRepairsForItem, fetchCustomers } from '@/lib/data'
 import { getProductImages } from '@/lib/utils/storage';
 import { notFound } from 'next/navigation';
 import { StatusUpdateToast } from '@/components/status-update-toast';
-import { ProductActionMenu } from '@/components/product-action-menu';
+import { ProductActionMenu } from '@/components/products/product-action-menu';
 import { ProductViewDetails } from '@/components/products/product-view-details';
-import { Watch } from 'lucide-react';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -28,8 +27,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <div className="flex justify-between items-center mb-6">
         <span className="flex items-center">
 
-          <Watch className="mr-2"/> <h1 className="text-2xl font-bold">{product.itemNumber}
-            </h1></span>
+          <h1 className="text-3xl font-bold">{product.itemNumber}</h1></span>
         <ProductActionMenu 
           id={id} 
           productStatus={product.status}

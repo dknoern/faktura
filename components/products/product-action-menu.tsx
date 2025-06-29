@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ImagePlus, FileText, Copy, Wrench, Trash2, Plane, Clock, ArrowDown, Unlock, Edit } from "lucide-react";
-import { CustomerSelectModalWrapper } from "./customers/select-modal-wrapper";
+import { CustomerSelectModalWrapper } from "../customers/select-modal-wrapper";
 import { toast } from "react-hot-toast";
 import {
     Dialog,
