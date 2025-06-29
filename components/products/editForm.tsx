@@ -775,11 +775,11 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                 {submitError}
                             </div>
                         )}
-                        <div className="flex justify-center space-y-0 space-x-4">
+                        <div className="flex justify-end space-y-0 space-x-4">
+                        <Button variant="secondary" type="button" disabled={isSubmitting} onClick={() => router.back()}>Cancel</Button>
                             <Button type="submit" disabled={isSubmitting}>
                                 {isSubmitting ? 'Saving...' : isNewProduct ? 'Create Product' : 'Update Product'}
                             </Button>
-                            <Link href="/products"><Button variant="secondary" type="button" disabled={isSubmitting}>Cancel</Button></Link>
                         </div>
                         
                     </div>

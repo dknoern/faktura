@@ -1,11 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Printer, Mail, Edit } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { OutActionMenu } from "./out-action-menu";
 
 interface Out {
   id?: string;
@@ -20,54 +17,7 @@ interface Out {
   signatureUser?: string;
 }
 
-
 export function ViewOut({ out }: { out: Out }) {
-  const router = useRouter();
-  const [isEmailSending, setIsEmailSending] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<string | null>(null);
-
-  // Function to handle printing
-  const handlePrint = () => {
-    window.print();
-  };
-  
-  // Function to navigate to edit page
-  const handleEdit = () => {
-    const outId = out.id || out._id;
-    router.push(`/logoutitems/${outId}/edit`);
-  };
-  
-  // Function to send email
-  const handleEmail = async () => {
-    setIsEmailSending(true);
-    setEmailStatus(null);
-    
-    try {
-      const response = await fetch('/api/email/send-out', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          outId: out.id || out._id,
-          email: 'david@seattleweb.com',
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setEmailStatus('Email sent successfully!');
-      } else {
-        setEmailStatus(`Error: ${data.error || 'Failed to send email'}`);
-      }
-    } catch (error) {
-      console.error('Error sending email:', error);
-      setEmailStatus('Error: Failed to send email');
-    } finally {
-      setIsEmailSending(false);
-    }
-  };
 
   const formatDateTime = (date: Date | string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -89,48 +39,15 @@ export function ViewOut({ out }: { out: Out }) {
           <h1 className="text-3xl font-bold">
             Log Out Entry
           </h1>
+
           <p className="text-lg text-muted-foreground mt-1">
             Sent to {out.sentTo}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2" 
-            onClick={handlePrint}
-          >
-            <Printer className="h-4 w-4" />
-            Print
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2" 
-            onClick={handleEdit}
-          >
-            <Edit className="h-4 w-4" />
-            Edit
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2" 
-            onClick={handleEmail}
-            disabled={isEmailSending}
-          >
-            <Mail className="h-4 w-4" />
-            {isEmailSending ? 'Sending...' : 'Email'}
-          </Button>
-        </div>
+        <OutActionMenu out={out} />
       </div>
 
-      {/* Email Status Message */}
-      {emailStatus && (
-        <div className={`p-3 rounded-md ${emailStatus.includes('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
-          {emailStatus}
-        </div>
-      )}
+
 
       <div className="grid grid-cols-1 gap-6">
         {/* Log Out Details */}

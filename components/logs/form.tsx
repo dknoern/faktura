@@ -502,7 +502,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/loginitems")}
+            onClick={() => router.back()}
             disabled={isSubmitting}
           >
             Cancel

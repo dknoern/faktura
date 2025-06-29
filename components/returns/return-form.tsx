@@ -315,22 +315,21 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
         </table>
       </div>
       
-      <div className="flex justify-center mt-8 space-x-4">
+      <div className="flex justify-end mt-8 space-x-4">
+      <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+        >
+          Cancel
+        </Button>        
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="bg-blue-500 hover:bg-blue-600"
         >
           Save
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push('/returns')}
-          className="border-gray-300"
-        >
-          Cancel
-        </Button>
+
       </div>
     </form>
   );

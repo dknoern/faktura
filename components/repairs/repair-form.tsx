@@ -307,7 +307,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/repairs")}
+          onClick={() => router.back()}
         >
           Cancel
         </Button>
