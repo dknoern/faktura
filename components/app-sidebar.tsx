@@ -89,7 +89,7 @@ const data = {
           url: "/reports/items-on-memo",
         },
         {
-          title: "Daily sales",
+          title: "Daily Sales",
           url: "/reports/daily-sales",
         },
         {
@@ -105,7 +105,7 @@ const data = {
           url: "/reports/consignment-items",
         },
         {
-          title: "Monthly sales",
+          title: "Monthly Sales",
           url: "/reports/monthly-sales",
         },
         {
@@ -113,11 +113,11 @@ const data = {
           url: "/reports/out-at-show",
         },
         {
-          title: "Show report",
+          title: "Show Report",
           url: "/reports/show-report",
         },
         {
-          title: "In stock",
+          title: "In Stock",
           url: "/reports/in-stock",
         },
         {
