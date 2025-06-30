@@ -3,8 +3,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductHistory } from "./product-history";
-import { Watch, Gem, BriefcaseBusiness, Clock } from "lucide-react";
+import { Watch, Gem, BriefcaseBusiness, Clock} from "lucide-react";
 import React, { useState } from "react";
+import Link from "next/link";
 interface ProductViewDetailsProps {
   product: any;
   repairs: any[];
@@ -91,6 +92,14 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
     }
   };
 
+  // Calculate total repair cost from associated repairs
+  const totalRepairCost = repairs && repairs.length > 0 
+    ? repairs.reduce((total: number, repair: any) => {
+        const repairCost = repair.cost || repair.repairCost || 0;
+        return total + repairCost;
+      }, 0)
+    : 0;
+
   return (
     <div className="space-y-6">
       {/* Basic Information */}
@@ -119,7 +128,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">Status</label>
-              <div className="mt-1">
+              <div className="mt-1 flex gap-2">
                 <Badge style={{ 
                   backgroundColor: product.status === 'In Stock' ? 'green' : 
                                  product.status === 'Sold' ? 'grey' : 
@@ -128,6 +137,9 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
                 }}>
                   {product.sellerType === 'Partner' && product.status !== 'Sold' ? 'Partnership' : product.status}
                 </Badge>
+                {product.ebayNoReserve && <Badge style={{ backgroundColor: 'blue' }}>Ebay</Badge>}
+                {product.inventoryItem && <Badge style={{ backgroundColor: 'green' }}>Inventory</Badge>}
+                {product.sellerType === "Partner" && product.id != null && <div style={{ fontSize: '14px', cursor: 'pointer' }} className="text-blue-500 hover:underline"><Link href={`/invoices/${product.id}/partner`}>Partner Invoice</Link></div>}
               </div>
             </div>
 
@@ -199,28 +211,41 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
         <CardHeader>
           <CardTitle>Financial Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-500">Cost</label>
-              <p className="text-lg font-semibold">
-                {product.cost ? formatCurrency(product.cost) : 'N/A'}
-              </p>
+        <CardContent>
+          <div className="space-y-0">
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm font-medium text-gray-500">Our Price</span>
+              <span className="text-sm font-semibold">
+                {product.sellingPrice ? formatCurrency(product.sellingPrice) : '$0.00'}
+              </span>
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-500">Price</label>
-              <p className="text-lg font-semibold">
-                {product.price ? formatCurrency(product.price) : 'N/A'}
-              </p>
+            
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm font-medium text-gray-500">List Price</span>
+              <span className="text-sm font-semibold">
+                {product.listPrice ? formatCurrency(product.listPrice) : '$0.00'}
+              </span>
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-500">Margin</label>
-              <p className="text-lg font-semibold">
-                {product.cost && product.price 
-                  ? `${Math.round(((product.price - product.cost) / product.price) * 100)}%`
-                  : 'N/A'
-                }
-              </p>
+            
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm font-medium text-gray-500">Cost</span>
+              <span className="text-sm font-semibold">
+                {product.cost ? formatCurrency(product.cost) : '$0.00'}
+              </span>
+            </div>
+            
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm font-medium text-gray-500">Repair Cost</span>
+              <span className="text-sm font-semibold">
+                {totalRepairCost > 0 ? formatCurrency(totalRepairCost) : '$0.00'}
+              </span>
+            </div>
+            
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm font-medium text-gray-500">Total Cost</span>
+              <span className="text-sm font-semibold">
+                {(product.cost || 0) + totalRepairCost > 0 ? formatCurrency((product.cost || 0) + totalRepairCost) : '$0.00'}
+              </span>
             </div>
           </div>
         </CardContent>
