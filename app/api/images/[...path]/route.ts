@@ -4,10 +4,14 @@ import { getImage } from '@/lib/utils/storage';
 
 export async function GET(
     request: Request,
-    { params }: { params: Promise<{ filename: string }> }
+    { params }: { params: Promise<{ path: string[] }> }
 ) {
+
     try {
-        const filename = (await params).filename;
+        const pathSegments = (await params).path;
+        // Join the path segments to create the full file path
+        const filename = pathSegments.join('/');
+        
         const imageBuffer = await getImage(filename);
         const contentType = path.extname(filename).toLowerCase() === '.png' 
             ? 'image/png' 

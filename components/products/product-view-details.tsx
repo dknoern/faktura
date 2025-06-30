@@ -4,9 +4,62 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductHistory } from "./product-history";
 import { Watch, Gem, BriefcaseBusiness, Clock } from "lucide-react";
+import React, { useState } from "react";
 interface ProductViewDetailsProps {
   product: any;
   repairs: any[];
+}
+
+// Component to display manufacturer logo
+function ManufacturerLogo({ manufacturer }: { manufacturer: string }) {
+  const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Add timeout to handle hanging requests - MUST be before any early returns
+  React.useEffect(() => {
+    if (!manufacturer) return; // Don't set timeout if no manufacturer
+    
+    const timeout = setTimeout(() => {
+      if (!imageLoaded && !imageError) {
+        console.log('Image load timeout, falling back to text');
+        setImageError(true);
+      }
+    }, 3000); // 3 second timeout
+    
+    return () => clearTimeout(timeout);
+  }, [manufacturer, imageLoaded, imageError]);
+  
+  if (!manufacturer) {
+    return <p/>;
+  }
+  
+  if (imageError) {
+    return <p>{manufacturer}</p>;
+  }
+  
+  // Create the logo path - no encoding needed with catch-all route
+  const logoPath = `logos/${manufacturer}.png`;
+  const imageUrl = `/api/images/${logoPath}`;
+  
+  return (
+    <div className="flex items-center">
+      {!imageLoaded && !imageError && (
+        <p className="text-gray-400">Loading logo...</p>
+      )}
+      <img
+        src={imageUrl}
+        alt={`${manufacturer} logo`}
+        style={{ maxWidth: '120px', height: 'auto', objectFit: 'contain' }}
+        className={!imageLoaded ? 'hidden' : ''}
+        onLoad={() => {
+          setImageLoaded(true);
+        }}
+        onError={() => {
+          setImageError(true);
+        }}
+      />
+    </div>
+  );
 }
 
 export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps) {
@@ -47,6 +100,19 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+
+            <div className="col-span-2">
+              {/*<label className="text-sm font-medium text-gray-500">Manufacturer</label>*/}
+              <div className="mt-1">
+                <ManufacturerLogo manufacturer={product.manufacturer} />
+              </div>
+            </div>
+
+            <div className="col-span-2">
+              <label className="text-sm font-medium text-gray-500">Title</label>
+              <p>{product.title}</p>
+            </div>
+
             <div>
               <label className="text-sm font-medium text-gray-500">Type</label>
               <div className="mt-1"><Badge>{getProductTypeIcon(product.productType)} {product.productType}</Badge></div>
@@ -64,15 +130,6 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
                 </Badge>
               </div>
             </div>
-            <div className="col-span-2">
-              <label className="text-sm font-medium text-gray-500">Title</label>
-              <p>{product.title}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Manufacturer</label>
-              <p>{product.manufacturer || 'N/A'}</p>
-            </div>
 
             <div>
               <label className="text-sm font-medium text-gray-500">Serial Number</label>
@@ -83,11 +140,6 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
               <label className="text-sm font-medium text-gray-500">Model Name</label>
               <p>{product.model || 'N/A'}</p>
             </div>
-
-
-
-
-
 
             <div>
               <label className="text-sm font-medium text-gray-500">Model Number</label>

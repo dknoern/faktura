@@ -1,5 +1,6 @@
-import { fetchWantedById } from "@/lib/data";
 import { ViewWanted } from "@/components/wanted/view";
+import { fetchWantedById } from "@/lib/data";
+
 import { notFound } from "next/navigation";
 
 type Params = Promise<{ id: string }>
