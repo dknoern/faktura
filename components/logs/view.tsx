@@ -64,7 +64,7 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
   };
 
   return (
-    <div className="container mx-auto px-8 max-w-4xl">
+    <div className="container mx-auto px-8">
 
       <div className="bg-white p-8 rounded-lg shadow print:shadow-none">
 
@@ -142,8 +142,8 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Item Number</TableHead>
                     <TableHead>Description</TableHead>
+                    <TableHead>Item Number</TableHead>
                     <TableHead>Repair Number</TableHead>
                     <TableHead className="text-right">Cost</TableHead>
                   </TableRow>
@@ -152,11 +152,12 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
                   {log.lineItems && log.lineItems.length > 0 ? (
                     log.lineItems.map((item, index) => (
                       <TableRow key={index} className="hover:bg-muted/50 transition-colors">
-                        <TableCell className="font-medium">
-                          {item.itemNumber || '-'}
-                        </TableCell>
+
                         <TableCell>
                           {item.name || '-'}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {item.itemNumber || '-'}
                         </TableCell>
                         <TableCell>
                           {item.repairNumber || '-'}

@@ -405,13 +405,13 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                           </TableCell>
                           <TableCell>
                             <a 
-                              href={`/products/${item.productId}/edit`}
+                              href={`/products/${item.productId}/view`}
                               className="text-[rgb(98,90,250)] hover:text-black"
                             >
                               {item.itemNumber || ""}
                             </a>
                           </TableCell>
-                          <TableCell><a href={`/repairs/${item.repairNumber}/view`} className="text-[rgb(98,90,250)] hover:text-black">{item.repairNumber || ""}</a></TableCell>
+                          <TableCell><a href={`/repairs/${item.repairId}/view`} className="text-[rgb(98,90,250)] hover:text-black">{item.repairNumber || ""}</a></TableCell>
                           <TableCell className="text-right">
                             {/* Only show repair cost input if it's a repair item */}
                             {(item.repairId || item.repairNumber) ? (
