@@ -25,9 +25,9 @@ export async function OutAtShowTable() {
             <TableBody>
                 {products.map((product) => (
                     <TableRow key={product._id}>
-                        <TableCell>{product._id}</TableCell>
+                        <TableCell>{product.itemNumber}</TableCell>
                         <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
-                        <TableCell>{product.description}</TableCell>
+                        <TableCell>{product.title}</TableCell>
                      </TableRow>
                 ))}
             </TableBody>

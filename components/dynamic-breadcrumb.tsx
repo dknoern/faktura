@@ -15,29 +15,28 @@ const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
     { label: "Dashboard" }
   ],
   "/products": [
-    { label: "Products" }
+    { label: "Products", href: "/products" }
   ],
   "/repairs": [
-    { label: "Repairs" }
+    { label: "Repairs", href: "/repairs" }
   ],
   "/customers": [
-    { label: "Customers" }
+    { label: "Customers", href: "/customers" }
   ],
   "/invoices": [
-    { label: "Invoices" }
+    { label: "Invoices", href: "/invoices" }
   ],
   "/returns": [
-    { label: "Returns" }
+    { label: "Returns", href: "/returns" }
   ],
   "/logoutitems": [
-    { label: "Log Out Items" }
+    { label: "Log Out Items", href: "/logoutitems" }
   ],
   "/loginitems": [
-    { label: "Log In Items" }
+    { label: "Log In Items", href: "/loginitems" }
   ],
   "/reports": [
     { label: "Reports", href: "#" }
-
   ]
 }
 
@@ -46,6 +45,9 @@ export function DynamicBreadcrumb() {
   
   // Get the base path (remove any sub-paths like /products/123)
   const basePath = pathname.split('/').slice(0, 2).join('/') || '/'
+  
+  // Check if we're on a deeper page (like /products/123/view)
+  const isDeepPage = pathname.split('/').length > 2
   
   const breadcrumbs = breadcrumbMap[basePath] || [
     { label: "Dashboard" }
@@ -57,7 +59,7 @@ export function DynamicBreadcrumb() {
         {breadcrumbs.map((breadcrumb, index) => (
           <div key={index} className="flex items-center">
             <BreadcrumbItem className={index === 0 && breadcrumbs.length > 1 ? "hidden sm:block" : "min-w-0"}>
-              {breadcrumb.href ? (
+              {(breadcrumb.href && isDeepPage) || (breadcrumb.href && !isDeepPage) ? (
                 <BreadcrumbLink href={breadcrumb.href} className="truncate text-lg font-bold">
                   {breadcrumb.label}
                 </BreadcrumbLink>
