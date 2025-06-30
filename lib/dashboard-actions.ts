@@ -105,10 +105,13 @@ export async function getMonthlySalesData(): Promise<MonthlySalesData[]> {
       const salesRecord = salesData.find(
         record => record._id.year === year && record._id.month === month
       );
+
+      // round sales to nearest dollar
+      const roundedSales = salesRecord ? Math.round(salesRecord.totalSales) : 0;
       
       months.push({
         month: `${monthName} ${year.toString().slice(-2)}`,
-        sales: salesRecord ? salesRecord.totalSales : 0
+        sales: roundedSales
       });
       
       currentDate.setMonth(currentDate.getMonth() + 1);
