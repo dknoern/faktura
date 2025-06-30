@@ -1,5 +1,6 @@
 import { ViewOut } from "@/components/outs/view";
 import { fetchOutById } from "@/lib/data";
+import { getProductImages } from "@/lib/utils/storage";
 import { notFound } from "next/navigation";
 
 
@@ -7,7 +8,12 @@ export default async function ViewOutPage(props: { params: Promise<{ id: string 
     const params = await props.params;
     const id = params.id;
 
-    const outitem = await fetchOutById(id);
+
+
+    const [outitem, images] = await Promise.all([
+        fetchOutById(id),
+        getProductImages(id)
+    ]);
 
     if (!outitem) {
         notFound();
@@ -17,6 +23,6 @@ export default async function ViewOutPage(props: { params: Promise<{ id: string 
     const out = JSON.parse(JSON.stringify(outitem));
 
     return (
-        <ViewOut out={out} />
+        <ViewOut out={out} initialImages={images} />
     );
 }

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { SignaturePad } from "@/components/ui/signature-pad";
+
 import { format } from "date-fns";
 import { Textarea } from "../ui/textarea";
 
@@ -19,9 +19,7 @@ interface OutItem {
     customerFirstName: string;
     customerLastName: string;
     vendor: string;
-    signature?: string;
-    signatureDate?: string;
-    signatureUser?: string;
+
 }
 
 export function OutForm({ out }: { out?: OutItem }) {
@@ -37,19 +35,14 @@ export function OutForm({ out }: { out?: OutItem }) {
             customerFirstName: "",
             customerLastName: "",
             vendor: "",
-            signature: "",
-            signatureDate: "",
-            signatureUser: ""
+
         };
 
         if (out) {
             return {
                 ...defaultData,
                 ...out,
-                // Ensure optional fields are strings, not undefined
-                signature: out.signature || "",
-                signatureDate: out.signatureDate || "",
-                signatureUser: out.signatureUser || ""
+
             };
         }
 
@@ -175,33 +168,7 @@ export function OutForm({ out }: { out?: OutItem }) {
                 </Button>
             </div>
 
-            {formData.signature && (
-                <div className="mt-6 border rounded-md p-4 bg-gray-50">
-                    <h3 className="text-sm font-medium mb-2">Signature</h3>
-                    <div className="bg-white border rounded-md p-2 inline-block">
-                        <img src={formData.signature} alt="Signature" className="h-16 object-contain" />
-                    </div>
-                    {formData.signatureDate && (
-                        <p className="text-xs text-gray-500 mt-2">
-                            Signed by {formData.signatureUser} on {new Date(formData.signatureDate).toLocaleDateString()}
-                        </p>
-                    )}
-                </div>
-            )}
 
-            {formData._id && (
-                <div className="mt-6">
-                    <SignaturePad
-                        value={formData.signature}
-                        onChange={(signature) => setFormData({
-                            ...formData,
-                            signature,
-                            signatureDate: new Date().toISOString(),
-                            signatureUser: formData.user || "User"
-                        })}
-                    />
-                </div>
-            )}
 
         </form>
     );

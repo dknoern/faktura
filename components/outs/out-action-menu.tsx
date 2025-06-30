@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Printer, Edit, ImagePlus } from "lucide-react";
+import { ChevronDown, Printer, Edit, ImagePlus, PenLine } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
@@ -17,9 +17,10 @@ interface OutActionMenuProps {
     id?: string;
     _id?: string;
   };
+  onSignatureClick?: () => void;
 }
 
-export function OutActionMenu({ out }: OutActionMenuProps) {
+export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
   const router = useRouter();
   const [isEmailSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -94,6 +95,10 @@ export function OutActionMenu({ out }: OutActionMenuProps) {
           <DropdownMenuItem onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" />
             Print
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onSignatureClick}>
+            <PenLine className="mr-2 h-4 w-4" />
+            e-Sign
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
