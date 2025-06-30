@@ -179,6 +179,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           id="returnDate"
           name="returnDate"
           type="text"
+          defaultValue={repair?.returnDate?.split("T")[0] || ""}
           readOnly
           className="cursor-not-allowed bg-gray-100"
         />

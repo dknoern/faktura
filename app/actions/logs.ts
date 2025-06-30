@@ -26,7 +26,7 @@ function formatDate(date: Date | null) {
 export async function createLog(data: LogData) {
   try {
     await dbConnect();
-    
+
     data.search = (formatDate(new Date()) + " "
     + data.receivedFrom + " "
     + valueOrBlank(data.customerName) + " "

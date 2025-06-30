@@ -48,6 +48,7 @@ export const formatDate = (dateString: string | null) => {
 // Generate repair HTML content
 export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
   const formattedDate = formatDate(repair.dateOut);
+  const formattedReturnDate = formatDate(repair.returnDate);
   const formattedCustomerApprovedDate = formatDate(repair.customerApprovedDate);
   const formattedCost = formatCurrency(repair.repairCost);
   
@@ -76,6 +77,11 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
         ${repair.customerApprovedDate ? `<div style="margin-bottom: 15px;">
           <h3 style="font-weight: bold;">Customer Approved Date</h3>
           <p>${formattedCustomerApprovedDate}</p>
+        </div>` : ''}
+
+        ${repair.returnDate ? `<div style="margin-bottom: 15px;">
+          <h3 style="font-weight: bold;">Return Date</h3>
+          <p>${formattedReturnDate}</p>
         </div>` : ''}
 
         <div style="margin-bottom: 15px;">

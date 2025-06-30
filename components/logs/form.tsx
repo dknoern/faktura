@@ -159,6 +159,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
       repairNumber: repair.repairNumber,
       repairCost: repair.repairCost,
       repairId: repair._id,
+      productId: repair.itemId,
     };
     setLineItems([...lineItems, newItem]);
     
