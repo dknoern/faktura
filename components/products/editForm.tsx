@@ -63,11 +63,11 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
             serialNo: "",
             longDesc: "",
             lastUpdated: new Date(),
-            cost: 0,
-            listPrice: 0,
+            cost: undefined,
+            listPrice: undefined,
             //totalRepairCost: 0,
-            sellingPrice: 0,
-            totalCost: 0,
+            sellingPrice: undefined,
+            totalCost: undefined,
             received: new Date(),
             status: "",
             notes: "",
@@ -268,9 +268,9 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                 <SelectItem value="Rolex">Rolex</SelectItem>
                                                 <SelectItem value="Ulysse Nardin">Ulysse Nardin</SelectItem>
                                                 <SelectItem value="Vacheron Constantin">Vacheron Constantin</SelectItem>
-                                                <SelectItem value="Additional Brands"></SelectItem>
-                                                <SelectItem value="Maurice Lacroix"></SelectItem>
-                                                <SelectItem value="Zenith"></SelectItem>
+                                                <SelectItem value="Additional Brands">Additional Brands</SelectItem>
+                                                <SelectItem value="Maurice Lacroix">Maurice Lacroix</SelectItem>
+                                                <SelectItem value="Zenith">Zenith</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -588,67 +588,60 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                                 {...field} 
                                                                 value={field.value === undefined || field.value === null ? "" : field.value} 
                                                                 onChange={e => {
-                                                                    const value = e.target.value === "" ? 0 : Number(e.target.value);
+                                                                    const value = e.target.value === "" ? undefined : Number(e.target.value);
                                                                     field.onChange(value);
                                                                 }}
                                                             />
-
                                                         </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="listPrice"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>List price</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                type="number"
+                                                {...field} 
+                                                value={field.value === undefined || field.value === null ? "" : field.value} 
+                                                onChange={e => {
+                                                    const value = e.target.value === "" ? undefined : Number(e.target.value);
+                                                    field.onChange(value);
+                                                }}
                                             />
 
-                                            <FormField
-                                                control={form.control}
-                                                name="listPrice"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>List price</FormLabel>
-                                                        <FormControl>
-                                                            <Input 
-                                                                type="number"
-                                                                {...field} 
-                                                                value={field.value === undefined || field.value === null ? "" : field.value} 
-                                                                onChange={e => {
-                                                                    const value = e.target.value === "" ? 0 : Number(e.target.value);
-                                                                    field.onChange(value);
-                                                                }}
-                                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-
+                            <FormField
+                                control={form.control}
+                                name="cost"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Cost</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                type="number"
+                                                {...field} 
+                                                value={field.value === undefined || field.value === null ? "" : field.value} 
+                                                onChange={e => {
+                                                    const value = e.target.value === "" ? undefined : Number(e.target.value);
+                                                    field.onChange(value);
+                                                }}
                                             />
-
-                                            <FormField
-                                                control={form.control}
-                                                name="cost"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Cost</FormLabel>
-                                                        <FormControl>
-                                                            <Input 
-                                                                type="number"
-                                                                {...field} 
-                                                                value={field.value === undefined || field.value === null ? "" : field.value} 
-                                                                onChange={e => {
-                                                                    const value = e.target.value === "" ? 0 : Number(e.target.value);
-                                                                    field.onChange(value);
-                                                                }}
-                                                            />
-
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-
-
-
-
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
                     </div>
 

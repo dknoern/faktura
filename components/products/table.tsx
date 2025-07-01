@@ -122,7 +122,9 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                                     {product.sellerType === 'Partner' && product.status !== 'Sold' ? 'Partnership' : product.status}
                                 </Badge>
                             </TableCell>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
+
+                            {/* show date in format yyyy-mm-dd but for local timezone */}
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toLocaleDateString('fr-Ca', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

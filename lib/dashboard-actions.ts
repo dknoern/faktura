@@ -5,6 +5,7 @@ import { productModel } from './models/product';
 import { Repair } from './models/repair';
 import { Invoice } from './models/invoice';
 import { logModel } from './models/log';
+import { fetchOuts } from './data';
 
 export interface DashboardStats {
   totalInventory: number;
@@ -55,9 +56,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     console.error('Error fetching dashboard stats:', error);
     // Return mock data as fallback
     return {
-      totalInventory: 1247,
-      totalRepairsOut: 23,
-      totalItemsAtShow: 156
+      totalInventory: 0,
+      totalRepairsOut: 0,
+      totalItemsAtShow: 0
     };
   }
 }
@@ -116,6 +117,9 @@ export async function getMonthlySalesData(): Promise<MonthlySalesData[]> {
       
       currentDate.setMonth(currentDate.getMonth() + 1);
     }
+
+    // drop the first month
+    months.shift();
     
     return months;
   } catch (error) {
@@ -155,12 +159,32 @@ export async function getRecentTransactions(): Promise<RecentTransaction[]> {
       .lean();
     
     for (const log of recentLogs) {
+
+
+      let description = "Received";
+      if (log.customerName) description += " from " + log.customerName;
+
+      if (log.receivedFrom) description += " via " + log.receivedFrom;
+
       //const product = await productModel.findById(log.productId).lean();
       transactions.push({
         id: String(log._id),
-        type: log.action === 'Log In' ? 'log_in' : 'log_out',
-        description: `Received from ${log.customerName}`,
+        type: 'log_in',
+        description: description,
         date: log.date,
+      });
+    }
+
+
+    const recentOuts = await fetchOuts(1,10,'');
+
+    for (const out of recentOuts.outs) {
+      transactions.push({
+        id: String(out._id),
+        type: 'log_out',
+        description: `Sent to ${out.sentTo}`,
+        date: out.date,
+        customer: `${out.customerFirstName} ${out.customerLastName}`
       });
     }
     

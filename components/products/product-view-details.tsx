@@ -3,71 +3,21 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductHistory } from "./product-history";
-import { Watch, Gem, BriefcaseBusiness, Clock} from "lucide-react";
-import React, { useState } from "react";
+import { Watch, Gem, BriefcaseBusiness, Clock } from "lucide-react";
+import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 interface ProductViewDetailsProps {
   product: any;
   repairs: any[];
 }
 
-// Component to display manufacturer logo
-function ManufacturerLogo({ manufacturer }: { manufacturer: string }) {
-  const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  
-  // Add timeout to handle hanging requests - MUST be before any early returns
-  React.useEffect(() => {
-    if (!manufacturer) return; // Don't set timeout if no manufacturer
-    
-    const timeout = setTimeout(() => {
-      if (!imageLoaded && !imageError) {
-        console.log('Image load timeout, falling back to text');
-        setImageError(true);
-      }
-    }, 3000); // 3 second timeout
-    
-    return () => clearTimeout(timeout);
-  }, [manufacturer, imageLoaded, imageError]);
-  
-  if (!manufacturer) {
-    return <p/>;
-  }
-  
-  if (imageError) {
-    return <p>{manufacturer}</p>;
-  }
-  
-  // Create the logo path - no encoding needed with catch-all route
-  const logoPath = `logos/${manufacturer}.png`;
-  const imageUrl = `/api/images/${logoPath}`;
-  
-  return (
-    <div className="flex items-center">
-      {!imageLoaded && !imageError && (
-        <p className="text-gray-400">Loading logo...</p>
-      )}
-      <img
-        src={imageUrl}
-        alt={`${manufacturer} logo`}
-        style={{ maxWidth: '120px', height: 'auto', objectFit: 'contain' }}
-        className={!imageLoaded ? 'hidden' : ''}
-        onLoad={() => {
-          setImageLoaded(true);
-        }}
-        onError={() => {
-          setImageError(true);
-        }}
-      />
-    </div>
-  );
-}
 
 export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps) {
   const formatCurrency = (amount: number) => {
-    return Math.ceil(amount).toLocaleString('en-US', { 
-      style: 'currency', 
-      currency: 'USD' 
+    return Math.ceil(amount).toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD'
     }).replace('.00', '');
   };
 
@@ -77,7 +27,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
   };
 
   const getProductTypeIcon = (productType: string) => {
-    const className="size-4 ml-0 mr-2"
+    const className = "size-4 ml-0 mr-2"
     switch (productType) {
       case 'Watch':
         return <Watch className={className} />;
@@ -93,11 +43,11 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
   };
 
   // Calculate total repair cost from associated repairs
-  const totalRepairCost = repairs && repairs.length > 0 
+  const totalRepairCost = repairs && repairs.length > 0
     ? repairs.reduce((total: number, repair: any) => {
-        const repairCost = repair.cost || repair.repairCost || 0;
-        return total + repairCost;
-      }, 0)
+      const repairCost = repair.cost || repair.repairCost || 0;
+      return total + repairCost;
+    }, 0)
     : 0;
 
   return (
@@ -113,7 +63,17 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
             <div className="col-span-2">
               {/*<label className="text-sm font-medium text-gray-500">Manufacturer</label>*/}
               <div className="mt-1">
-                <ManufacturerLogo manufacturer={product.manufacturer} />
+
+
+
+                {product.manufacturer && product.manufacturer !== 'Additional Brands' &&
+                  <Image src={`/manufacturers/${product.manufacturer}.png`}
+                    alt={`${product.manufacturer} logo`}
+                    width={120}
+                    height={120}
+                  />}
+
+
               </div>
             </div>
 
@@ -129,11 +89,11 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
             <div>
               <label className="text-sm font-medium text-gray-500">Status</label>
               <div className="mt-1 flex gap-2">
-                <Badge style={{ 
-                  backgroundColor: product.status === 'In Stock' ? 'green' : 
-                                 product.status === 'Sold' ? 'grey' : 
-                                 product.status === 'Incoming' ? 'teal' : 
-                                 product.status === 'Sale Pending' ? 'red' : 'orange' 
+                <Badge style={{
+                  backgroundColor: product.status === 'In Stock' ? 'green' :
+                    product.status === 'Sold' ? 'grey' :
+                      product.status === 'Incoming' ? 'teal' :
+                        product.status === 'Sale Pending' ? 'red' : 'orange'
                 }}>
                   {product.sellerType === 'Partner' && product.status !== 'Sold' ? 'Partnership' : product.status}
                 </Badge>
@@ -219,28 +179,28 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
                 {product.sellingPrice ? formatCurrency(product.sellingPrice) : '$0.00'}
               </span>
             </div>
-            
+
             <div className="flex justify-between items-center py-2 border-b">
               <span className="text-sm font-medium text-gray-500">List Price</span>
               <span className="text-sm font-semibold">
                 {product.listPrice ? formatCurrency(product.listPrice) : '$0.00'}
               </span>
             </div>
-            
+
             <div className="flex justify-between items-center py-2 border-b">
               <span className="text-sm font-medium text-gray-500">Cost</span>
               <span className="text-sm font-semibold">
                 {product.cost ? formatCurrency(product.cost) : '$0.00'}
               </span>
             </div>
-            
+
             <div className="flex justify-between items-center py-2 border-b">
               <span className="text-sm font-medium text-gray-500">Repair Cost</span>
               <span className="text-sm font-semibold">
                 {totalRepairCost > 0 ? formatCurrency(totalRepairCost) : '$0.00'}
               </span>
             </div>
-            
+
             <div className="flex justify-between items-center py-2">
               <span className="text-sm font-medium text-gray-500">Total Cost</span>
               <span className="text-sm font-semibold">

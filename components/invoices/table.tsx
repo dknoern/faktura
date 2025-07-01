@@ -199,8 +199,20 @@ export function InvoicesTable({
                                 </TableCell>
                                 <TableCell> {invoice.trackingNumber}</TableCell>
                                 <TableCell style={{ textAlign: 'right' }}>{Math.ceil(invoice.total).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '')}</TableCell>
-                                <TableCell> {invoice.invoiceType}</TableCell>
-                            </TableRow>
+                                <TableCell>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                        invoice.invoiceType === 'Memo' 
+                                            ? 'bg-yellow-100 text-yellow-800' 
+                                            : invoice.invoiceType === 'Partner'
+                                            ? 'bg-blue-100 text-blue-800'
+                                            : invoice.invoiceType === 'Consignment'
+                                            ? 'bg-gray-100 text-gray-800'
+                                            : 'bg-green-100 text-green-800'
+                                    }`}>
+                                        {invoice.invoiceType}
+                                    </span>
+                                </TableCell>
+                                </TableRow>
                         )
                     }
                     )}
