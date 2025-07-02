@@ -129,7 +129,11 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  tenantName: string;
+}
+
+export function AppSidebar({ tenantName, ...props }: AppSidebarProps) {
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -141,7 +145,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Package className="size-6" style={{ color: BRAND_CONFIG.colors.primary }} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{BRAND_CONFIG.name}</span>
+                  <span className="truncate font-semibold">{tenantName}</span>
                   <span className="truncate text-xs">{BRAND_CONFIG.tagline}</span>
                 </div>
               </a>

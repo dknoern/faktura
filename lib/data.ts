@@ -410,6 +410,17 @@ export async function fetchDefaultTenant() {
     }
 }
 
+export async function fetchTenantById(id: string) {
+    try {
+        await dbConnect();
+        const tenant = await Tenant.findOne({ _id: id });
+        return tenant ? JSON.parse(JSON.stringify(tenant)) : null;
+    } catch (error) {
+        console.error("Error fetching tenant:", error);
+        throw error;
+    }
+}
+
 export async function fetchInvoiceById(id: number) {
     try {
         await dbConnect();

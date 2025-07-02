@@ -6,7 +6,7 @@ import { getImageHost } from '@/lib/utils/imageHost';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
-  region: 'us-west-2',
+  region: process.env.AWS_REGION || 'us-west-2',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
@@ -23,6 +23,9 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    
+    // Parse comma-delimited email addresses
+    const emailAddresses = email.split(',').map((addr: string) => addr.trim()).filter((addr: string) => addr.length > 0);
     
     // Fetch invoice and tenant data
     const invoice = await fetchInvoiceById(Number(invoiceId));
@@ -50,7 +53,7 @@ export async function POST(request: Request) {
     const params = {
       Source: tenant.email,
       Destination: {
-        ToAddresses: [email],
+        ToAddresses: emailAddresses,
       },
       Message: {
         Subject: {
@@ -66,7 +69,12 @@ export async function POST(request: Request) {
     
     await sesClient.send(new SendEmailCommand(params));
     
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true, 
+      message: `Email sent to ${emailAddresses.length} recipient${emailAddresses.length > 1 ? 's' : ''}` 
+    });
+    
+
   } catch (error) {
     console.error('Error sending invoice email:', error);
     return NextResponse.json(

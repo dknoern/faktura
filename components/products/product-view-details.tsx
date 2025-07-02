@@ -55,7 +55,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
       {/* Basic Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
+          <CardTitle>Product Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
@@ -67,7 +67,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
 
 
                 {product.manufacturer && product.manufacturer !== 'Additional Brands' &&
-                  <Image src={`/manufacturers/${product.manufacturer}.png`}
+                  <Image src={`/manufacturers/${product.manufacturer.replace(/\s*&\s*/g, '-').replace(/\s+/g, '-')}.png`}
                     alt={`${product.manufacturer} logo`}
                     width={120}
                     height={120}

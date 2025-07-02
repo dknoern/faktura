@@ -8,7 +8,7 @@ export const IMAGE_BUCKET = process.env.IMAGE_BUCKET;
 
 // Initialize S3 client if bucket is configured
 const s3Client = IMAGE_BUCKET ? new S3Client({
-    region: process.env.AWS_REGION || 'us-west-1'
+    region: process.env.AWS_REGION || 'us-east-1'
 }) : null;
 
 export async function saveImage(buffer: Buffer, fileName: string): Promise<void> {

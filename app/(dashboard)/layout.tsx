@@ -10,6 +10,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import UserButton from "@/components/user-button";
+import { fetchTenantById } from "@/lib/data";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -22,17 +23,18 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-export default function Layout({
+export default async function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const tenant = await fetchTenantById("67f48a2050abe41246b22a87")
   return (
     <div
       className={`flex h-screen flex-col md:flex-row overflow-hidden ${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar tenantName={tenant?.name || 'Lager'} />
         <SidebarInset className="flex flex-col h-full w-full min-w-0 relative">
           <div className="h-full overflow-y-auto">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background border-b w-full">

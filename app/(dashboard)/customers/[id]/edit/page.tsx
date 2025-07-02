@@ -15,7 +15,7 @@ export default async function EditCustomerPage(props: { params: Promise<{ id: nu
     return (
         <div>
             <div>
-                <h2 className='text-2xl font-bold tracking-tight'>Customer</h2>
+                <h2 className='text-2xl font-bold tracking-tight'>Update Customer</h2>
             </div>
             <div>
                 <CustomerForm customer={JSON.parse(JSON.stringify(customer))} />

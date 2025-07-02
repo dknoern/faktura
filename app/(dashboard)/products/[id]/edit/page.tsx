@@ -17,7 +17,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   return (
     <div className="container mx-auto py-1">
       <StatusUpdateToast />
-      <h2 className="text-2xl font-bold tracking-tight">Product</h2>
+      <h2 className="text-2xl font-bold tracking-tight">Update Product</h2>
 
       <div className="space-y-8">
         <ProductEditForm 

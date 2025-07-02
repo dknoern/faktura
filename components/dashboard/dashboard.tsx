@@ -186,7 +186,7 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
             </TableHeader>
             <TableBody>
               {transactions.map((transaction) => (
-                <TableRow key={transaction.id}>
+                <TableRow key={transaction.id} onClick={() => {window.location.href = `/invoices/${transaction.id}/view`}}>
                   <TableCell>
                     {getTransactionIcon(transaction.type)}
                   </TableCell>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -10,7 +11,7 @@ import {
 import { Edit, ChevronDown, Printer, Mail, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Invoice } from "@/lib/invoice-renderer";
-import toast from "react-hot-toast";
+import { EmailDialog } from "./email-dialog";
 
 interface InvoiceActionMenuProps {
     invoice: Invoice;
@@ -18,6 +19,7 @@ interface InvoiceActionMenuProps {
 
 export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
     const router = useRouter();
+    const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
     const handleEdit = () => {
         router.push(`/invoices/${invoice._id}/edit`);
@@ -33,38 +35,14 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
         router.push(`/returns/new?invoiceId=${invoice._id}`);
     };
 
-    // Function to send email
-    const handleEmail = async () => {
-
-        try {
-            const response = await fetch('/api/email/send-invoice', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    invoiceId: invoice._id,
-                    email: 'david@seattleweb.com',
-                }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-
-                // toast success
-                toast.success('Email sent successfully!');
-            } else {
-                toast.error(`Error: ${data.error || 'Failed to send email'}`);
-            }
-        } catch (error) {
-            console.error('Error sending email:', error);
-            toast.error('Error: Failed to send email');
-        }
+    // Function to open email dialog
+    const handleEmail = () => {
+        setEmailDialogOpen(true);
     };
 
 
     return (
+        <>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button
@@ -99,5 +77,12 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
 
             </DropdownMenuContent>
         </DropdownMenu>
+        
+        <EmailDialog
+            open={emailDialogOpen}
+            onOpenChange={setEmailDialogOpen}
+            invoiceId={invoice._id.toString()}
+        />
+        </>
     );
 }

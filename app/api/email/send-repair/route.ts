@@ -5,7 +5,7 @@ import { Repair, Tenant, generateEmailHtml } from '@/lib/repair-renderer';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
-  region: 'us-west-2', // hard-coded for now until we verify in correct region
+  region: process.env.AWS_REGION || 'us-west-2', // hard-coded for now until we verify in correct region
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
