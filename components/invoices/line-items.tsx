@@ -52,11 +52,6 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
     onChange(items.filter((_, i) => i !== index))
   }
 
-  const openProductModal = (index: number) => {
-    setIsAddingNewItem(false) // We're editing an existing item, not adding a new one
-    setCurrentEditIndex(index)
-    setIsProductModalOpen(true)
-  }
 
   const handleProductSelect = (product: any) => {
     const newLineItem = {
@@ -119,10 +114,10 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100">
-              <th className="text-left p-2 border">DESCRIPTION</th>
-              <th className="text-left p-2 border w-[150px]">ITEM NUMBER</th>
-              <th className="text-left p-2 border w-[150px]">SERIAL NUMBER</th>
-              <th className="text-left p-2 border w-[120px]">AMOUNT</th>
+              <th className="text-left p-2 border">Description</th>
+              <th className="text-left p-2 border w-[110px]">Item No</th>
+              <th className="text-left p-2 border w-[110px]">Serial No</th>
+              <th className="text-left p-2 border w-[110px]">Amount</th>
               <th className="w-[80px]"></th>
             </tr>
           </thead>
@@ -130,12 +125,22 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
             {items.map((item, index) => (
               <tr key={index} className="border-b">
                 <td className="p-2 border">
-                  <Textarea
-                    value={item.name}
-                    onChange={(e) => handleLineItemChange(index, "name", e.target.value)}
-                    placeholder="Description"
-                    className="min-h-[60px]"
-                  />
+                  <div className="space-y-2">
+                    <Textarea
+                      value={item.name}
+                      onChange={(e) => handleLineItemChange(index, "name", e.target.value)}
+                      placeholder="Name/Title"
+                      className="min-h-[48px] resize-none"
+                      rows={2}
+                    />
+                    <Textarea
+                      value={item.longDesc || ""}
+                      onChange={(e) => handleLineItemChange(index, "longDesc", e.target.value)}
+                      placeholder="Long Description"
+                      className="min-h-[72px] resize-none"
+                      rows={3}
+                    />
+                  </div>
                 </td>
                 <td className="p-2 border">
                   <div className="flex items-center gap-2">
@@ -144,15 +149,6 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
                       onChange={(e) => handleLineItemChange(index, "itemNumber", e.target.value)}
                       placeholder="Item #"
                     />
-                    <Button 
-                      type="button" 
-                      size="icon" 
-                      variant="ghost" 
-                      onClick={() => openProductModal(index)}
-                      className="h-8 w-8"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
                   </div>
                 </td>
                 <td className="p-2 border">

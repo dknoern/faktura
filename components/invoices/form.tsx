@@ -208,8 +208,9 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
           <div className="grid grid-cols-[120px_1fr] items-center">
             <label className="text-sm font-medium">Invoice No</label>
             <Input
-              value={formData.invoiceNo || ""}
-              onChange={(e) => setFormData({ ...formData, invoiceNo: e.target.value })}
+              value={formData._id ? formData._id.toString() : (formData.invoiceNo || "")}
+              readOnly
+              className="bg-gray-50"
             />
           </div>
           
@@ -218,6 +219,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
             <Input
               type="text"
               readOnly
+              className="bg-gray-50"
               value={formData.date}
             />
           </div>
