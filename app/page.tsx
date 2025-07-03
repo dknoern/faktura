@@ -1,45 +1,34 @@
 import { Button } from '@/components/ui/button';
-import { signIn, signOut } from "@/auth"
+import { signIn } from "@/auth"
 import Image from 'next/image'
 
 export default async function Page() {
-
   return (
-    <main className="flex min-h-screen flex-col p-6">
-
-
-      <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
-        <div className="flex flex-col justify-center gap-6 rounded-lg bg-gray-50 px-6 py-10 md:w-2/5 md:px-20">
-
-          <p >
-            <strong>Inventory<br/></strong>Management System
-          </p>
-
-
-
-<Image src="/background.webp" alt="Lager Logo" layout="fill" className="bg-img" />
-<div>
-          <form
-      action={async () => {
-        "use server"
-        await signIn('auth0', { redirectTo: "/home" }) 
-      }}
-    >
-      <Button>Sign In</Button>
-    </form>
-    </div>
-
-    <form
-      action={async () => {
-        "use server"
-        await signOut({redirectTo: "/", redirect: true})
-      }}
-      className="w-full"
-    >
-    </form>
-
-        </div>
-
+    <main className="relative min-h-screen">
+      {/* Background Image */}
+      <Image 
+        src="/background-watches.jpg" 
+        alt="Background" 
+        fill
+        className="object-cover"
+        priority
+      />
+      
+      {/* Sign In Button - Upper Right */}
+      <div className="absolute top-6 right-6 z-10">
+        <form
+          action={async () => {
+            "use server"
+            await signIn('auth0', { redirectTo: "/home" }) 
+          }}
+        >
+          <Button 
+            variant="outline" 
+            className="bg-transparent border-white/50 text-white font-bold hover:bg-white/10 backdrop-blur-sm"
+          >
+            Sign In
+          </Button>
+        </form>
       </div>
     </main>
   );

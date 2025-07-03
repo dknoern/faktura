@@ -277,7 +277,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
               {repairs.map((repair: any, index: number) => (
                 <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="font-medium">Repair #{repair.repairNumber}</p>
+                    <p className="font-medium">Repair <Link style={{ color: 'blue', cursor: 'pointer' }}href={`/repairs/${repair._id}/view`}>#{repair.repairNumber}</Link></p>
                     <p className="text-sm text-gray-600">{repair.description}</p>
                   </div>
                   <div className="text-right">

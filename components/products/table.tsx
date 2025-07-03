@@ -115,7 +115,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                             <TableCell>{product.itemNumber}</TableCell>
                             <TableCell>{product.title}</TableCell>
                             <TableCell>{product.serialNo}</TableCell>
-                            <TableCell style={{ textAlign: 'right' }}>{product.cost ? Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '') : ''}</TableCell>
+                            <TableCell style={{ textAlign: 'right' }}>{product.sellingPrice ? Math.ceil(product.sellingPrice).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '') : ''}</TableCell>
                             <TableCell>{product.modelNumber}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>
                                 <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : product.status === 'Incoming' ? 'teal' : product.status === 'Sale Pending' ? 'red' : 'orange' }}>
