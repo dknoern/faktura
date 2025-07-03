@@ -6,15 +6,17 @@ export default async function EditReturnPage(props: { params: Promise<{ id: stri
     const params = await props.params;
     const id = params.id;
     const idNumber = parseInt(id);
-    
+
     const returnData = await fetchReturnById(idNumber);
-    
+
     if (!returnData) {
         notFound();
     }
-    
+
     return (
-        <div className="p-4 bg-white rounded-lg shadow">
+
+        <div className="container mx-auto py-6">
+            <h2 className="text-2xl font-bold tracking-tight">Update Return</h2>
             <ReturnForm initialData={returnData} />
         </div>
     );

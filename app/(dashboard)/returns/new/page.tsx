@@ -1,6 +1,7 @@
 import { fetchInvoiceById } from "@/lib/data";
 import ReturnForm from "@/components/returns/return-form";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 interface InvoiceLineItem {
   productId?: string;
@@ -48,18 +49,17 @@ export default async function NewReturnPage({ searchParams }: { searchParams: Pr
     };
     
     return (
-      <div className="p-4 bg-white rounded-lg shadow">
+      <div>
         <h1 className="text-2xl font-bold mb-6">Create Return for Invoice #{invoice._id}</h1>
         <ReturnForm initialData={initialData} />
       </div>
     );
   }
   
-  // If no invoice ID, just show an empty form
+  // If no invoice ID, just show an empty form, should not happen unless someone enters URL directly
   return (
-    <div className="p-4 bg-white rounded-lg shadow">
-      <h1 className="text-2xl font-bold mb-6">Create New Return</h1>
-      <ReturnForm />
+    <div>
+      Select invoice from <Link style={{ color: 'blue' }} href="/invoices">Invoices</Link> and then click &quot;Create Return&quot;
     </div>
   );
 }

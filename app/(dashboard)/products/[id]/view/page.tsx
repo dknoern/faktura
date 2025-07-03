@@ -1,4 +1,4 @@
-import { ImageGallery } from '@/components/products/image-gallery';
+import { ImageGallery } from '@/components/image-gallery';
 import { fetchProductById, getRepairsForItem, fetchCustomers } from '@/lib/data';
 import { getProductImages } from '@/lib/utils/storage';
 import { notFound } from 'next/navigation';
@@ -28,8 +28,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         <span className="flex items-center">
 
           <h1 className="text-3xl font-bold">{product.itemNumber}</h1></span>
-        <ProductActionMenu 
-          id={id} 
+        <ProductActionMenu
+          id={id}
           productStatus={product.status}
           customers={customers.customers}
           pagination={customers.pagination}
@@ -38,9 +38,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
 
       <div className="space-y-8">
-        <ProductViewDetails 
-          product={JSON.parse(JSON.stringify(product))} 
-          repairs={JSON.parse(JSON.stringify(repairs))} 
+        <ProductViewDetails
+          product={JSON.parse(JSON.stringify(product))}
+          repairs={JSON.parse(JSON.stringify(repairs))}
         />
         <ImageGallery images={productImages} />
       </div>

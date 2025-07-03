@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "react-hot-toast";
 
 interface Wanted {
@@ -121,11 +120,7 @@ export function WantedForm({ wanted, isEditing = false, selectedCustomer }: Want
         </h1>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Wanted Item Details</CardTitle>
-        </CardHeader>
-        <CardContent>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -177,17 +172,15 @@ export function WantedForm({ wanted, isEditing = false, selectedCustomer }: Want
               )}
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Saving...' : (isEditing ? 'Update' : 'Create')}
-              </Button>
+            <div className="flex gap-4 pt-4 justify-end">
               <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Saving...' : (isEditing ? 'Update' : 'Create')}
+              </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
     </div>
   );
 }

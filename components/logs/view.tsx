@@ -4,7 +4,7 @@ import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { LogActionMenu } from "./log-action-menu";
-import { ImageGallery } from "@/components/products/image-gallery";
+import { ImageGallery } from "@/components/image-gallery";
 
 import {
   Table,
@@ -182,11 +182,7 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
         
         {/* Image Gallery */}
         {initialImages.length > 0 && (
-          <Card>
-            <CardContent className="pt-6">
-              <ImageGallery images={initialImages} />
-            </CardContent>
-          </Card>
+          <ImageGallery images={initialImages} />
         )}
       </div>
     </div>

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OutActionMenu } from "./out-action-menu";
-import { ImageGallery } from "@/components/products/image-gallery";
+import { ImageGallery } from "@/components/image-gallery";
 import { toast } from "react-hot-toast";
 
 interface Out {
@@ -251,11 +251,7 @@ export function ViewOut({ out, initialImages = [] }: ViewOutProps) {
 
       {/* Image Gallery */}
       {initialImages.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <ImageGallery images={initialImages} />
-          </CardContent>
-        </Card>
+        <ImageGallery images={initialImages} />
       )}
 
       {/* Custom Signature Canvas */}
