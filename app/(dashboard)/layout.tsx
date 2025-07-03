@@ -28,7 +28,17 @@ export default async function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const tenant = await fetchTenantById("67f48a2050abe41246b22a87")
+  // During build time, database might not be available, so provide fallback
+  let tenant = null;
+  try {
+    // Only attempt to fetch tenant if we have a valid MongoDB URI
+    if (process.env.MONGODB_URI && process.env.MONGODB_URI.startsWith('mongodb')) {
+      tenant = await fetchTenantById("67f48a2050abe41246b22a87");
+    }
+  } catch (error) {
+    console.warn('Could not fetch tenant during build:', error instanceof Error ? error.message : 'Unknown error');
+    // Fallback to null, will use default name
+  }
   return (
     <div
       className={`flex h-screen flex-col md:flex-row overflow-hidden ${geistSans.variable} ${geistMono.variable} antialiased`}
