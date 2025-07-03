@@ -56,6 +56,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [customerApproved, setCustomerApproved] = useState(!!repair?.customerApprovedDate);
+  const [customerApprovedDate, setCustomerApprovedDate] = useState(repair?.customerApprovedDate || '');
   const [warrantyService, setWarrantyService] = useState(repair?.warrantyService || false);
 
   const handleProductSelect = (product: Product) => {
@@ -70,7 +71,9 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
     setIsSubmitting(true);
     try {
       // Add checkbox values that might not be in the form if unchecked
-      if (!customerApproved) {
+      if (customerApproved && customerApprovedDate) {
+        formData.set('customerApprovedDate', customerApprovedDate);
+      } else {
         formData.set('customerApprovedDate', '');
       }
 
@@ -79,7 +82,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
 
       if (repair) {
         await updateRepair(repair.repairNumber, formData);
-      } else if (selectedProduct) {
+      } else {
         // add hidden form elements for productId and customerId
         formData.set('productId', selectedProduct?._id || initialSelectedProduct?._id || '');
 
@@ -126,11 +129,12 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vendor">Vendor</Label>
+          <Label htmlFor="vendor">Vendor *</Label>
           <Input
             id="vendor"
             name="vendor"
             defaultValue={repair?.vendor}
+            required
           />
         </div>
       </div>
@@ -153,8 +157,20 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           checked={customerApproved}
           onCheckedChange={(checked) => {
             setCustomerApproved(checked as boolean);
-            if (checked && repair && !repair?.customerApprovedDate) {
-              repair.customerApprovedDate = new Date().toISOString();
+            if (checked) {
+              // Set current date when checkbox is checked
+              const currentDate = new Date().toISOString();
+              setCustomerApprovedDate(currentDate);
+              // Also update the repair object if it exists (for editing)
+              if (repair && !repair?.customerApprovedDate) {
+                repair.customerApprovedDate = currentDate;
+              }
+            } else {
+              // Clear date when unchecked
+              setCustomerApprovedDate('');
+              if (repair) {
+                repair.customerApprovedDate = null;
+              }
             }
           }}
         />
@@ -166,7 +182,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           <Input
             id="customerApprovedDate"
             name="customerApprovedDate"
-            defaultValue={repair?.customerApprovedDate?.split("T")[0] || ""}
+            value={customerApprovedDate ? customerApprovedDate.split("T")[0] : ""}
             type="text"
             readOnly
             className="cursor-not-allowed bg-gray-100"

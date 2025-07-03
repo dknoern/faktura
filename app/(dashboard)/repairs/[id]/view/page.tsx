@@ -2,13 +2,13 @@ import { fetchDefaultTenant, fetchRepairById } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { ViewRepair } from "@/components/repairs/view";
 
-export default async function ViewRepairPage(props: { params: Promise<{ repairNumber: string }> }) {
+export default async function ViewRepairPage(props: { params: Promise<{ id: string }> }) {
 
     const params = await props.params;
-    const repairNumber = params.repairNumber;
+    const repairId = params.id;
 
     const [repair, tenant] = await Promise.all([
-        fetchRepairById(repairNumber),
+        fetchRepairById(repairId),
         fetchDefaultTenant()
     ]);
 

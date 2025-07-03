@@ -86,7 +86,9 @@ export async function fetchProductById(id: string) {
         await dbConnect();
         var _id = new mongoose.Types.ObjectId(id);
         const product = await productModel.findOne({ _id: _id });
-        product.id = id;
+        if(product){
+            product.id = id;
+        }
         return product;
     } catch (error) {
         console.error('Error fetching product:', error);
@@ -99,6 +101,7 @@ export async function fetchCustomerById(id: number) {
     try {
         await dbConnect();
         const customer = await customerModel.findOne({ _id: id });
+        console.log('returning customer', customer);
         return customer;
     } catch (error) {
         console.error('Error fetching customer:', error);

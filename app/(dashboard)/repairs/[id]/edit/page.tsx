@@ -1,13 +1,13 @@
 import { RepairForm } from "@/components/repairs/repair-form";
-import { fetchRepairByNumber } from "@/lib/data";
+import { fetchRepairById } from "@/lib/data";
 
 
-export default async function EditRepairPage(props: { params: Promise<{ repairNumber: string }> }) {
+export default async function EditRepairPage(props: { params: Promise<{ id: string }> }) {
 
   const params = await props.params;
-  const repairNumber = params.repairNumber;
+  const repairId = params.id;
 
-  const repair = await fetchRepairByNumber(repairNumber);
+  const repair = await fetchRepairById(repairId);
 
   if (!repair) {
     return <div>Repair not found</div>;

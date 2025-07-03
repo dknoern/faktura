@@ -46,13 +46,17 @@ export function ProductHistory({ history }: ProductHistoryProps) {
             <TableCell className="font-medium">{historyEvent.user}</TableCell>
             <TableCell>
               {historyEvent.action}
-              {historyEvent.action === "sold item" ? (
+              {historyEvent.action === "sold item" && historyEvent.refDoc ? (
                 <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${historyEvent.refDoc}/view`}>
                   {historyEvent.refDoc}
                 </Link></span>
               ) : historyEvent.action === "received" && historyEvent.refDoc ? (
-                <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/loginitems/${historyEvent.refDoc}/edit`}>
+                <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/loginitems/${historyEvent.refDoc}/view`}>
                   log
+                </Link></span>
+              ) : historyEvent.action === "in repair" && historyEvent.refDoc ? (
+                <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/repairs/${historyEvent.refDoc}/view`}>
+                  repair
                 </Link></span>
               ) : null}
             </TableCell>

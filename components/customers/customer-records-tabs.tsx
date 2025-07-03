@@ -32,6 +32,7 @@ type Invoice = {
 };
 
 type Repair = {
+  _id: string;
   repairNumber: string;
   dateOut: string;
   returnDate: string;
@@ -256,9 +257,9 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                 <TableBody>
                   {repairs.map((repair) => (
                     <TableRow 
-                      key={repair.repairNumber} 
+                      key={repair._id} 
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => navigateToRepair(repair.repairNumber)}
+                      onClick={() => navigateToRepair(repair._id)}
                     >
                       <TableCell className="font-medium">{repair.repairNumber}</TableCell>
                       <TableCell style={{ whiteSpace: 'nowrap' }}>{formatDate(repair.dateOut)}</TableCell>

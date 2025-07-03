@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import { fetchRepairByNumber, fetchDefaultTenant } from '@/lib/data';
+import { fetchRepairById, fetchDefaultTenant } from '@/lib/data';
 import { Repair, Tenant, generateEmailHtml } from '@/lib/repair-renderer';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
-  region: process.env.AWS_REGION || 'us-west-2', // hard-coded for now until we verify in correct region
+  region: process.env.AWS_REGION || 'us-east-1',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
@@ -15,17 +15,20 @@ const sesClient = new SESClient({
 
 export async function POST(request: Request) {
   try {
-    const { repairNumber, email } = await request.json();
+    const { repairId, email } = await request.json();
     
-    if (!repairNumber || !email) {
+    if (!repairId || !email) {
       return NextResponse.json(
-        { error: 'Repair number and email are required' },
+        { error: 'Repair ID and email are required' },
         { status: 400 }
       );
     }
     
+    // Parse comma-delimited email addresses
+    const emailAddresses = email.split(',').map((addr: string) => addr.trim()).filter((addr: string) => addr.length > 0);
+    
     // Fetch repair and tenant data
-    const repair = await fetchRepairByNumber(repairNumber);
+    const repair = await fetchRepairById(repairId);
     const tenant = await fetchDefaultTenant();
     
     if (!repair) {
@@ -49,11 +52,11 @@ export async function POST(request: Request) {
     const params = {
       Source: tenant.email,
       Destination: {
-        ToAddresses: [email],
+        ToAddresses: emailAddresses,
       },
       Message: {
         Subject: {
-          Data: `Repair #${repair.repairNumber} from ${tenant.nameLong || 'DeMesy'}`,
+          Data: `Repair #${repair._id} from ${tenant.nameLong || 'DeMesy'}`,
         },
         Body: {
           Html: {
@@ -65,7 +68,10 @@ export async function POST(request: Request) {
     
     await sesClient.send(new SendEmailCommand(params));
     
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true, 
+      message: `Email sent to ${emailAddresses.length} recipient${emailAddresses.length > 1 ? 's' : ''}` 
+    });
   } catch (error) {
     console.error('Error sending repair email:', error);
     return NextResponse.json(

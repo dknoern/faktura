@@ -2,6 +2,7 @@
 // Generates plain HTML for repair content that can be used in both email and web views
 
 export interface Repair {
+  _id: string;
   repairNumber: string;
   itemNumber: string;
   description: string;

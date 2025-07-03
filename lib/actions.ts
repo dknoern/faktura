@@ -89,7 +89,7 @@ export async function createRepair(formData: FormData) {
           "history": {
             user: user,
             date: Date.now(),
-            action: "in repair",
+            action: "in repair - " + repair.vendor,
             refDoc: repair._id
           }
         },

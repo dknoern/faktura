@@ -7,11 +7,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit, ChevronDown, Printer, Mail } from "lucide-react";
+import { ChevronDown, Edit, Printer, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Repair } from "@/lib/repair-renderer";
 import { useState } from "react";
-import toast from "react-hot-toast";
+import { EmailDialog } from "./email-dialog";
 
 interface RepairActionMenuProps {
     repair: Repair;
@@ -19,53 +19,27 @@ interface RepairActionMenuProps {
 
 export function RepairActionMenu({ repair }: RepairActionMenuProps) {
     const router = useRouter();
-    const [isEmailSending, setIsEmailSending] = useState(false);
+    const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
     const handleEdit = () => {
-        router.push(`/repairs/${repair.repairNumber}/edit`);
+        router.push(`/repairs/${repair._id}/edit`);
     };
 
     const handlePrint = () => {
         window.print();
     };
 
-    // Function to send email
-    const handleEmail = async () => {
-        setIsEmailSending(true);
-        
-        try {
-            const response = await fetch('/api/email/send-repair', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    repairNumber: repair.repairNumber,
-                    email: 'david@seattleweb.com',
-                }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                toast.success('Email sent successfully!');
-            } else {
-                toast.error(`Error: ${data.error || 'Failed to send email'}`);
-            }
-        } catch (error) {
-            console.error('Error sending email:', error);
-            toast.error('Error: Failed to send email');
-        } finally {
-            setIsEmailSending(false);
-        }
+    // Function to open email dialog
+    const handleEmail = () => {
+        setEmailDialogOpen(true);
     };
 
     return (
+        <>
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="outline"
-                    disabled={isEmailSending}
                 >
                     Action
                     <ChevronDown className="h-4 w-4" />
@@ -82,11 +56,18 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
                     Print
                 </DropdownMenuItem>
 
-                <DropdownMenuItem onClick={handleEmail} disabled={isEmailSending}>
+                <DropdownMenuItem onClick={handleEmail}>
                     <Mail className="mr-2 h-4 w-4" />
-                    {isEmailSending ? 'Sending...' : 'Email'}
+                    Email
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+        
+        <EmailDialog
+            open={emailDialogOpen}
+            onOpenChange={setEmailDialogOpen}
+            repairId={repair._id}
+        />
+        </>
     );
 }

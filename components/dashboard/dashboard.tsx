@@ -186,7 +186,17 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
             </TableHeader>
             <TableBody>
               {transactions.map((transaction) => (
-                <TableRow key={transaction.id} onClick={() => {window.location.href = `/invoices/${transaction.id}/view`}}>
+                <TableRow key={transaction.id} onClick={() => {
+
+                  // if invoice url is /invoices/$[transaction.id}/view, if login /logs/${transaction.id}, if logout, /outs/${transaction.id}/edit:
+
+
+                  const url = transaction.type === 'log_in' ? `/loginitems/${transaction.id}/view` : transaction.type === 'log_out' ? `/logoutitems/${transaction.id}/edit` : `/invoices/${transaction.id}/view`;
+                  
+                  window.location.href = url;
+                  
+
+                  }}>
                   <TableCell>
                     {getTransactionIcon(transaction.type)}
                   </TableCell>

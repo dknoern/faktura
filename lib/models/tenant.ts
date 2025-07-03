@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 
+
+// add features array
+
 const TenantSchema = new mongoose.Schema({
     tenantCode: String,
     isDefault: Boolean,
@@ -16,7 +19,8 @@ const TenantSchema = new mongoose.Schema({
     returnPolicy: String,
     bankWireTransferInstructions: String,
     logo: String,
-    email: String
+    email: String,
+    features: [String]
 });
 
 export const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', TenantSchema);
