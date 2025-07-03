@@ -54,7 +54,7 @@ export function ProductHistory({ history }: ProductHistoryProps) {
                 <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/loginitems/${historyEvent.refDoc}/view`}>
                   log
                 </Link></span>
-              ) : historyEvent.action === "in repair" && historyEvent.refDoc ? (
+              ) : historyEvent.action.startsWith("in repair") && historyEvent.refDoc ? (
                 <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/repairs/${historyEvent.refDoc}/view`}>
                   repair
                 </Link></span>

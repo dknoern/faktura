@@ -58,9 +58,14 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
   const [customerApproved, setCustomerApproved] = useState(!!repair?.customerApprovedDate);
   const [customerApprovedDate, setCustomerApprovedDate] = useState(repair?.customerApprovedDate || '');
   const [warrantyService, setWarrantyService] = useState(repair?.warrantyService || false);
+  const [repairNumber, setRepairNumber] = useState(initialSelectedProduct?.itemNumber || repair?.repairNumber || '');
 
   const handleProductSelect = (product: Product) => {
     setSelectedProduct(product);
+    // Update repair number with the selected product's item number
+    if (product.itemNumber) {
+      setRepairNumber(product.itemNumber);
+    }
   };
 
   if (initialSelectedProduct !== null && selectedProduct === null) {
@@ -124,7 +129,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           <Input
             id="repairNumber"
             name="repairNumber"
-            defaultValue={initialSelectedProduct?.itemNumber || repair?.repairNumber}
+            value={repairNumber}
+            onChange={(e) => setRepairNumber(e.target.value)}
             required
           />
         </div>

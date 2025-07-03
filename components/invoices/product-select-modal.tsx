@@ -193,7 +193,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
                     <TableCell>{product.itemNumber}</TableCell>
                     <TableCell>{product.title}</TableCell>
                     <TableCell>${product.sellingPrice?.toFixed(2) || "0.00"}</TableCell>
-                    <TableCell>
+                    <TableCell style={{ whiteSpace: 'nowrap' }}>
                                 <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : product.status === 'Incoming' ? 'teal' : product.status === 'Sale Pending' ? 'red' : 'orange' }}>
                                     {product.status}
                                 </Badge>

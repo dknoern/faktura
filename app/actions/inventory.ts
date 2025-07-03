@@ -122,3 +122,33 @@ export async function searchFilteredStatusProducts(search: string = '') {
     return { success: false, error: 'Failed to search products with filtered status' };
   }
 }
+
+
+
+export async function searchInStockProducts(search: string = '') {
+  try {
+    await dbConnect();
+    
+    // Build the query to find products with specific statuses
+    const query: any = {
+      status: { $in: ["In Stock"] }
+    };
+    
+    // Add search condition if provided
+    if (search) {
+      query.search = { $regex: search, $options: 'i' };
+    }
+    
+    const products = await productModel.find(query)
+      .sort({ lastUpdated: -1 })
+      .limit(20);
+    
+    return { 
+      success: true, 
+      data: JSON.parse(JSON.stringify(products)) 
+    };
+  } catch (error) {
+    console.error('Error searching filtered status products:', error);
+    return { success: false, error: 'Failed to search products with filtered status' };
+  }
+}
