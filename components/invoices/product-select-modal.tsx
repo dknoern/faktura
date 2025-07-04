@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Loader2 } from "lucide-react"
-import { searchInventoryItems } from "@/app/actions/inventory"
+import { searchFilteredInventoryItems } from "@/app/actions/inventory"
 import { Badge } from "../ui/badge"
 
 interface Product {
@@ -23,11 +23,11 @@ interface ProductSelectModalProps {
   isOpen: boolean
   onClose: () => void
   onProductSelect: (product: Product) => void
-  customSearchFunction?: (search: string) => Promise<{success: boolean, data?: Product[], error?: string}>
+  statuses?: string[]
   modalTitle?: string
 }
 
-export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSearchFunction, modalTitle = "Select Product" }: ProductSelectModalProps) {
+export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses = ["Sold", "Memo", "Incoming", "In Stock", "Partnership"] }: ProductSelectModalProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
@@ -44,15 +44,13 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
       const searchValue = searchTerm !== undefined ? searchTerm : search
       
       // Use either the custom search function or the default one
-      const result = customSearchFunction 
-        ? await customSearchFunction(searchValue)
-        : await searchInventoryItems(searchValue)
+      const result = searchFilteredInventoryItems(searchValue, statuses)
       
-      if (result.success && result.data) {
-        setProducts(result.data)
+      if ((await result).success && (await result).data) {
+        setProducts((await result).data)
         //setTotalPages(result.pagination?.pages || 1)
       } else {
-        setError(result.error || "No products found")
+        setError((await result).error || "No products found")
         setProducts([])
       }
     } catch (error) {
@@ -62,7 +60,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
     } finally {
       setLoading(false)
     }
-  }, [search, customSearchFunction])
+  }, [search, statuses])
 
 
   useEffect(() => {
@@ -134,7 +132,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, customSea
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>{modalTitle}</DialogTitle>
+          <DialogTitle>Select Product ({statuses.join(", ")})</DialogTitle>
         </DialogHeader>
         
         {error && (

@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createRepair, updateRepair } from "@/lib/actions";
 import { ProductSelectModal } from "@/components/invoices/product-select-modal";
-import { searchFilteredStatusProducts } from "@/app/actions/inventory";
 
 interface Product {
   _id: string;
@@ -346,8 +345,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
         isOpen={isProductModalOpen}
         onClose={() => setIsProductModalOpen(false)}
         onProductSelect={handleProductSelect}
-        modalTitle="Select Product (In Stock, Sold, Memo, Partnership)"
-        customSearchFunction={(search) => searchFilteredStatusProducts(search, ["In Stock", "Sold", "Memo", "Partnership"])}
+        statuses={["In Stock", "Sold", "Memo", "Partnership"]}
       />
     </form>
     

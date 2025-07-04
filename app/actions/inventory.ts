@@ -4,28 +4,6 @@ import { productModel } from '@/lib/models/product';
 import { Repair } from '@/lib/models/repair';
 import dbConnect from '@/lib/dbConnect';
 
-// Function to search inventory items
-export async function searchInventoryItems(search: string = '') {
-  try {
-    await dbConnect();
-    
-    const query = search 
-      ? { search: { $regex: search, $options: 'i' } }
-      : {};
-    
-    const products = await productModel.find(query)
-      .sort({ lastUpdated: -1 })
-      .limit(20);
-    
-    return { 
-      success: true, 
-      data: JSON.parse(JSON.stringify(products)) 
-    };
-  } catch (error) {
-    console.error('Error searching inventory items:', error);
-    return { success: false, error: 'Failed to search inventory items' };
-  }
-}
 
 // Function to search repair items
 export async function searchOutstandingRepairs(search: string = '') {
@@ -95,7 +73,7 @@ export async function getRepairItemById(id: string) {
 }
 
 // Function to search for products with specific statuses
-export async function searchFilteredStatusProducts(search: string = '', statuses: string[] = ["Sold", "Memo", "Incoming"]) {
+export async function searchFilteredInventoryItems(search: string = '', statuses: string[] = ["Sold", "Memo", "Incoming"]) {
   try {
     await dbConnect();
     

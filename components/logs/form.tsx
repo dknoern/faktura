@@ -34,7 +34,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductSelectModal } from "@/components/invoices/product-select-modal";
 import { RepairSelectModal } from "@/components/logs/repair-select-modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { searchFilteredStatusProducts } from "@/app/actions/inventory";
 
 export const CARRIER_OPTIONS = [
   "FedEx",
@@ -460,8 +459,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
             handleProductSelect(product);
             // Modal is closed automatically by ProductSelectModal
           }}
-          customSearchFunction={(search) => searchFilteredStatusProducts(search, ["Sold", "Memo", "Incoming"])}
-          modalTitle="Select Product (Sold, Memo, Incoming)"
+          statuses={["Sold", "Memo", "Incoming"]}
         />
         
         {/* Misc Item Modal */}
