@@ -460,7 +460,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
             handleProductSelect(product);
             // Modal is closed automatically by ProductSelectModal
           }}
-          customSearchFunction={searchFilteredStatusProducts}
+          customSearchFunction={(search) => searchFilteredStatusProducts(search, ["Sold", "Memo", "Incoming"])}
           modalTitle="Select Product (Sold, Memo, Incoming)"
         />
         

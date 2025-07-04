@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createRepair, updateRepair } from "@/lib/actions";
 import { ProductSelectModal } from "@/components/invoices/product-select-modal";
-import { searchAvailableProducts } from "@/app/actions/repair-products";
+import { searchFilteredStatusProducts } from "@/app/actions/inventory";
 
 interface Product {
   _id: string;
@@ -236,15 +236,17 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
               name="itemNumber"
               value={selectedProduct?.itemNumber || repair?.itemNumber || ''}
               readOnly
-              className="rounded-r-none"
+              className={repair ? "cursor-not-allowed bg-gray-100" : "rounded-r-none"}
             />
-            <Button
-              type="button"
-              onClick={() => setIsProductModalOpen(true)}
-              className="rounded-l-none"
-            >
-              Select
-            </Button>
+            {!repair && (
+              <Button
+                type="button"
+                onClick={() => setIsProductModalOpen(true)}
+                className="rounded-l-none"
+              >
+                Select
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -344,8 +346,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
         isOpen={isProductModalOpen}
         onClose={() => setIsProductModalOpen(false)}
         onProductSelect={handleProductSelect}
-        customSearchFunction={searchAvailableProducts}
-        modalTitle="Select Available Product"
+        modalTitle="Select Product (In Stock, Sold, Memo, Partnership)"
+        customSearchFunction={(search) => searchFilteredStatusProducts(search, ["In Stock", "Sold", "Memo", "Partnership"])}
       />
     </form>
     

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ProductSelectModal } from "./product-select-modal"
 import { Plus, Trash2 } from "lucide-react"
-import { searchInStockProducts } from "@/app/actions/inventory"
+import { searchFilteredStatusProducts } from "@/app/actions/inventory"
 
 export interface LineItem {
   productId?: string
@@ -234,7 +234,7 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
         onClose={handleModalClose}
         onProductSelect={handleProductSelect}
         modalTitle="Select Product (In Stock)"
-        customSearchFunction={searchInStockProducts}
+        customSearchFunction={(search) => searchFilteredStatusProducts(search, ["In Stock"])}
       />
     </div>
   )
