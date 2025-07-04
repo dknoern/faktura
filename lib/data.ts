@@ -101,7 +101,6 @@ export async function fetchCustomerById(id: number) {
     try {
         await dbConnect();
         const customer = await customerModel.findOne({ _id: id });
-        console.log('returning customer', customer);
         return customer;
     } catch (error) {
         console.error('Error fetching customer:', error);
@@ -349,7 +348,6 @@ export async function getRepairsForItem(productId: string) {
     try {
         await dbConnect();
         const repairs = await Repair.find({ itemId: productId });
-        console.log("repairs", repairs);
         return repairs;
     } catch (error) {
         console.error('Error fetching outs:', error);
@@ -441,7 +439,6 @@ export async function fetchInvoiceById(id: number) {
 export async function fetchPartnerInvoiceByProductId(id: string) {
     try {
         await dbConnect();
-        console.log('looking for invoice for product id', id);
         let invoice = await Invoice.findOne({
             $and: [
                 {

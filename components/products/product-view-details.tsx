@@ -55,7 +55,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
       {/* Basic Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Product Information</CardTitle>
+          <CardTitle>Specifications</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
@@ -101,6 +101,11 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
                 {product.inventoryItem && <Badge style={{ backgroundColor: 'green' }}>Inventory</Badge>}
                 {product.sellerType === "Partner" && product.id != null && <div style={{ fontSize: '14px', cursor: 'pointer' }} className="text-blue-500 hover:underline"><Link href={`/invoices/${product.id}/partner`}>Partner Invoice</Link></div>}
               </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-500">Item Number</label>
+              <p>{product.itemNumber || 'N/A'}</p>
             </div>
 
             <div>

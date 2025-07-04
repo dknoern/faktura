@@ -71,11 +71,21 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
         <ReturnActionMenu returnData={returnData} />
       </div>
       
-      <div className="bg-white p-8 rounded-lg shadow print:shadow-none">
+      <div className="bg-white p-6 rounded-lg shadow print:shadow-none">
+
+
+
+
+
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
+<div>
         {/* Header with Logo */}
-        <div className="mb-8">
+        <div className="mb-4">
           <div className="flex flex-col items-start">
-            <div className="w-48 mb-4">
+            <div className="w-48">
               <Image
                 src={getApiUrl(tenant._id)}
                 alt={tenant.nameLong || ''}
@@ -88,57 +98,37 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
           </div>
         </div>
 
+
         {/* Return Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">RETURN AUTHORIZATION</h1>
-          <div className="text-lg text-gray-600">
-            Return #{returnData._id}
-          </div>
+        <div className="text-left">
+          <h1 style={{ color: '#B69D57', fontSize: '24px', marginTop: '10px' }}>RETURN</h1>
+
         </div>
 
+</div>
+
+        <div>
+          <div>Return #{returnData._id}</div>
+          <div>Invoice #{returnData.invoiceId}</div>
+          <div>Date: {formatDate(returnData.returnDate)}</div>
+        </div>  
+        
+      </div>
+
         {/* Return Details */}
-        <div className="grid grid-cols-2 gap-8 mb-8">
           <div>
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">Return Information</h2>
             <div className="space-y-2">
-              <div><strong>Return Date:</strong> {formatDate(returnData.returnDate)}</div>
-              <div><strong>Invoice ID:</strong> {returnData.invoiceId}</div>
-              <div><strong>Customer:</strong> {returnData.customerName}</div>
-              {returnData.salesPerson && (
-                <div><strong>Sales Person:</strong> {returnData.salesPerson}</div>
-              )}
+              <div className="mt-4 mb-6 uppercase"><strong> {returnData.customerName}</strong></div>
             </div>
           </div>
           
-          <div>
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">Company Information</h2>
-            <div className="space-y-1 text-sm">
-              <div className="font-medium">{tenant.nameLong}</div>
-              {tenant.address1 && <div>{tenant.address1}</div>}
-              {tenant.address2 && <div>{tenant.address2}</div>}
-              {(tenant.city || tenant.state || tenant.zip) && (
-                <div>
-                  {tenant.city && tenant.city}
-                  {tenant.city && tenant.state && ', '}
-                  {tenant.state && tenant.state}
-                  {tenant.zip && ` ${tenant.zip}`}
-                </div>
-              )}
-              {tenant.phone && <div>Phone: {tenant.phone}</div>}
-              {tenant.email && <div>Email: {tenant.email}</div>}
-              {tenant.website && <div>Website: {tenant.website}</div>}
-            </div>
-          </div>
-        </div>
-
         {/* Line Items Table */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Returned Items</h2>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2 text-left">Item Number</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left whitespace-nowrap">Item No</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Description</th>
                   <th className="border border-gray-300 px-4 py-2 text-right">Amount</th>
                   <th className="border border-gray-300 px-4 py-2 text-center">Status</th>
@@ -190,9 +180,7 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
         <div className="flex justify-end">
           <div className="w-80">
             <div className="border border-gray-300 rounded">
-              <div className="bg-gray-100 px-4 py-2 font-semibold text-gray-800">
-                Return Summary
-              </div>
+
               <div className="p-4 space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
@@ -203,7 +191,7 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
                   <span>{formatCurrency(returnData.shipping)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tax:</span>
+                  <span>Tax (TX):</span>
                   <span>{formatCurrency(returnData.salesTax)}</span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -218,7 +206,7 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
                 </div>
                 <hr className="my-2" />
                 <div className="flex justify-between font-bold text-lg">
-                  <span>Total Return Amount:</span>
+                  <span>Total:</span>
                   <span>{formatCurrency(returnData.totalReturnAmount)}</span>
                 </div>
               </div>

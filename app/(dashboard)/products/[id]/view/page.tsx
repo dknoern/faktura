@@ -27,7 +27,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <div className="flex justify-between items-center mb-6">
         <span className="flex items-center">
 
-          <h1 className="text-3xl font-bold">{product.itemNumber}</h1></span>
+          <h1 className="text-3xl font-bold">Product {product.itemNumber}</h1></span>
         <ProductActionMenu
           id={id}
           productStatus={product.status}

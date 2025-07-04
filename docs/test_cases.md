@@ -31,6 +31,21 @@
 1. return item
 1. update return
 
+1. view report: repairs
+1. view report: memo items
+1. view report: daily sales
+1. change daily sales date
+1. view report returns
+1. view report partnership
+1. view repot consignment
+1. view monthly sales
+1. view out at show
+1. put multiple items to out at show
+1. bulk release from out at show
+1. view show report
+1. view in start
+1. view customers
+
 
 todo:
 - new welcome page - DONE
