@@ -42,7 +42,7 @@ export function ProductHistory({ history }: ProductHistoryProps) {
       <TableBody>
         {history.map((historyEvent, index) => (
           <TableRow key={index}>
-            <TableCell>{new Date(historyEvent.date).toISOString().split('T')[0]}</TableCell>
+            <TableCell>{new Date(historyEvent.date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })}</TableCell>
             <TableCell className="font-medium">{historyEvent.user}</TableCell>
             <TableCell>
               {historyEvent.action}

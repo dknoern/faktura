@@ -52,7 +52,7 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'long',
+      month: '2-digit',
       day: 'numeric'
     });
   };

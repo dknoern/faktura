@@ -1,36 +1,29 @@
+# Test Cases
+
 1. create product
 1. update product
 1. add, rotate, delete product image
-2. create customer
-2. update customer
-3. create repair, with item
-3. update repair, with item
+1. create customer
+1. update customer
+1. create repair, with item
+1. update repair, with item
 1. create repair, no item
 1. update repair, no item
-4. create invoice
-4. update invoice
-5. create log in (from repair previously made)
-5. create log in (from invoice previously made)
-5. update log in
-
-.... made it here
-
+1. create invoice
+1. update invoice
+1. create log in (from repair previously made)
+1. create log in (from invoice previously made)
+1. update log in
 1. add, rotate, delete login image
-
-6. create log out
-6. update log out
+1. create log out
+1. update log out
 1. add, rotate, delete logout image
 1. e-sign log out
-
-7. create wanted
-7. update wanted
-
+1. create wanted
+1. update wanted
 1. mark wanted item as found
-
-
 1. return item
 1. update return
-
 1. view report: repairs
 1. view report: memo items
 1. view report: daily sales
@@ -43,11 +36,12 @@
 1. put multiple items to out at show
 1. bulk release from out at show
 1. view show report
-1. view in start
+1. view in stock
 1. view customers
-
-
-todo:
-- new welcome page - DONE
-- format dates consistenly
-- repair images?  leave out for now but ask Ke.
+1. product out to show and back
+1. product hode to sale pending and back
+1. product to incoming and back (back via login)
+1. clonoe item
+1. delete item
+1. try to create new product with same number (non deleted)
+1. try to create new product with same number (deleted)

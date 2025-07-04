@@ -145,7 +145,7 @@ export function WantedTable({ wanted, pagination }: { wanted: Wanted[], paginati
                             <TableCell className="font-medium">{item.title}</TableCell>
                             <TableCell>{item.customerName}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>
-                                {item.createdDate ? new Date(item.createdDate).toISOString().split('T')[0] : ''}
+                                {item.createdDate ? new Date(item.createdDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}
                             </TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>
                                 {item.foundDate ? new Date(item.foundDate).toISOString().split('T')[0] : ''}

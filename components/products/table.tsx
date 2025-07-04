@@ -124,7 +124,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                             </TableCell>
 
                             {/* show date in format yyyy-mm-dd but for local timezone */}
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toLocaleDateString('fr-Ca', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

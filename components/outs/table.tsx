@@ -118,7 +118,7 @@ export function OutsTable({ outs, pagination }: { outs: Out[], pagination: Pagin
                                 key={out._id} 
                                 onClick={() => router.push(`/logoutitems/${out._id}/view`)}
                                 className="cursor-pointer hover:bg-gray-100">
-                                <TableCell style={{ whiteSpace: 'nowrap' }}>{out.date ? new Date(out.date).toISOString().split('T')[0] : ''}</TableCell>
+                                <TableCell style={{ whiteSpace: 'nowrap' }}>{out.date ? new Date(out.date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
                                 <TableCell> {out.sentTo}</TableCell>
                                 <TableCell> {out.description}</TableCell>
                                 <TableCell> {out.user}</TableCell>

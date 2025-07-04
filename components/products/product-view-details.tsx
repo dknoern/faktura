@@ -57,15 +57,11 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
         <CardHeader>
           <CardTitle>Specifications</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-1">
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
 
             <div className="col-span-2">
-              {/*<label className="text-sm font-medium text-gray-500">Manufacturer</label>*/}
-              <div className="mt-1">
-
-
-
+              <div>
                 {product.manufacturer && product.manufacturer !== 'Additional Brands' &&
                   <Image src={`/manufacturers/${product.manufacturer.replace(/\s*&\s*/g, '-').replace(/\s+/g, '-')}.png`}
                     alt={`${product.manufacturer} logo`}

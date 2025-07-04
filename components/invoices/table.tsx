@@ -180,7 +180,7 @@ export function InvoicesTable({
                                 className="cursor-pointer hover:bg-gray-100">
                                 <TableCell>{invoice._id}</TableCell>
                                 <TableCell> {invoice.customerFirstName + ' ' + invoice.customerLastName}</TableCell>
-                                <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
+                                <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
                                 <TableCell>
                                     {itemNumbers.split("<br/>").map((line, index, array) => (
                                         <React.Fragment key={index}>

@@ -182,9 +182,9 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                             <TableCell>{repair.repairNumber}</TableCell>
                             <TableCell>{repair.itemNumber}</TableCell>
                             <TableCell>{repair.description}</TableCell>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.dateOut ? new Date(repair.dateOut).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.customerApprovedDate ? new Date(repair.customerApprovedDate).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.returnDate ? new Date(repair.returnDate).toISOString().split('T')[0] : ''}</TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.dateOut ? new Date(repair.dateOut).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.customerApprovedDate ? new Date(repair.customerApprovedDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.returnDate ? new Date(repair.returnDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.customerFirstName + ' ' + repair.customerLastName}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>{repair.vendor}</TableCell>
                             <TableCell>{repair.repairCost}</TableCell>

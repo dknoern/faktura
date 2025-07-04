@@ -128,7 +128,7 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
                                             </React.Fragment>
                                         ))}
                                 </TableCell>
-                                <TableCell>{ret.returnDate ? new Date(ret.returnDate).toISOString().split('T')[0] : ''}</TableCell>
+                                <TableCell>{ret.returnDate ? new Date(ret.returnDate).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
                                 <TableCell>{ret.customerName}</TableCell>
                                 <TableCell> {ret.salesPerson}</TableCell>
                                 <TableCell>{ret.totalReturnAmount ? Math.ceil(ret.totalReturnAmount).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '') : ''}</TableCell>
