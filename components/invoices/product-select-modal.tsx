@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +27,23 @@ interface ProductSelectModalProps {
   modalTitle?: string
 }
 
+// Custom hook for debounced search
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+    
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+  
+  return debouncedValue
+}
+
 export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses = ["Sold", "Memo", "Incoming", "In Stock", "Partnership"] }: ProductSelectModalProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
@@ -34,23 +51,25 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
   const [page, setPage] = useState(1)
   const [totalPages] = useState(1)
   const [error, setError] = useState<string | null>(null)
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  
+  // Debounce the search term with 300ms delay
+  const debouncedSearch = useDebounce(search, 300)
 
-  const fetchProducts = useCallback(async (searchTerm?: string) => {
+  const fetchProducts = useCallback(async (searchTerm: string) => {
     try {
-      setLoading(true)
+      // Only show loading for initial load or when we have no products
+      if (isInitialLoad || products.length === 0) {
+        setLoading(true)
+      }
       setError(null)
       
-      const searchValue = searchTerm !== undefined ? searchTerm : search
+      const result = await searchFilteredInventoryItems(searchTerm, statuses)
       
-      // Use either the custom search function or the default one
-      const result = searchFilteredInventoryItems(searchValue, statuses)
-      
-      if ((await result).success && (await result).data) {
-        setProducts((await result).data)
-        //setTotalPages(result.pagination?.pages || 1)
+      if (result.success && result.data) {
+        setProducts(result.data)
       } else {
-        setError((await result).error || "No products found")
+        setError(result.error || "No products found")
         setProducts([])
       }
     } catch (error) {
@@ -59,22 +78,27 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
       setProducts([])
     } finally {
       setLoading(false)
+      setIsInitialLoad(false)
     }
-  }, [search, statuses])
+  }, [statuses, isInitialLoad, products.length])
 
 
+  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
-      fetchProducts()
+      setIsInitialLoad(true)
+      setProducts([])
+      setSearch("")
+      setError(null)
     }
-    
-    return () => {
-      // Clear any pending timeouts when component unmounts
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current)
-      }
+  }, [isOpen])
+  
+  // Fetch products when debounced search changes (only when modal is open)
+  useEffect(() => {
+    if (isOpen) {
+      fetchProducts(debouncedSearch)
     }
-  }, [isOpen, page, fetchProducts])
+  }, [isOpen, debouncedSearch, fetchProducts])
   
   // Fix for scrolling issues - ensure body scroll is restored
   useEffect(() => {
@@ -94,21 +118,11 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
     }
   }, [isOpen])
 
-  // Handle search input changes with debouncing
+  // Handle search input changes (debouncing is handled by useDebounce hook)
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearch(value)
-    
-    // Clear any existing timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current)
-    }
-    
-    // Set a new timeout to delay the search
-    searchTimeoutRef.current = setTimeout(() => {
-      setPage(1)
-      fetchProducts(value)
-    }, 150) // Reduced debounce delay for more responsive search
+    setPage(1) // Reset page when search changes
   }
   
   // Handle form submit
