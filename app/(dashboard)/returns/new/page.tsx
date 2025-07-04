@@ -44,7 +44,7 @@ export default async function NewReturnPage({ searchParams }: { searchParams: Pr
         amount: item.amount || 0,
         serialNo: item.serialNumber || '',
         longDesc: item.longDesc || '',
-        included: false // Default to not included in return
+        included: true // Default to included in return
       }))
     };
     

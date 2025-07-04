@@ -75,21 +75,16 @@ export async function PUT(
         let action = '';
         switch (data.status) {
           case 'At Show':
-            action = 'Sent to show';
+            action = 'item at show';
             break;
           case 'In Stock':
-            // Check if coming from Sale Pending status
-            if (currentProduct.status === 'Sale Pending') {
-              action = 'Released from sale pending';
-            } else {
-              action = 'Returned to stock';
-            }
+            action = 'item in stock';
             break;
           case 'Sale Pending':
-            action = 'Item held for sale pending';
+            action = 'item sale pending';
             break;
           case 'Incoming':
-            action = 'Marked as incoming';
+            action = 'item incoming';
             break;
         }
         

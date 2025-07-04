@@ -273,10 +273,11 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
                 </td>
                 <td className="p-2 text-center">
                   <Checkbox
-                    checked={formData._id ? item.included || false : true}
-                    onCheckedChange={(checked) => 
+                    checked={item.included || false}
+                    onCheckedChange={formData._id ? undefined : (checked) => 
                       handleLineItemChange(index, 'included', checked === true)
                     }
+                    disabled={!!formData._id}
                   />
                 </td>
               </tr>
