@@ -72,8 +72,13 @@ export async function getRepairItemById(id: string) {
   }
 }
 
-// Function to search for products with specific statuses
-export async function searchFilteredInventoryItems(search: string = '', statuses: string[] = ["Sold", "Memo", "Incoming"]) {
+// Function to search for products with specific statuses with pagination
+export async function searchFilteredInventoryItems(
+  search: string = '', 
+  statuses: string[] = ["Sold", "Memo", "Incoming"],
+  page: number = 1,
+  limit: number = 10
+) {
   try {
     await dbConnect();
     
@@ -87,13 +92,30 @@ export async function searchFilteredInventoryItems(search: string = '', statuses
       query.search = { $regex: search, $options: 'i' };
     }
     
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+    
+    // Get total count for pagination
+    const total = await productModel.countDocuments(query);
+    
+    // Get products with pagination
     const products = await productModel.find(query)
       .sort({ lastUpdated: -1 })
-      .limit(20);
+      .skip(skip)
+      .limit(limit);
+    
+    // Calculate pagination info
+    const pages = Math.ceil(total / limit);
     
     return { 
       success: true, 
-      data: JSON.parse(JSON.stringify(products)) 
+      data: JSON.parse(JSON.stringify(products)),
+      pagination: {
+        total,
+        pages,
+        currentPage: page,
+        limit
+      }
     };
   } catch (error) {
     console.error('Error searching filtered status products:', error);

@@ -19,6 +19,13 @@ interface Product {
   status?: string
 }
 
+interface PaginationProps {
+  total: number
+  pages: number
+  currentPage: number
+  limit: number
+}
+
 interface ProductSelectModalProps {
   isOpen: boolean
   onClose: () => void
@@ -48,15 +55,20 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState("")
-  const [page, setPage] = useState(1)
-  const [totalPages] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pagination, setPagination] = useState<PaginationProps>({
+    total: 0,
+    pages: 1,
+    currentPage: 1,
+    limit: 10
+  })
   const [error, setError] = useState<string | null>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   
   // Debounce the search term with 300ms delay
   const debouncedSearch = useDebounce(search, 300)
 
-  const fetchProducts = useCallback(async (searchTerm: string) => {
+  const fetchProducts = useCallback(async (searchTerm: string, page: number = 1) => {
     try {
       // Only show loading for initial load or when we have no products
       if (isInitialLoad || products.length === 0) {
@@ -64,18 +76,36 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
       }
       setError(null)
       
-      const result = await searchFilteredInventoryItems(searchTerm, statuses)
+      const result = await searchFilteredInventoryItems(searchTerm, statuses, page, 10)
       
       if (result.success && result.data) {
         setProducts(result.data)
+        setPagination(result.pagination || {
+          total: 0,
+          pages: 1,
+          currentPage: 1,
+          limit: 10
+        })
       } else {
         setError(result.error || "No products found")
         setProducts([])
+        setPagination({
+          total: 0,
+          pages: 1,
+          currentPage: 1,
+          limit: 10
+        })
       }
     } catch (error) {
       console.error("Error fetching products:", error)
       setError("Failed to load products")
       setProducts([])
+      setPagination({
+        total: 0,
+        pages: 1,
+        currentPage: 1,
+        limit: 10
+      })
     } finally {
       setLoading(false)
       setIsInitialLoad(false)
@@ -89,6 +119,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
       setIsInitialLoad(true)
       setProducts([])
       setSearch("")
+      setCurrentPage(1)
       setError(null)
     }
   }, [isOpen])
@@ -96,9 +127,9 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
   // Fetch products when debounced search changes (only when modal is open)
   useEffect(() => {
     if (isOpen) {
-      fetchProducts(debouncedSearch)
+      fetchProducts(debouncedSearch, currentPage)
     }
-  }, [isOpen, debouncedSearch, fetchProducts])
+  }, [isOpen, debouncedSearch, currentPage, fetchProducts])
   
   // Fix for scrolling issues - ensure body scroll is restored
   useEffect(() => {
@@ -122,14 +153,19 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearch(value)
-    setPage(1) // Reset page when search changes
+    setCurrentPage(1) // Reset page when search changes
   }
   
   // Handle form submit
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setPage(1)
-    fetchProducts(search)
+    setCurrentPage(1)
+    fetchProducts(search, 1)
+  }
+  
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
   }
 
   const handleProductSelect = (product: Product) => {
@@ -217,25 +253,30 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
           </Table>
         </div>
         
-        {totalPages > 1 && (
-          <div className="flex justify-between items-center mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1 || loading}
-            >
-              Previous
-            </Button>
-            <span>
-              Page {page} of {totalPages}
-            </span>
-            <Button 
-              variant="outline" 
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages || loading}
-            >
-              Next
-            </Button>
+        {pagination.pages > 1 && (
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-gray-500">
+              Showing {products.length} of {pagination.total} products
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                disabled={pagination.currentPage <= 1 || loading}
+              >
+                Previous
+              </Button>
+              <div className="flex items-center">
+                <span className="px-2">Page {pagination.currentPage} of {pagination.pages}</span>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                disabled={pagination.currentPage >= pagination.pages || loading}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         )}
         
