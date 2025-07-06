@@ -100,6 +100,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
     invoice
       ? { ...invoice, date: formatDateTime(invoice.date) }
       : {
+          customerId: selectedCustomer?._id,
           customerFirstName: selectedCustomer?.firstName || "",
           customerLastName: selectedCustomer?.lastName || "",
           shipAddress1: selectedCustomer?.address1 || "",

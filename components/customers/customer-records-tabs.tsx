@@ -105,9 +105,9 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
         setReturns(returnsData.returns || []);
         
         // Fetch wanted count
-        const wantedResponse = await fetch(`/api/wanted?customerId=${customerId}`);
+        const wantedResponse = await fetch(`/api/customers/${customerId}/wanteds`);
         const wantedData = await wantedResponse.json();
-        setWanted(wantedData.wanted || []);
+        setWanted(wantedData.wanteds || []);
       } catch (error) {
         console.error("Error fetching counts:", error);
       } finally {

@@ -104,64 +104,74 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
               <p>{product.itemNumber || 'N/A'}</p>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-500">Serial Number</label>
-              <p>{product.serialNo || 'N/A'}</p>
-            </div>
+            {product.serialNo && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Serial Number</label>
+                <p>{product.serialNo || 'N/A'}</p>
+              </div>
+            )}
+            {product.model && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Model Name</label>
+                <p>{product.model || 'N/A'}</p>
+              </div>
+            )}
+            {product.modelNumber && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Model Number</label>
+                <p>{product.modelNumber || 'N/A'}</p>
+              </div>
+            )}
+            {product.condition && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Condition</label>
+                <p>{product.condition || 'N/A'}</p>
+              </div>
+            )}
+            {product.gender && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Gender</label>
+                <p>{product.gender || 'N/A'}</p>
+              </div>
+            )}
+            {product.features && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Features</label>
+                <p>{product.features || 'N/A'}</p>
+              </div>
+            )}
+            {product.case && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Case</label>
+                <p>{product.case || 'N/A'}</p>
+              </div>
+            )}
 
-            <div>
-              <label className="text-sm font-medium text-gray-500">Model Name</label>
-              <p>{product.model || 'N/A'}</p>
-            </div>
+            {product.dial && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Dial</label>
+                <p>{product.dial || 'N/A'}</p>
+              </div>
+            )}
+            {product.bracelet && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Bracelet</label>
+                <p>{product.bracelet || 'N/A'}</p>
+              </div>
+            )}
 
-            <div>
-              <label className="text-sm font-medium text-gray-500">Model Number</label>
-              <p>{product.modelNumber || 'N/A'}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Condition</label>
-              <p>{product.condition || 'N/A'}</p>
-            </div>
-
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Gender</label>
-              <p>{product.gender || 'N/A'}</p>
-            </div>
-
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Features</label>
-              <p>{product.features || 'N/A'}</p>
-            </div>
-
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Case</label>
-              <p>{product.case || 'N/A'}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Dial</label>
-              <p>{product.dial || 'N/A'}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Bracelet</label>
-              <p>{product.bracelet || 'N/A'}</p>
-            </div>
-
-            <div className="col-span-2">
-              <label className="text-sm font-medium text-gray-500">Long Desc</label>
-              <p>{product.longDesc || 'N/A'}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Movement</label>
-              <p>{product.movement || 'N/A'}</p>
-            </div>
-
+            {product.longDesc && (
+              <div className="col-span-2">
+                <label className="text-sm font-medium text-gray-500">Long Desc</label>
+                <p>{product.longDesc || 'N/A'}</p>
+              </div>
+            )}
+            {product.movement && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Movement</label>
+                <p>{product.movement || 'N/A'}</p>
+              </div>
+            )}
 
           </div>
         </CardContent>
@@ -278,7 +288,7 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
               {repairs.map((repair: any, index: number) => (
                 <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="font-medium">Repair <Link style={{ color: 'blue', cursor: 'pointer' }}href={`/repairs/${repair._id}/view`}>#{repair.repairNumber}</Link></p>
+                    <p className="font-medium">Repair <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/repairs/${repair._id}/view`}>#{repair.repairNumber}</Link></p>
                     <p className="text-sm text-gray-600">{repair.description}</p>
                   </div>
                   <div className="text-right">

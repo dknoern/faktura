@@ -94,16 +94,13 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
       // Ensure date is set for new logs
       form.setValue("date", new Date());
     }
-    
-    // Log the form state for debugging
-    console.log("Form initialized with values:", form.getValues());
+
   }, [log, form]);
 
   async function onSubmit(data: LogFormValues) {
     try {
       setError(null);
       setIsSubmitting(true);
-      console.log("Form submission started", { data, lineItems });
 
       // Validate that there is at least one line item
       if (!log?.id && lineItems.length === 0) {
@@ -120,8 +117,6 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
         id: log?.id // Include the id if it exists
       };
       
-      console.log("Submitting form data:", formData);
-
       const result = log?.id
         ? await updateLog(log.id, formData)
         : await createLog(formData);
@@ -244,7 +239,6 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
       <form onSubmit={(e) => {
         e.preventDefault();
         const formValues = form.getValues();
-        console.log("Form submitted with values:", formValues);
         onSubmit(formValues);
       }} className="space-y-8">
         {error && (

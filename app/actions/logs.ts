@@ -120,7 +120,6 @@ async function receiveProduct(log: any, lineItem: any) {
           memo = false;
         }
       }
-      console.log("action = ", element.action, "sold = ", sold, "repair = ", repair, "memo = ", memo);
     });
 
     // figure out new state for received item
@@ -139,8 +138,6 @@ async function receiveProduct(log: any, lineItem: any) {
       newStatus = "In Stock";
     }
 
-    console.log("checking existing product in, status was " + product.status + ", setting status to " + newStatus);
-    
     const updates = {
       lastUpdated: new Date(),
       status: newStatus
@@ -169,7 +166,6 @@ async function receiveProduct(log: any, lineItem: any) {
       { upsert: true }
     );
 
-    console.log('added history line for itemNumber', lineItem.itemNumber);
   } catch (error) {
     console.error('error adding history:', error);
   }

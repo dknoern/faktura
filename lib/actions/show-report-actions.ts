@@ -14,9 +14,6 @@ export async function bulkEntryToShow(itemNumbers: string[]) {
       .map(num => num.trim())
       .filter(num => num.length > 0);
 
-    console.log('DEBUG: Received item numbers:', itemNumbers);
-    console.log('DEBUG: Clean item numbers:', cleanItemNumbers);
-
     if (cleanItemNumbers.length === 0) {
       throw new Error("No valid item numbers provided");
     }
@@ -38,10 +35,6 @@ export async function bulkEntryToShow(itemNumbers: string[]) {
     });
     const allProducts = Array.from(allProductsMap.values());
     
-    console.log('DEBUG: String query results:', stringQuery.map(p => ({ itemNumber: p.itemNumber, status: p.status })));
-    console.log('DEBUG: Number query results:', numberQuery.map(p => ({ itemNumber: p.itemNumber, status: p.status })));
-    console.log('DEBUG: Combined results:', allProducts.map(p => ({ itemNumber: p.itemNumber, status: p.status })));
-
     // Separate products by their current status
     // Convert all to strings for consistent comparison
     const foundItemNumbers = allProducts.map(p => String(p.itemNumber));
@@ -49,11 +42,6 @@ export async function bulkEntryToShow(itemNumbers: string[]) {
     const alreadyAtShow = allProducts.filter(p => p.status === "At Show");
     const productsToMove = allProducts.filter(p => p.status !== "At Show");
     
-    console.log('DEBUG: Found item numbers:', foundItemNumbers);
-    console.log('DEBUG: Not found item numbers:', notFoundItemNumbers);
-    console.log('DEBUG: Already at show:', alreadyAtShow.map(p => p.itemNumber));
-    console.log('DEBUG: Products to move:', productsToMove.map(p => p.itemNumber));
-
     // Build detailed feedback message
     const messages = [];
     

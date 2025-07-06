@@ -75,10 +75,6 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
                 throw new Error('Upload failed');
             }
 
-            // Show success notification
-            console.log(`Upload successful: ${file.name}`);
-            // You could implement a custom notification here if needed
-        
             // Reload the page to show the new image
             window.location.reload();
         } catch (error) {

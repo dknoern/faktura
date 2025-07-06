@@ -21,7 +21,27 @@ export async function getShortUserFromToken() {
 }
 
 
+export async function getCustomClaimsFromToken(claimName: string) {
+  try {
+    const session = await auth();
+    
+    // Check if we have a session
+    if (!session) {
+      console.log("No session found");
+      return null;
+    }
 
+    const claim = (session as any)?.[claimName];
+    if (claim) {
+      console.log(`Found claim ${claimName}:`, claim);
+    } else {
+      console.log(`No claim ${claimName} found in session`);
+    }
 
+    return claim || null;
 
-  
+  } catch (error) {
+    console.error(`Error extracting claim ${claimName} from session:`, error);
+    return null;
+  }
+}
