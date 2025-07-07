@@ -49,6 +49,22 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
     }
   };
 
+  const handleTransactionRowClick = (transaction: RecentTransaction, e: React.MouseEvent) => {
+    // Check if user is selecting text
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      // User is selecting text, don't navigate
+      return;
+    }
+    
+    // Check if the click started and ended on the same element (not a drag)
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TD' || target.closest('td')) {
+      const url = transaction.type === 'log_in' ? `/loginitems/${transaction.id}/view` : transaction.type === 'log_out' ? `/logoutitems/${transaction.id}/edit` : `/invoices/${transaction.id}/view`;
+      window.location.href = url;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -186,17 +202,22 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
             </TableHeader>
             <TableBody>
               {transactions.map((transaction) => (
-                <TableRow key={transaction.id} onClick={() => {
-
-                  // if invoice url is /invoices/$[transaction.id}/view, if login /logs/${transaction.id}, if logout, /outs/${transaction.id}/edit:
-
-
-                  const url = transaction.type === 'log_in' ? `/loginitems/${transaction.id}/view` : transaction.type === 'log_out' ? `/logoutitems/${transaction.id}/edit` : `/invoices/${transaction.id}/view`;
-                  
-                  window.location.href = url;
-                  
-
-                  }}>
+                <TableRow 
+                  key={transaction.id} 
+                  onClick={(e) => handleTransactionRowClick(transaction, e)}
+                  className="cursor-pointer hover:bg-gray-50"
+                  onMouseDown={(e) => {
+                    // Prevent text selection from interfering with click detection
+                    if (e.detail > 1) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onContextMenu={(e) => {
+                    // Disable right-click context menu
+                    e.preventDefault();
+                  }}
+                  style={{ userSelect: 'text' }}
+                >
                   <TableCell>
                     {getTransactionIcon(transaction.type)}
                   </TableCell>

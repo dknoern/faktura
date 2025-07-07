@@ -105,6 +105,21 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
         router.push(`/repairs/${repairNumber}/view`);
     };
 
+    const handleRowClickWithTextCheck = (repairId: string, e: React.MouseEvent) => {
+        // Check if user is selecting text
+        const selection = window.getSelection();
+        if (selection && selection.toString().length > 0) {
+            // User is selecting text, don't navigate
+            return;
+        }
+        
+        // Check if the click started and ended on the same element (not a drag)
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'TD' || target.closest('td')) {
+            handleRowClick(repairId);
+        }
+    };
+
     // Handle customer selection for new repair
     const handleCustomerSelect = (customer: any) => {
         setIsCustomerModalOpen(false);
@@ -177,7 +192,18 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                         <TableRow 
                             key={repair._id}
                             className="cursor-pointer hover:bg-gray-50"
-                            onClick={() => handleRowClick(repair._id)}
+                            onClick={(e) => handleRowClickWithTextCheck(repair._id, e)}
+                            onMouseDown={(e) => {
+                                // Prevent text selection from interfering with click detection
+                                if (e.detail > 1) {
+                                    e.preventDefault();
+                                }
+                            }}
+                            onContextMenu={(e) => {
+                                // Disable right-click context menu
+                                e.preventDefault();
+                            }}
+                            style={{ userSelect: 'text' }}
                         >
                             <TableCell>{repair.repairNumber}</TableCell>
                             <TableCell>{repair.itemNumber}</TableCell>

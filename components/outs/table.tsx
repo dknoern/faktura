@@ -81,6 +81,21 @@ export function OutsTable({ outs, pagination }: { outs: Out[], pagination: Pagin
         };
     }, []);
 
+    const handleRowClick = (outId: string, e: React.MouseEvent) => {
+        // Check if user is selecting text
+        const selection = window.getSelection();
+        if (selection && selection.toString().length > 0) {
+            // User is selecting text, don't navigate
+            return;
+        }
+        
+        // Check if the click started and ended on the same element (not a drag)
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'TD' || target.closest('td')) {
+            router.push(`/logoutitems/${outId}/view`);
+        }
+    };
+
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
@@ -116,8 +131,20 @@ export function OutsTable({ outs, pagination }: { outs: Out[], pagination: Pagin
                         return (
                             <TableRow 
                                 key={out._id} 
-                                onClick={() => router.push(`/logoutitems/${out._id}/view`)}
-                                className="cursor-pointer hover:bg-gray-100">
+                                onClick={(e) => handleRowClick(out._id, e)}
+                                className="cursor-pointer hover:bg-gray-100"
+                                onMouseDown={(e) => {
+                                    // Prevent text selection from interfering with click detection
+                                    if (e.detail > 1) {
+                                        e.preventDefault();
+                                    }
+                                }}
+                                onContextMenu={(e) => {
+                                    // Disable right-click context menu
+                                    e.preventDefault();
+                                }}
+                                style={{ userSelect: 'text' }}
+                            >
                                 <TableCell style={{ whiteSpace: 'nowrap' }}>{out.date ? new Date(out.date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
                                 <TableCell> {out.sentTo}</TableCell>
                                 <TableCell> {out.description}</TableCell>

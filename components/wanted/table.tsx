@@ -85,6 +85,21 @@ export function WantedTable({ wanted, pagination }: { wanted: Wanted[], paginati
         router.push(`/wanted/${id}/view`);
     };
 
+    const handleRowClickWithTextCheck = (id: string, e: React.MouseEvent) => {
+        // Check if user is selecting text
+        const selection = window.getSelection();
+        if (selection && selection.toString().length > 0) {
+            // User is selecting text, don't navigate
+            return;
+        }
+        
+        // Check if the click started and ended on the same element (not a drag)
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'TD' || target.closest('td')) {
+            handleRowClick(id);
+        }
+    };
+
     // Handle customer selection for new wanted item
     const handleCustomerSelect = (customer: any) => {
         setIsCustomerModalOpen(false);
@@ -140,7 +155,18 @@ export function WantedTable({ wanted, pagination }: { wanted: Wanted[], paginati
                         <TableRow 
                             key={item._id}
                             className="cursor-pointer hover:bg-gray-50"
-                            onClick={() => handleRowClick(item._id)}
+                            onClick={(e) => handleRowClickWithTextCheck(item._id, e)}
+                            onMouseDown={(e) => {
+                                // Prevent text selection from interfering with click detection
+                                if (e.detail > 1) {
+                                    e.preventDefault();
+                                }
+                            }}
+                            onContextMenu={(e) => {
+                                // Disable right-click context menu
+                                e.preventDefault();
+                            }}
+                            style={{ userSelect: 'text' }}
                         >
                             <TableCell className="font-medium">{item.title}</TableCell>
                             <TableCell>{item.customerName}</TableCell>
