@@ -46,7 +46,7 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
 
   const addMiscItem = () => {
     // For misc items, keep the original behavior
-    onChange([...items, { itemNumber: "MISC", name: "", amount: 0 }])
+    onChange([...items, { itemNumber: "", name: "", amount: 0 }])
   }
 
   const removeLineItem = (index: number) => {
@@ -148,7 +148,8 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
                     <Input
                       value={item.itemNumber}
                       onChange={(e) => handleLineItemChange(index, "itemNumber", e.target.value)}
-                      placeholder="Item #"
+                      disabled
+                      className={!item.productId ? "bg-gray-100 text-gray-500" : ""}
                     />
                   </div>
                 </td>
@@ -156,7 +157,8 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
                   <Input
                     value={item.serialNumber || ""}
                     onChange={(e) => handleLineItemChange(index, "serialNumber", e.target.value)}
-                    placeholder="Serial #"
+                    disabled
+                    className={!item.productId ? "bg-gray-100 text-gray-500" : ""}
                   />
                 </td>
                 <td className="p-2 border">
