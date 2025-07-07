@@ -1,7 +1,6 @@
 // lib/dbConnect.tsx
 
 import _mongoose, { connect } from "mongoose";
-import { getCustomClaimsFromToken } from "./auth-utils";
 
 declare global {
   var mongoose: {
@@ -24,26 +23,6 @@ if (!cached) {
 }
 
 async function dbConnect() {
-
-
-  const tenantName = await getCustomClaimsFromToken("tenantName");
-  if (tenantName) {
-    console.log("tenant name: ", tenantName);
-  }else{
-    console.log("no tenant name found");
-  }
-
-
-  // Check for tenantId in JWT token
-  const tenantId = await getCustomClaimsFromToken("tenantId");
-  if (tenantId) {
-    console.log("tenant id: ", tenantId);
-  }else{
-    console.log("no tenant id found");
-  }
-
-
-
   if (!MONGODB_URI) {
     throw new Error(
       "Please define the MONGODB_URI environment variable inside .env.local"

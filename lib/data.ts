@@ -180,13 +180,35 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
         await dbConnect();
         const skip = (page - 1) * limit;
 
-        let query: any = {};
+        // Calculate cutoff date (2 years ago)
+        const twoYearsAgo = new Date();
+        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+
+        let query: any = {
+            // Exclude records with dateOut more than 2 years ago
+            $or: [
+                { dateOut: { $exists: false } },
+                { dateOut: null },
+                { dateOut: { $gte: twoYearsAgo } }
+            ]
+        };
         
-        // Apply filter first
+        // Apply filter
         if (filter === 'outstanding') {
-            query.returnDate = { $eq: null };
+            query = {
+                $and: [
+                    {
+                        $or: [
+                            { dateOut: { $exists: false } },
+                            { dateOut: null },
+                            { dateOut: { $gte: twoYearsAgo } }
+                        ]
+                    },
+                    { returnDate: { $eq: null } }
+                ]
+            };
         }
-        // If filter is 'all', we don't add any filter condition
+        // If filter is 'all', we keep the base query with date filtering
         
         if (search) {
             const searchConditions = {
@@ -196,7 +218,7 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
                     { description: { $regex: search, $options: 'i' } },
                     { customerFirstName: { $regex: search, $options: 'i' } },
                     { customerLastName: { $regex: search, $options: 'i' } },
-                    { vendor: { $regex: search, $options: 'i' } }
+                    { vendor: { $regex: search, $options: 'i' } } 
                 ]
             };
             
@@ -204,12 +226,30 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
             if (filter === 'outstanding') {
                 query = {
                     $and: [
+                        {
+                            $or: [
+                                { dateOut: { $exists: false } },
+                                { dateOut: null },
+                                { dateOut: { $gte: twoYearsAgo } }
+                            ]
+                        },
                         { returnDate: { $eq: null } },
                         searchConditions
                     ]
                 };
             } else {
-                query = searchConditions;
+                query = {
+                    $and: [
+                        {
+                            $or: [
+                                { dateOut: { $exists: false } },
+                                { dateOut: null },
+                                { dateOut: { $gte: twoYearsAgo } }
+                            ]
+                        },
+                        searchConditions
+                    ]
+                };
             }
         }
 

@@ -37,9 +37,22 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       status: 'In Stock' 
     });
     
-    // Total repairs out (repairs without return date)
+    // Calculate cutoff date (2 years ago)
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+    
+    // Total repairs out (repairs without return date and within last 2 years)
     const totalRepairsOut = await Repair.countDocuments({ 
-      returnDate: { $eq: null } 
+      $and: [
+        { returnDate: { $eq: null } },
+        {
+          $or: [
+            { dateOut: { $exists: false } },
+            { dateOut: null },
+            { dateOut: { $gte: twoYearsAgo } }
+          ]
+        }
+      ]
     });
     
     // Total items out at show (At Show status)
