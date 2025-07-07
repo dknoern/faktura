@@ -11,8 +11,10 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
+    const sortBy = searchParams.get('sortBy') || 'lastUpdated';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
 
-    const data = await fetchProducts(page, limit, search);
+    const data = await fetchProducts(page, limit, search, sortBy, sortOrder);
     
     return NextResponse.json(data);
   } catch (error) {

@@ -43,24 +43,43 @@ export async function fetchCustomers(page = 1, limit = 10, search = '') {
 }
 
 
-export async function fetchProducts(page = 1, limit = 10, search = '') {
+export async function fetchProducts(page = 1, limit = 10, search = '', sortBy = 'lastUpdated', sortOrder = 'desc') {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
 
         let query: any = {
-            status: { $ne: 'Deleted' } // Exclude items with status "Deleted"
+            $and: [
+                { status: { $ne: 'Deleted' } }, // Exclude items with status "Deleted"
+                { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
+                { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
+                { title: { $ne: null } } // Exclude items with null title
+            ]
         };
         
         if (search) {
-            query = { 
-                search: { $regex: search, $options: 'i' },
-                status: { $ne: 'Deleted' } // Also exclude deleted items when searching
+            query = {
+                $and: [
+                    { search: { $regex: search, $options: 'i' } },
+                    { status: { $ne: 'Deleted' } }, // Also exclude deleted items when searching
+                    { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
+                    { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
+                    { title: { $ne: null } } // Exclude items with null title
+                ]
             };
         }
 
+        // Build sort object
+        const sortObj: any = {};
+        if (sortBy === 'status' || sortBy === 'lastUpdated') {
+            sortObj[sortBy] = sortOrder === 'asc' ? 1 : -1;
+        } else {
+            // Default sort
+            sortObj.lastUpdated = -1;
+        }
+
         const products = await productModel.find(query)
-            .sort({ lastUpdated: -1 })
+            .sort(sortObj)
             .skip(skip)
             .limit(limit);
 

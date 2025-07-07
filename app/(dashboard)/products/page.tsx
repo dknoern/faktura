@@ -16,10 +16,12 @@ export default function Page() {
     const loadProducts = async () => {
       const page = searchParams.get('page') ? parseInt(searchParams.get('page')!) : 1;
       const search = searchParams.get('search') || '';
+      const sortBy = searchParams.get('sortBy') || 'lastUpdated';
+      const sortOrder = searchParams.get('sortOrder') || 'desc';
       const limit = 10;
 
       try {
-        const response = await fetch(`/api/products?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
+        const response = await fetch(`/api/products?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }

@@ -16,7 +16,7 @@ import { productSchema } from "@/lib/models/product";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef } from "react";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, ChevronUp, ChevronDown } from "lucide-react";
 
 interface PaginationProps {
     total: number;
@@ -31,6 +31,9 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    
+    const currentSortBy = searchParams.get('sortBy') || 'lastUpdated';
+    const currentSortOrder = searchParams.get('sortOrder') || 'desc';
 
     const productsList = Array.isArray(products) ? products : [];
 
@@ -53,6 +56,32 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
         const params = new URLSearchParams(searchParams.toString());
         params.set('page', newPage.toString());
         router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const handleSort = (sortBy: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        
+        // If clicking the same column, toggle sort order
+        if (currentSortBy === sortBy) {
+            const newSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+            params.set('sortOrder', newSortOrder);
+        } else {
+            // If clicking a different column, set new sort field and default to desc
+            params.set('sortBy', sortBy);
+            params.set('sortOrder', 'desc');
+        }
+        
+        params.set('page', '1'); // Reset to first page when sorting
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const getSortIcon = (columnName: string) => {
+        if (currentSortBy !== columnName) {
+            return null;
+        }
+        return currentSortOrder === 'asc' ? 
+            <ChevronUp className="inline w-4 h-4 ml-1" /> : 
+            <ChevronDown className="inline w-4 h-4 ml-1" />;
     };
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,8 +147,20 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                         <TableHead>Serial No</TableHead>
                         <TableHead>Price</TableHead>
                         <TableHead>Model No</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Updated</TableHead>
+                        <TableHead 
+                            className="cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('status')}
+                            style={{ whiteSpace: 'nowrap' }}
+                        >
+                            Status{getSortIcon('status')}
+                        </TableHead>
+                        <TableHead 
+                            className="cursor-pointer hover:bg-gray-100 select-none"
+                            onClick={() => handleSort('lastUpdated')}
+                            style={{ whiteSpace: 'nowrap' }}
+                        >
+                            Updated{getSortIcon('lastUpdated')}
+                        </TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>

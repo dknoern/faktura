@@ -157,7 +157,6 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
                   <Input
                     value={item.serialNumber || ""}
                     onChange={(e) => handleLineItemChange(index, "serialNumber", e.target.value)}
-                    disabled
                     className={!item.productId ? "bg-gray-100 text-gray-500" : ""}
                   />
                 </td>
