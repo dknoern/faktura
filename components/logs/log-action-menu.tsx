@@ -26,7 +26,41 @@ export function LogActionMenu({ log }: LogActionMenuProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const handlePrint = () => {
-    window.print();
+    const logId = log.id || log._id;
+    if (!logId) {
+      console.error('Log ID is required for printing');
+      return;
+    }
+    
+    // Create hidden iframe for printing
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.left = '-9999px';
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    iframe.style.opacity = '0';
+    
+    document.body.appendChild(iframe);
+    
+    iframe.onload = () => {
+      // Wait a moment for content to fully load, then print
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.print();
+        } catch (error) {
+          console.error('Print failed:', error);
+          // Fallback to opening in new tab if iframe printing fails
+          window.open(`/loginitems/${logId}/print`, '_blank');
+        }
+        
+        // Clean up iframe after printing
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      }, 500);
+    };
+    
+    iframe.src = `/loginitems/${logId}/print`;
   };
 
   const handleEdit = () => {

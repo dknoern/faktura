@@ -96,3 +96,45 @@ body {
   object-fit: cover;
   z-index: -1;
 }
+
+/* Print Styles for Invoices */
+@media print {
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Remove all page margins and constraints */
+  @page {
+    margin: 0.5in;
+    size: auto;
+  }
+  
+  /* Invoice content styling */
+  .invoice-content {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .invoice-content table {
+    page-break-inside: auto;
+  }
+  
+  .invoice-content tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  
+  /* Ensure tables and content fit properly */
+  .invoice-content table {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  /* Hide print button and other UI elements */
+  .print\:hidden {
+    display: none !important;
+  }
+}

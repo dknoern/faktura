@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { fetchRepairById, fetchDefaultTenant } from '@/lib/data';
 import { Repair, Tenant, generateEmailHtml } from '@/lib/repair-renderer';
+import { getImageHost } from '@/lib/utils/imageHost';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
@@ -45,8 +46,11 @@ export async function POST(request: Request) {
       );
     }
     
+    // Get image host for logo URLs
+    const imageHost = await getImageHost();
+    
     // Generate email HTML content using the shared utility
-    const emailHtml = generateEmailHtml(repair as Repair, tenant as Tenant);
+    const emailHtml = generateEmailHtml(repair as Repair, tenant as Tenant, imageHost);
     
     // Send email using AWS SES
     const params = {

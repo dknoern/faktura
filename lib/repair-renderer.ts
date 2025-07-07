@@ -47,20 +47,28 @@ export const formatDate = (dateString: string | null) => {
 };
 
 // Generate repair HTML content
-export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
+export const generateRepairHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string): string => {
   const formattedDate = formatDate(repair.dateOut);
   const formattedReturnDate = formatDate(repair.returnDate);
   const formattedCustomerApprovedDate = formatDate(repair.customerApprovedDate);
   const formattedCost = formatCurrency(repair.repairCost);
   
+  const logoUrl = `${imageBaseUrl}/api/images/logo-${tenant._id}.png`;
+  
   return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; font-size: 12px">
-      <!-- Header with Company Info -->
-      <div style="margin-bottom: 0px;">
-        <p>${tenant.address || ''}</p>
-        <p>${tenant.city || ''}, ${tenant.state || ''} ${tenant.zip || ''}</p>
-        <p>Phone ${tenant.phone || ''}</p>
-        ${tenant.fax ? `<p>Fax ${tenant.fax}</p>` : ''}
+      <!-- Header with Logo and Company Info -->
+      <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <div>
+          <img src="${logoUrl}" height="76px" width="190px" alt="Company Logo" />
+          <div style="color: #B69D57; font-size: 24px; margin-top: 10px;">REPAIR ORDER</div>
+        </div>
+        <div style="text-align: left;">
+          <p style="margin: 1px 0;">${tenant.address || ''}</p>
+          <p style="margin: 1px 0;">${tenant.city || ''}, ${tenant.state || ''} ${tenant.zip || ''}</p>
+          <p style="margin: 1px 0;">Phone ${tenant.phone || ''}</p>
+          ${tenant.fax ? `<p style="margin: 1px 0;">Fax ${tenant.fax}</p>` : ''}
+        </div>
       </div>
       
       <!-- Repair Information -->
@@ -132,8 +140,8 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant): string => {
 };
 
 // Generate complete email HTML with proper doctype and head
-export const generateEmailHtml = (repair: Repair, tenant: Tenant): string => {
-  const repairHtml = generateRepairHtml(repair, tenant);
+export const generateEmailHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string): string => {
+  const repairHtml = generateRepairHtml(repair, tenant, imageBaseUrl);
   
   return `
     <!DOCTYPE html>
