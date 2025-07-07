@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ImagePlus, FileText, Copy, Wrench, Trash2, Plane, Clock, ArrowDown, Unlock, Edit } from "lucide-react";
 import { CustomerSelectModalWrapper } from "../customers/select-modal-wrapper";
+import { UploadDialog } from "../upload-dialog";
 import { toast } from "react-hot-toast";
 import {
     Dialog,
@@ -34,16 +35,27 @@ interface ProductActionMenuProps {
 }
 
 export function ProductActionMenu({ id, customers = [], productStatus, pagination = { total: 0, pages: 1, currentPage: 1, limit: 10 } }: ProductActionMenuProps) {
-    const [isUploading, setIsUploading] = useState(false);
+    const [showUploadDialog, setShowUploadDialog] = useState(false);
     const [showCustomerSelectModal, setShowCustomerSelectModal] = useState(false);
     const [showCustomerSelectModalForRepair, setShowCustomerSelectModalForRepair] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [productData, setProductData] = useState<any>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const imageInputRef = useRef<HTMLInputElement>(null);
+    const [isMobile, setIsMobile] = useState(false);
+    const mobileFileInputRef = useRef<HTMLInputElement>(null);
 
-    // Fetch product data when component mounts
+    // Detect if device is mobile and fetch product data when component mounts
     useEffect(() => {
+        const checkMobile = () => {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(userAgent);
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            setIsMobile(isMobileDevice || (isTouchDevice && window.innerWidth < 768));
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        
         const fetchProductData = async () => {
             try {
                 const response = await fetch(`/api/products/${id}`);
@@ -57,11 +69,19 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
         };
         
         fetchProductData();
+        
+        return () => {
+            window.removeEventListener('resize', checkMobile);
+        };
     }, [id]);
     
-    const handleFileUpload = async (file: File) => {
+    const handleUploadComplete = () => {
+        // Reload the page to show the new images
+        window.location.reload();
+    };
+    
+    const handleMobileFileUpload = async (file: File) => {
         try {
-            setIsUploading(true);
             const formData = new FormData();
             formData.append('file', file);
             formData.append('id', id);
@@ -79,19 +99,17 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
             window.location.reload();
         } catch (error) {
             console.error('Error uploading:', error);
-            // Show error notification
-            console.error(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
             alert(`Upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
-            // You could implement a custom notification here if needed
-        } finally {
-            setIsUploading(false);
         }
     };
     
-    // Trigger native camera for image capture
-    const captureImage = () => {
-        if (imageInputRef.current) {
-            imageInputRef.current.click();
+    const handleAddImageClick = () => {
+        if (isMobile) {
+            // On mobile, go straight to camera
+            mobileFileInputRef.current?.click();
+        } else {
+            // On desktop, show upload dialog
+            setShowUploadDialog(true);
         }
     };
     
@@ -370,8 +388,7 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button 
-                    variant="outline" 
-                    disabled={isUploading}
+                    variant="outline"
                 >
                     Action
                     <ChevronDown className="h-4 w-4" />
@@ -382,7 +399,7 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
                     <Edit className="h-4 w-4" />
                     Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={captureImage} className="flex items-center gap-2">
+                <DropdownMenuItem onSelect={handleAddImageClick} className="flex items-center gap-2">
                     <ImagePlus className="h-4 w-4" />
                     Add Image
                 </DropdownMenuItem>
@@ -443,22 +460,29 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
             </DropdownMenuContent>
         </DropdownMenu>
         
-        {/* Hidden input for capturing images */}
+        {/* Upload dialog for desktop */}
+        <UploadDialog
+            id={id}
+            open={showUploadDialog}
+            onOpenChange={setShowUploadDialog}
+            onUploadComplete={handleUploadComplete}
+        />
+        
+        {/* Hidden input for mobile camera */}
         <input
             type="file"
-            ref={imageInputRef}
+            ref={mobileFileInputRef}
             className="hidden"
             accept="image/*"
             capture="environment"
             onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                    handleFileUpload(file);
+                    handleMobileFileUpload(file);
                 }
                 // Reset the input to allow selecting the same file again
                 e.target.value = '';
             }}
-            disabled={isUploading}
         />
         
         {/* Customer selection modal for invoice creation */}

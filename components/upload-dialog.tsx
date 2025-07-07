@@ -7,7 +7,9 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Camera, X, FileImage } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface UploadDialogProps {    id: string;
     onUploadComplete?: () => void;
@@ -17,10 +19,29 @@ interface UploadDialogProps {    id: string;
 
 export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: UploadDialogProps) {
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
+    const [stagedFiles, setStagedFiles] = useState<File[]>([]);
+    const [dragActive, setDragActive] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [showCamera, setShowCamera] = useState(false);
     const [stream, setStream] = useState<MediaStream | null>(null);
+    
+    // Detect if device is mobile
+    useEffect(() => {
+        const checkMobile = () => {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(userAgent);
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            setIsMobile(isMobileDevice || (isTouchDevice && window.innerWidth < 768));
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     const handleFileUpload = async (file: File) => {
         try {
@@ -48,37 +69,96 @@ export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: Uploa
         }
     };
 
-    const startCamera = async () => {
+    const addFilesToStaging = (files: File[]) => {
+        const imageFiles = files.filter(file => file.type.startsWith('image/'));
+        
+        if (imageFiles.length === 0) {
+            alert('Please select only image files');
+            return;
+        }
+        
+        // Add new files to staging, avoiding duplicates based on name and size
+        setStagedFiles(prev => {
+            const existing = new Set(prev.map(f => `${f.name}-${f.size}`));
+            const newFiles = imageFiles.filter(f => !existing.has(`${f.name}-${f.size}`));
+            return [...prev, ...newFiles];
+        });
+    };
+    
+    const removeFileFromStaging = (index: number) => {
+        setStagedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+    
+    const clearStagedFiles = () => {
+        setStagedFiles([]);
+    };
+
+    const handleBulkFileUpload = async () => {
+        if (stagedFiles.length === 0) return;
+        
         try {
-            // First check if we can access the camera
-            if (!navigator.mediaDevices?.getUserMedia) {
-                throw new Error('Camera API not available');
+            setIsUploading(true);
+            setUploadProgress(0);
+            const fileNames = stagedFiles.map(f => f.name);
+            setUploadingFiles(fileNames);
+            
+            let completed = 0;
+            const total = stagedFiles.length;
+            
+            // Upload files sequentially to avoid overwhelming the server
+            for (const file of stagedFiles) {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('id', id);
+
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to upload ${file.name}`);
+                }
+                
+                completed++;
+                setUploadProgress((completed / total) * 100);
+                
+                // Remove completed file from the list
+                setUploadingFiles(prev => prev.filter(name => name !== file.name));
             }
 
-            // Set showCamera first to ensure video element is rendered
-            setShowCamera(true);
-
-            // Wait a moment for the video element to be available
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            if (!videoRef.current) {
-                throw new Error('Video element not ready');
-            }
-
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: { ideal: 'environment' }  // Prefer rear camera
-                },
-                audio: false
-            });
-
-            videoRef.current.srcObject = mediaStream;
-            setStream(mediaStream);
-
+            // Clear staged files and close dialog
+            setStagedFiles([]);
+            onUploadComplete?.();
+            onOpenChange(false);
         } catch (error) {
-            console.error('Error accessing camera:', error);
-            setShowCamera(false); // Hide camera UI if there's an error
-            alert('Failed to access camera: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            console.error('Error uploading files:', error);
+            alert(`Failed to upload images: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } finally {
+            setIsUploading(false);
+            setUploadProgress(0);
+            setUploadingFiles([]);
+        }
+    };
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const files = Array.from(e.dataTransfer.files);
+            addFilesToStaging(files);
         }
     };
 
@@ -187,6 +267,7 @@ export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: Uploa
         <Dialog open={open} onOpenChange={(isOpen) => {
             if (!isOpen) {
                 stopCamera();
+                clearStagedFiles();
                 // Force reset any lingering scroll locks
                 resetBodyStyles();
                 
@@ -200,25 +281,133 @@ export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: Uploa
                 <DialogTitle>Upload Image</DialogTitle>
                 <div className="grid gap-4">
                     {!showCamera ? (
-                        <div className="grid grid-cols-2 gap-4">
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploading}
-                            >
-                                <Upload className="mr-2 h-4 w-4" />
-                                Device
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={startCamera}
-                                disabled={isUploading}
-                            >
-                                <Camera className="mr-2 h-4 w-4" />
-                                Camera
-                            </Button>
+                        <div className="space-y-4">
+                            {/* Desktop: Drag and drop zone */}
+                            {!isMobile && (
+                                <div
+                                    className={cn(
+                                        "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
+                                        dragActive 
+                                            ? "border-primary bg-primary/5" 
+                                            : "border-gray-300 hover:border-gray-400",
+                                        isUploading && "opacity-50 pointer-events-none"
+                                    )}
+                                    onDragEnter={handleDrag}
+                                    onDragLeave={handleDrag}
+                                    onDragOver={handleDrag}
+                                    onDrop={handleDrop}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    <div className="space-y-4">
+                                        <div className="mx-auto w-12 h-12 text-gray-400">
+                                            <FileImage className="w-full h-full" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <p className="text-lg font-medium">
+                                                {dragActive ? "Drop images here" : "Drag & drop images here"}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                or click to browse files
+                                            </p>
+                                            <p className="text-xs text-gray-400">
+                                                Supports multiple image files
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Mobile: Camera button */}
+                            {isMobile && (
+                                <div className="flex justify-center">
+                                    <Button
+                                        variant="outline"
+                                        className="w-full max-w-xs"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isUploading}
+                                    >
+                                        <Camera className="mr-2 h-4 w-4" />
+                                        Take Photo
+                                    </Button>
+                                </div>
+                            )}
+                            
+
+                            
+                            {/* Staged files section */}
+                            {!isMobile && stagedFiles.length > 0 && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-sm font-medium">Selected Images ({stagedFiles.length})</h4>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={clearStagedFiles}
+                                            disabled={isUploading}
+                                        >
+                                            Clear All
+                                        </Button>
+                                    </div>
+                                    <div className="max-h-32 overflow-y-auto space-y-2">
+                                        {stagedFiles.map((file, index) => (
+                                            <div key={`${file.name}-${index}`} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium truncate">{file.name}</p>
+                                                    <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => removeFileFromStaging(index)}
+                                                    disabled={isUploading}
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            onClick={handleBulkFileUpload}
+                                            disabled={isUploading || stagedFiles.length === 0}
+                                            className="flex-1"
+                                        >
+                                            {isUploading ? 'Uploading...' : `Upload ${stagedFiles.length} Image${stagedFiles.length !== 1 ? 's' : ''}`}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            onClick={clearStagedFiles}
+                                            disabled={isUploading}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Upload progress */}
+                            {isUploading && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span>Uploading images...</span>
+                                        <span>{Math.round(uploadProgress)}%</span>
+                                    </div>
+                                    <Progress value={uploadProgress} className="w-full" />
+                                    {uploadingFiles.length > 0 && (
+                                        <div className="space-y-1">
+                                            <p className="text-xs text-gray-500">Remaining files:</p>
+                                            <div className="max-h-20 overflow-y-auto space-y-1">
+                                                {uploadingFiles.map((fileName, index) => (
+                                                    <div key={index} className="flex items-center gap-2 text-xs text-gray-600">
+                                                        <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse" />
+                                                        <span className="truncate">{fileName}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -255,11 +444,21 @@ export function UploadDialog({ id, onUploadComplete, open, onOpenChange }: Uploa
                         ref={fileInputRef}
                         className="hidden"
                         accept="image/*"
+                        multiple={!isMobile}
+                        capture={isMobile ? "environment" : undefined}
                         onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                handleFileUpload(file);
+                            const files = e.target.files;
+                            if (files) {
+                                if (isMobile && files.length === 1) {
+                                    // On mobile, upload single file immediately
+                                    handleFileUpload(files[0]);
+                                } else {
+                                    // On desktop or multiple files, stage them
+                                    addFilesToStaging(Array.from(files));
+                                }
                             }
+                            // Reset the input to allow selecting the same files again
+                            e.target.value = "";
                         }}
                         disabled={isUploading}
                     />
