@@ -160,6 +160,13 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
               </div>
             )}
 
+            {product.comments && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Box & Papers</label>
+                <p>{product.comments || 'N/A'}</p>
+              </div>
+            )}
+
             {product.longDesc && (
               <div className="col-span-2">
                 <label className="text-sm font-medium text-gray-500">Long Desc</label>

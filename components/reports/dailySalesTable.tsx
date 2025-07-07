@@ -18,7 +18,7 @@ interface DailySalesTableProps {
 interface Invoice {
     _id: string;
     date: string | Date;
-    lineItems: Array<{ name: string }>;
+    lineItems: Array<{ name: string; itemNumber?: string }>;
     salesPerson: string;
     methodOfSale: string;
     invoiceType: string;
@@ -67,6 +67,7 @@ export function DailySalesTable({ selectedDate }: DailySalesTableProps) {
             <TableHeader>
                 <TableRow>
                     <TableHead style={{ whiteSpace: 'nowrap' }}>Item #</TableHead>
+                    <TableHead style={{ whiteSpace: 'nowrap' }}>Invoice #</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Rep Sale</TableHead>
@@ -75,16 +76,35 @@ export function DailySalesTable({ selectedDate }: DailySalesTableProps) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {invoices.map((invoice) => (
-                    <TableRow key={invoice._id}>
-                        <TableCell>{invoice._id}</TableCell>
-                        <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
-                        <TableCell>{invoice.lineItems[0].name}</TableCell>
-                        <TableCell>{invoice.salesPerson}</TableCell>
-                        <TableCell>{invoice.methodOfSale}</TableCell>
-                        <TableCell>{invoice.invoiceType}</TableCell>
-                     </TableRow>
-                ))}
+                {invoices.flatMap((invoice) => {
+                    // If no line items, show one row with N/A
+                    if (!invoice.lineItems || invoice.lineItems.length === 0) {
+                        return (
+                            <TableRow key={invoice._id}>
+                                <TableCell>N/A</TableCell>
+                                <TableCell>{invoice._id}</TableCell>
+                                <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
+                                <TableCell>N/A</TableCell>
+                                <TableCell>{invoice.salesPerson}</TableCell>
+                                <TableCell>{invoice.methodOfSale}</TableCell>
+                                <TableCell>{invoice.invoiceType}</TableCell>
+                            </TableRow>
+                        );
+                    }
+                    
+                    // Create a row for each line item
+                    return invoice.lineItems.map((lineItem, index) => (
+                        <TableRow key={`${invoice._id}-${index}`}>
+                            <TableCell>{lineItem.itemNumber || 'N/A'}</TableCell>
+                            <TableCell>{invoice._id}</TableCell>
+                            <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
+                            <TableCell>{lineItem.name || 'N/A'}</TableCell>
+                            <TableCell>{invoice.salesPerson}</TableCell>
+                            <TableCell>{invoice.methodOfSale}</TableCell>
+                            <TableCell>{invoice.invoiceType}</TableCell>
+                        </TableRow>
+                    ));
+                })}
             </TableBody>
         </Table>
     )

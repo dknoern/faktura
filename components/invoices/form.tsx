@@ -118,8 +118,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
           tax: 0,
           shipping: 0,
           lineItems: initialLineItems,
-          copyAddress: false,
-          invoiceType: "Invoice"
+          copyAddress: false
         }
   )
 
@@ -362,13 +361,16 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
               onValueChange={(value) => setFormData({ ...formData, methodOfSale: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="In Person" />
+                <SelectValue placeholder="-- Select Method of Sale --" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="Show">Show</SelectItem>
+                <SelectItem value="Ebay">Ebay</SelectItem>
+                <SelectItem value="Chrono24">Chrono24</SelectItem>
                 <SelectItem value="In Person">In Person</SelectItem>
-                <SelectItem value="Phone">Phone</SelectItem>
-                <SelectItem value="Email">Email</SelectItem>
                 <SelectItem value="Online">Online</SelectItem>
+                <SelectItem value="First Dibs">First Dibs</SelectItem>
+                <SelectItem value="Dealer">Dealer</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -376,16 +378,16 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
           <div className="grid grid-cols-[120px_1fr] items-center">
             <label className="text-sm font-medium">Invoice Type <span className="text-red-500">*</span></label>
             <Select
-              value={formData.invoiceType || "Invoice"}
+              value={formData.invoiceType || undefined}
               onValueChange={(value) => setFormData({ ...formData, invoiceType: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Invoice" />
+                <SelectValue placeholder="-- Select Invoice Type --" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Invoice">Invoice</SelectItem>
-                <SelectItem value="Consignment">Consignment</SelectItem>
-                <SelectItem value="Partner">Partner</SelectItem>
+                <SelectItem value="Memo">Memo</SelectItem>
+                <SelectItem value="Estimate">Estimate</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -397,13 +399,18 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
               onValueChange={(value) => setFormData({ ...formData, paidBy: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Check" />
+                <SelectValue placeholder="-- Select Paid By --" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Check">Check</SelectItem>
                 <SelectItem value="Cash">Cash</SelectItem>
-                <SelectItem value="Credit Card">Credit Card</SelectItem>
-                <SelectItem value="Wire Transfer">Wire Transfer</SelectItem>
+                <SelectItem value="Check">Check</SelectItem>
+                <SelectItem value="Card">Card</SelectItem>
+                <SelectItem value="Paypal">Paypal</SelectItem>
+                <SelectItem value="Bank Wire">Bank Wire</SelectItem>
+                <SelectItem value="Chrono 24">Chrono 24</SelectItem>
+                <SelectItem value="Warranty">Warranty</SelectItem>
+                <SelectItem value="Affirm">Affirm</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -451,7 +451,20 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                     </FormItem>
                                 )}
                             />
+                            <FormField
+                                control={form.control}
+                                name="comments"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Box and Papers</FormLabel>
+                                        <FormControl>
+                                            <Textarea placeholder="Box and papers" {...field} value={field.value || ""} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
 
+                            />
                             <FormField
                                 control={form.control}
                                 name="longDesc"
@@ -561,20 +574,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                 )}
                             />
 
-                            <FormField
-                                control={form.control}
-                                name="comments"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Box and Papers</FormLabel>
-                                        <FormControl>
-                                            <Textarea placeholder="Box and papers" {...field} value={field.value || ""} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
 
-                            />
 
 <FormField
                                                 control={form.control}
