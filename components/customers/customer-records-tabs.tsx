@@ -150,6 +150,51 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
     router.push(`/wanted/${wantedId}/view`);
   };
 
+  // Handle row clicks with text selection detection
+  const handleInvoiceRowClick = (invoiceId: number, e: React.MouseEvent) => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TD' || target.closest('td')) {
+      navigateToInvoice(invoiceId);
+    }
+  };
+
+  const handleRepairRowClick = (repairNumber: string, e: React.MouseEvent) => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TD' || target.closest('td')) {
+      navigateToRepair(repairNumber);
+    }
+  };
+
+  const handleReturnRowClick = (returnId: number, e: React.MouseEvent) => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TD' || target.closest('td')) {
+      navigateToReturn(returnId);
+    }
+  };
+
+  const handleWantedRowClick = (wantedId: string, e: React.MouseEvent) => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TD' || target.closest('td')) {
+      navigateToWanted(wantedId);
+    }
+  };
+
   return (
     <div className="mt-8 space-y-4">
       <h3 className="text-xl font-bold tracking-tight">Customer Records</h3>
@@ -206,7 +251,16 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                     <TableRow 
                       key={invoice._id} 
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => navigateToInvoice(invoice._id)}
+                      onClick={(e) => handleInvoiceRowClick(invoice._id, e)}
+                      onMouseDown={(e) => {
+                        if (e.detail > 1) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                      }}
+                      style={{ userSelect: 'text' }}
                     >
                       <TableCell className="font-medium">{invoice._id}</TableCell>
                       <TableCell style={{ whiteSpace: 'nowrap' }}>{formatDate(invoice.date)}</TableCell>
@@ -259,7 +313,16 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                     <TableRow 
                       key={repair._id} 
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => navigateToRepair(repair._id)}
+                      onClick={(e) => handleRepairRowClick(repair._id, e)}
+                      onMouseDown={(e) => {
+                        if (e.detail > 1) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                      }}
+                      style={{ userSelect: 'text' }}
                     >
                       <TableCell className="font-medium">{repair.repairNumber}</TableCell>
                       <TableCell style={{ whiteSpace: 'nowrap' }}>{formatDate(repair.dateOut)}</TableCell>
@@ -296,7 +359,16 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                     <TableRow 
                       key={returnItem._id} 
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => navigateToReturn(returnItem._id)}
+                      onClick={(e) => handleReturnRowClick(returnItem._id, e)}
+                      onMouseDown={(e) => {
+                        if (e.detail > 1) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                      }}
+                      style={{ userSelect: 'text' }}
                     >
                       <TableCell className="font-medium">#{returnItem._id}</TableCell>
                       <TableCell style={{ whiteSpace: 'nowrap' }}>{formatDate(returnItem.returnDate)}</TableCell>
@@ -337,7 +409,16 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                     <TableRow 
                       key={wantedItem._id} 
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => navigateToWanted(wantedItem._id)}
+                      onClick={(e) => handleWantedRowClick(wantedItem._id, e)}
+                      onMouseDown={(e) => {
+                        if (e.detail > 1) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                      }}
+                      style={{ userSelect: 'text' }}
                     >
                       <TableCell className="font-medium">{wantedItem.title}</TableCell>
                       <TableCell className="max-w-xs truncate">{wantedItem.description}</TableCell>
