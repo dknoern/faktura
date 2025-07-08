@@ -81,10 +81,10 @@ export function DailySalesTable({ selectedDate }: DailySalesTableProps) {
                     if (!invoice.lineItems || invoice.lineItems.length === 0) {
                         return (
                             <TableRow key={invoice._id}>
-                                <TableCell>N/A</TableCell>
+                                <TableCell></TableCell>
                                 <TableCell>{invoice._id}</TableCell>
                                 <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
-                                <TableCell>N/A</TableCell>
+                                <TableCell></TableCell>
                                 <TableCell>{invoice.salesPerson}</TableCell>
                                 <TableCell>{invoice.methodOfSale}</TableCell>
                                 <TableCell>{invoice.invoiceType}</TableCell>
@@ -95,10 +95,10 @@ export function DailySalesTable({ selectedDate }: DailySalesTableProps) {
                     // Create a row for each line item
                     return invoice.lineItems.map((lineItem, index) => (
                         <TableRow key={`${invoice._id}-${index}`}>
-                            <TableCell>{lineItem.itemNumber || 'N/A'}</TableCell>
+                            <TableCell>{lineItem.itemNumber || ''}</TableCell>
                             <TableCell>{invoice._id}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
-                            <TableCell>{lineItem.name || 'N/A'}</TableCell>
+                            <TableCell>{lineItem.name || ''}</TableCell>
                             <TableCell>{invoice.salesPerson}</TableCell>
                             <TableCell>{invoice.methodOfSale}</TableCell>
                             <TableCell>{invoice.invoiceType}</TableCell>
