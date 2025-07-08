@@ -1,6 +1,7 @@
 import dbConnect from './dbConnect';
 import mongoose from 'mongoose';
 import { Invoice } from "./models/invoice";
+/*import { Proposal } from "./models/proposal";*/
 import { Tenant } from "./models/tenant";
 import { productModel } from './models/product';
 import { Return } from './models/return';

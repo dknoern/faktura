@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 export default function Page() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isOpen, setIsOpen] = useState(false);
+  
+  console.log('Daily Sales Page - selectedDate:', selectedDate);
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {

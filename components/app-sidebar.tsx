@@ -6,6 +6,7 @@ import {
   Package,
   Users,
   FileText,
+  //Lightbulb,
   Repeat2,
   Wrench,
   SquarePen,
@@ -48,8 +49,12 @@ const data = {
       title: "Invoices",
       url: "/invoices",
       icon: FileText,
-    },
-
+    },/*
+    {
+      title: "Proposals",
+      url: "/proposals",
+      icon: Lightbulb,
+    },*/
     {
       title: "Returns",
       url: "/returns",

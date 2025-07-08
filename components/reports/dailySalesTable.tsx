@@ -30,11 +30,15 @@ export function DailySalesTable({ selectedDate }: DailySalesTableProps) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        console.log('DailySalesTable useEffect triggered with selectedDate:', selectedDate);
+        
         const fetchData = async () => {
             try {
                 setLoading(true);
                 setError(null);
+                console.log('About to call fetchDailySalesData with:', selectedDate);
                 const data = await fetchDailySalesData(selectedDate);
+                console.log('fetchDailySalesData returned:', data.length, 'invoices');
                 setInvoices(data);
             } catch (err) {
                 setError('Failed to fetch daily sales data');
