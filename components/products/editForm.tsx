@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select"
 
 import { Input } from "@/components/ui/input"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 
 import { Textarea } from "../ui/textarea"
@@ -38,6 +38,35 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
     const [submitError, setSubmitError] = useState('');
     const isNewProduct = !product.id;
 
+    // Function to build longDesc from form values
+    const buildLongDesc = useCallback((values: any) => {
+        const title = values.title || '';
+        const modelName = values.model || '';
+        const features = values.features || '';
+        const caseText = values.case || '';
+        const dial = values.dial || '';
+        const bracelet = values.bracelet || '';
+        const comments = values.comments || '';
+
+        let longDesc = title;
+        if (title) longDesc += ' - ';
+
+        const addLongDescPart = (desc: string, part: string) => {
+            if (part && part.trim().length > 0) {
+                return desc + part.trim() + '. ';
+            }
+            return desc;
+        };
+
+        longDesc = addLongDescPart(longDesc, features);
+        longDesc = addLongDescPart(longDesc, modelName);
+        longDesc = addLongDescPart(longDesc, caseText);
+        longDesc = addLongDescPart(longDesc, dial);
+        longDesc = addLongDescPart(longDesc, bracelet);
+        longDesc = addLongDescPart(longDesc, comments);
+
+        return longDesc.trim();
+    }, []);
 
     // define productSchema2 which is just productSchema without history
     const productSchema2 = productSchema.omit({ history: true });
@@ -175,6 +204,22 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
         }
         fetchProduct()
     }, [form, product, repairs])
+
+    // Watch for changes in fields that should trigger longDesc update
+    useEffect(() => {
+        const subscription = form.watch((values, { name }) => {
+            // Only update longDesc if one of the relevant fields changed
+            if (name && ['title', 'model', 'features', 'case', 'dial', 'bracelet', 'comments'].includes(name)) {
+                const newLongDesc = buildLongDesc(values);
+                // Only update if the value actually changed to avoid infinite loops
+                if (form.getValues('longDesc') !== newLongDesc) {
+                    form.setValue('longDesc', newLongDesc, { shouldDirty: true });
+                }
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [form, buildLongDesc]);
 
     return (
         <div>
@@ -444,8 +489,7 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                     <FormItem>
                                         <FormLabel>Serial No</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Enter bracelet" {...field} value={field.value || ""} />
-
+                                            <Input placeholder="Enter serial number" {...field} value={field.value || ""} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

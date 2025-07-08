@@ -7,6 +7,14 @@ import { Watch, Gem, BriefcaseBusiness, Clock } from "lucide-react";
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 interface ProductViewDetailsProps {
   product: any;
   repairs: any[];
@@ -262,18 +270,6 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
         </Card>
       )}
 
-      {/* Notes */}
-      {product.notes && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-wrap">{product.notes}</p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Product History */}
       <Card>
         <CardHeader>
@@ -291,22 +287,45 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
             <CardTitle>Associated Repairs</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {repairs.map((repair: any, index: number) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">Repair <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/repairs/${repair._id}/view`}>#{repair.repairNumber}</Link></p>
-                    <p className="text-sm text-gray-600">{repair.description}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">{formatDate(repair.dateCreated)}</p>
-                    <Badge variant={repair.returnDate ? "secondary" : "default"}>
-                      {repair.returnDate ? "Returned" : "Outstanding"}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date Out</TableHead>
+                  <TableHead>Returned</TableHead>
+                  <TableHead>Notes</TableHead>
+                  <TableHead>Vendor</TableHead>
+                  <TableHead className="text-right">Cost</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {repairs.map((repair: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <Link 
+                        href={`/repairs/${repair._id}/view`} 
+                        className="text-blue-600 hover:underline"
+                      >
+                        {formatDate(repair.dateOut || repair.dateCreated)}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={repair.returnDate ? "secondary" : "default"}>
+                        {repair.returnDate ? formatDate(repair.returnDate) : "Outstanding"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate" title={repair.description || repair.notes || 'N/A'}>
+                        {repair.description || repair.notes || 'N/A'}
+                      </div>
+                    </TableCell>
+                    <TableCell>{repair.vendor || 'N/A'}</TableCell>
+                    <TableCell className="text-right font-medium">
+                      {repair.cost || repair.repairCost ? formatCurrency(repair.cost || repair.repairCost) : '$0.00'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}
