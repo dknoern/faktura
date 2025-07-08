@@ -162,10 +162,7 @@ export function WantedTable({ wanted, pagination }: { wanted: Wanted[], paginati
                                     e.preventDefault();
                                 }
                             }}
-                            onContextMenu={(e) => {
-                                // Disable right-click context menu
-                                e.preventDefault();
-                            }}
+
                             style={{ userSelect: 'text' }}
                         >
                             <TableCell className="font-medium">{item.title}</TableCell>

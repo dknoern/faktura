@@ -212,10 +212,7 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
                       e.preventDefault();
                     }
                   }}
-                  onContextMenu={(e) => {
-                    // Disable right-click context menu
-                    e.preventDefault();
-                  }}
+
                   style={{ userSelect: 'text' }}
                 >
                   <TableCell>

@@ -37,7 +37,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
 
     const productsList = Array.isArray(products) ? products : [];
 
-    const handleRowClick = (productId: string, e: React.MouseEvent) => {
+    const handleRowClick = (productId: string) => {
         // Check if user is selecting text
         const selection = window.getSelection();
         if (selection && selection.toString().length > 0) {
@@ -45,11 +45,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
             return;
         }
         
-        // Check if the click started and ended on the same element (not a drag)
-        const target = e.target as HTMLElement;
-        if (target.tagName === 'TD' || target.closest('td')) {
-            router.push(`/products/${productId}/view`);
-        }
+        router.push(`/products/${productId}/view`);
     };
 
     const handlePageChange = (newPage: number) => {
@@ -167,17 +163,13 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                     {productsList.map((product) => (
                         <TableRow 
                             key={product._id} 
-                            onClick={(e) => handleRowClick(product._id, e)}
+                            onClick={() => handleRowClick(product._id)}
                             className="cursor-pointer hover:bg-gray-50"
                             onMouseDown={(e) => {
                                 // Prevent text selection from interfering with click detection
                                 if (e.detail > 1) {
                                     e.preventDefault();
                                 }
-                            }}
-                            onContextMenu={(e) => {
-                                // Disable right-click context menu
-                                e.preventDefault();
                             }}
                             style={{ userSelect: 'text' }}
                         >

@@ -1,7 +1,7 @@
 import dbConnect from './dbConnect';
 import mongoose from 'mongoose';
 import { Invoice } from "./models/invoice";
-/*import { Proposal } from "./models/proposal";*/
+import { Proposal } from "./models/proposal";
 import { Tenant } from "./models/tenant";
 import { productModel } from './models/product';
 import { Return } from './models/return';
@@ -162,6 +162,49 @@ export async function fetchInvoices(page = 1, limit = 10, search = '') {
     }
 }
 
+export async function fetchProposals(page = 1, limit = 10, search = '') {
+    try {
+        await dbConnect();
+        const skip = (page - 1) * limit;
+
+        let query = {};
+        if (search) {
+            query = { search: { $regex: search, $options: 'i' } };
+        }
+
+        const proposals = await Proposal.find(query)
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        // Get total count for pagination
+        const totalCount = await Proposal.countDocuments(query);
+
+        return {
+            proposals: JSON.parse(JSON.stringify(proposals)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching proposals:', error);
+        throw error;
+    }
+}
+
+export async function fetchProposalById(id: number) {
+    try {
+        await dbConnect();
+        const proposal = await Proposal.findById(id);
+        return JSON.parse(JSON.stringify(proposal));
+    } catch (error) {
+        console.error('Error fetching proposal:', error);
+        throw error;
+    }
+}
 
 export async function fetchReturns(page = 1, limit = 10, search = '') {
     try {

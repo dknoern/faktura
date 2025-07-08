@@ -139,10 +139,7 @@ export function OutsTable({ outs, pagination }: { outs: Out[], pagination: Pagin
                                         e.preventDefault();
                                     }
                                 }}
-                                onContextMenu={(e) => {
-                                    // Disable right-click context menu
-                                    e.preventDefault();
-                                }}
+
                                 style={{ userSelect: 'text' }}
                             >
                                 <TableCell style={{ whiteSpace: 'nowrap' }}>{out.date ? new Date(out.date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>

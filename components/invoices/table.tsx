@@ -199,10 +199,7 @@ export function InvoicesTable({
                                         e.preventDefault();
                                     }
                                 }}
-                                onContextMenu={(e) => {
-                                    // Disable right-click context menu
-                                    e.preventDefault();
-                                }}
+
                                 style={{ userSelect: 'text' }}
                             >
                                 <TableCell>{invoice._id}</TableCell>

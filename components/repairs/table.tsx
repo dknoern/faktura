@@ -199,10 +199,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                                     e.preventDefault();
                                 }
                             }}
-                            onContextMenu={(e) => {
-                                // Disable right-click context menu
-                                e.preventDefault();
-                            }}
+
                             style={{ userSelect: 'text' }}
                         >
                             <TableCell>{repair.repairNumber}</TableCell>

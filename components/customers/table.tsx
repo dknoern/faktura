@@ -256,10 +256,7 @@ export function CustomersTable({
                                     e.preventDefault();
                                 }
                             }}
-                            onContextMenu={(e) => {
-                                // Disable right-click context menu
-                                e.preventDefault();
-                            }}
+
                             style={{ userSelect: 'text' }}
                         >
                             <TableCell>{customer._id}</TableCell>

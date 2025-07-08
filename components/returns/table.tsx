@@ -138,10 +138,7 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
                                         e.preventDefault();
                                     }
                                 }}
-                                onContextMenu={(e) => {
-                                    // Disable right-click context menu
-                                    e.preventDefault();
-                                }}
+
                                 style={{ userSelect: 'text' }}
                             >
                                 <TableCell>{ret._id}</TableCell>

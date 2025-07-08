@@ -157,10 +157,7 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
                                         e.preventDefault();
                                     }
                                 }}
-                                onContextMenu={(e) => {
-                                    // Disable right-click context menu
-                                    e.preventDefault();
-                                }}
+
                                 style={{ userSelect: 'text' }}
                             >
 
