@@ -120,14 +120,6 @@ export async function getDailySales(year: number, month: number, day: number) {
         // Create start and end dates for the day in local timezone
         const startDate = new Date(year, month - 1, day, 0, 0, 0, 0);
         const endDate = new Date(year, month - 1, day, 23, 59, 59, 999);
-        
-        console.log('getDailySales query range:', {
-            year,
-            month,
-            day,
-            startDate,
-            endDate
-        });
 
         const invoices = await Invoice.find({
             "date": {
@@ -144,8 +136,6 @@ export async function getDailySales(year: number, month: number, day: number) {
             methodOfSale: 1,
             invoiceType: 1
         });
-
-        console.log('getDailySales found:', invoices.length, 'invoices');
         return invoices;
 
     } catch (error) {

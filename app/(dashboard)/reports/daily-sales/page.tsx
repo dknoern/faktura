@@ -14,10 +14,15 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function Page() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [isOpen, setIsOpen] = useState(false);
+  // Initialize with today's date at start of day in local timezone
+  const getLocalToday = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
   
-  console.log('Daily Sales Page - selectedDate:', selectedDate);
+  const [selectedDate, setSelectedDate] = useState<Date>(getLocalToday());
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
@@ -28,7 +33,7 @@ export default function Page() {
 
   // Disable future dates
   const disabledDays = {
-    after: new Date()
+    after: getLocalToday()
   };
 
   return (
