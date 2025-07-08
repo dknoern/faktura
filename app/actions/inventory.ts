@@ -84,7 +84,13 @@ export async function searchFilteredInventoryItems(
     
     // Build the query to find products with specific statuses
     const query: any = {
-      status: { $in: statuses }
+      $and: [
+        { status: { $in: statuses } },
+        // someday we should delete all the bad records
+        { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
+        { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
+        { title: { $ne: null } } // Exclude items with null title
+    ]
     };
     
     // Add search condition if provided

@@ -11,6 +11,7 @@ export interface DashboardStats {
   totalInventory: number;
   totalRepairsOut: number;
   totalItemsAtShow: number;
+  totalItemsWanted: number;
 }
 
 export interface MonthlySalesData {
@@ -34,7 +35,15 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     
     // Total items in inventory (In Stock status)
     const totalInventory = await productModel.countDocuments({ 
-      status: 'In Stock' 
+
+      $and: [
+
+        { status: 'In Stock' },
+        // someday we should delete all the bad records
+        { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
+        { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
+        { title: { $ne: null } } // Exclude items with null title
+    ]
     });
     
     // Calculate cutoff date (2 years ago)
@@ -59,11 +68,17 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const totalItemsAtShow = await productModel.countDocuments({ 
       status: 'At Show' 
     });
+
+    // Total items wanted (Wanted status)
+    const totalItemsWanted = await productModel.countDocuments({ 
+      status: 'Wanted' 
+    });
     
     return {
       totalInventory,
       totalRepairsOut,
-      totalItemsAtShow
+      totalItemsAtShow,
+      totalItemsWanted
     };
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
@@ -71,7 +86,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     return {
       totalInventory: 0,
       totalRepairsOut: 0,
-      totalItemsAtShow: 0
+      totalItemsAtShow: 0,
+      totalItemsWanted: 0
     };
   }
 }
