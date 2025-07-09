@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductHistory } from "./product-history";
 import { Watch, Gem, BriefcaseBusiness, Clock } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -15,6 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+interface HistoryEvent {
+  date: string;
+  user: string;
+  action: string;
+  refDoc?: string;
+}
+
 interface ProductViewDetailsProps {
   product: any;
   repairs: any[];
@@ -22,11 +29,17 @@ interface ProductViewDetailsProps {
 
 
 export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps) {
+  const [productHistory, setProductHistory] = useState<HistoryEvent[]>(product.history || []);
+
   const formatCurrency = (amount: number) => {
     return Math.ceil(amount).toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD'
     }).replace('.00', '');
+  };
+
+  const handleHistoryUpdate = (newHistoryEntry: HistoryEvent) => {
+    setProductHistory(prev => [...prev, newHistoryEntry]);
   };
 
   const formatDate = (dateString: string) => {
@@ -276,7 +289,11 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
           <CardTitle>Product History</CardTitle>
         </CardHeader>
         <CardContent>
-          <ProductHistory history={product.history || []} />
+          <ProductHistory 
+            history={productHistory} 
+            productId={product._id}
+            onHistoryUpdate={handleHistoryUpdate}
+          />
         </CardContent>
       </Card>
 

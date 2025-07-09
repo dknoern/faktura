@@ -3,6 +3,7 @@
 import { productModel } from '@/lib/models/product';
 import { Repair } from '@/lib/models/repair';
 import dbConnect from '@/lib/dbConnect';
+import { getShortUserFromToken } from '@/lib/auth-utils';
 
 
 // Function to search repair items
@@ -69,6 +70,60 @@ export async function getRepairItemById(id: string) {
   } catch (error) {
     console.error('Error getting repair item:', error);
     return { success: false, error: 'Failed to get repair item' };
+  }
+}
+
+// Function to add a note to product history
+export async function addProductHistoryNote(productId: string, note: string) {
+  try {
+    await dbConnect();
+    
+    // Get current user
+    const user = await getShortUserFromToken();
+    
+    if (!user) {
+      return { success: false, error: 'User not authenticated' };
+    }
+    
+    // Create new history entry with proper Date object
+    const newHistoryEntry = {
+      date: new Date(),
+      user: user,
+      action: note
+    };
+    
+    // Use findByIdAndUpdate to add the history entry without triggering full validation
+    const updatedProduct = await productModel.findByIdAndUpdate(
+      productId,
+      { 
+        $push: { 
+          history: newHistoryEntry 
+        }
+      },
+      { 
+        new: true,
+        runValidators: false // Skip validation to avoid id field requirement
+      }
+    );
+    
+    if (!updatedProduct) {
+      return { success: false, error: 'Product not found' };
+    }
+    
+    // Return the entry with ISO string date for consistency with frontend
+    const returnEntry = {
+      date: newHistoryEntry.date.toISOString(),
+      user: newHistoryEntry.user,
+      action: newHistoryEntry.action
+    };
+    
+    return { 
+      success: true, 
+      data: returnEntry
+    };
+  } catch (error) {
+    console.error('Error adding product history note:', error);
+    return { success: false, error: 'Failed to add note to product history' };
   }
 }
 
