@@ -6,8 +6,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormLabel,
+  Form
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -22,13 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+
 import { X, ShoppingBag, FileText, Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductSelectModal } from "@/components/invoices/product-select-modal";
@@ -62,13 +55,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
 
   // Modals state
   const [inventoryModalOpen, setInventoryModalOpen] = useState(false);
-  const [miscModalOpen, setMiscModalOpen] = useState(false);
   const [repairModalOpen, setRepairModalOpen] = useState(false);
-  
-  // We don't need the repair search state anymore as it's handled by the modal
-  
-  // Misc item state
-  const [miscItemName, setMiscItemName] = useState("");
 
   const form = useForm<LogFormValues>({
     resolver: zodResolver(logSchema),
@@ -105,6 +92,16 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
       // Validate that there is at least one line item
       if (!log?.id && lineItems.length === 0) {
         setError("At least one item must be added before saving.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Validate that all misc items have names
+      const emptyMiscItems = lineItems.filter(item => 
+        !item.itemNumber && !item.repairNumber && (!item.name || !item.name.trim())
+      );
+      if (emptyMiscItems.length > 0) {
+        setError("All miscellaneous items must have a name before saving.");
         setIsSubmitting(false);
         return;
       }
@@ -170,19 +167,36 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
         form.setValue("vendor", newVendorValue);
       }
     }
+    
+    // Handle customer name field - append if not already present
+    if (repair.customerFirstName || repair.customerLastName) {
+      const customerName = [repair.customerFirstName, repair.customerLastName]
+        .filter(name => name && name.trim())
+        .join(" ")
+        .trim();
+      
+      if (customerName) {
+        const currentCustomerName = form.getValues("customerName") || "";
+        const customersArray = currentCustomerName.split(",").map(c => c.trim()).filter(c => c.length > 0);
+        
+        // Check if the customer already exists (case-insensitive)
+        const customerExists = customersArray.some(c => c.toLowerCase() === customerName.toLowerCase());
+        
+        if (!customerExists) {
+          const newCustomerValue = currentCustomerName ? `${currentCustomerName}, ${customerName}` : customerName;
+          form.setValue("customerName", newCustomerValue);
+        }
+      }
+    }
     // Modal is closed automatically by RepairSelectModal
   }
   
   // Add misc item to line items
   function handleAddMiscItem() {
-    if (miscItemName.trim()) {
-      const newItem: LineItem = {
-        name: miscItemName,
-      };
-      setLineItems([...lineItems, newItem]);
-      setMiscItemName("");
-      setMiscModalOpen(false);
-    }
+    const newItem: LineItem = {
+      name: "", // Empty name that user will fill in
+    };
+    setLineItems([...lineItems, newItem]);
   }
   
   // Remove item from line items
@@ -351,7 +365,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
                     type="button" 
                     onClick={(e) => {
                       e.preventDefault(); // Prevent form submission
-                      setMiscModalOpen(true);
+                      handleAddMiscItem();
                     }}
                   >
                     <FileText className="mr-2 h-4 w-4" /> Misc
@@ -456,30 +470,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
           statuses={["Sold", "Memo", "Incoming"]}
         />
         
-        {/* Misc Item Modal */}
-        <Dialog open={miscModalOpen} onOpenChange={setMiscModalOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add Miscellaneous Item</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <FormLabel className="text-right">Item Name</FormLabel>
-                <Input
-                  id="miscItemName"
-                  placeholder="Enter item name"
-                  className="col-span-3"
-                  value={miscItemName}
-                  onChange={(e) => setMiscItemName(e.target.value)}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setMiscModalOpen(false)}>Cancel</Button>
-              <Button onClick={handleAddMiscItem} disabled={!miscItemName.trim()}>Add Item</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+
         
         {/* Repair Select Modal */}
         <RepairSelectModal
