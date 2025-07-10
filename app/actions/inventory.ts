@@ -3,7 +3,7 @@
 import { productModel } from '@/lib/models/product';
 import { Repair } from '@/lib/models/repair';
 import dbConnect from '@/lib/dbConnect';
-import { getShortUserFromToken } from '@/lib/auth-utils';
+import { getShortUser } from '@/lib/auth-utils';
 
 
 // Function to search repair items
@@ -79,7 +79,7 @@ export async function addProductHistoryNote(productId: string, note: string) {
     await dbConnect();
     
     // Get current user
-    const user = await getShortUserFromToken();
+    const user = await getShortUser();
     
     if (!user) {
       return { success: false, error: 'User not authenticated' };

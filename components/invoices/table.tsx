@@ -222,7 +222,7 @@ export function InvoicesTable({
                                     ))}
                                 </TableCell>
                                 <TableCell> {invoice.trackingNumber}</TableCell>
-                                <TableCell style={{ textAlign: 'right' }}>{Math.ceil(invoice.total).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '')}</TableCell>
+                                <TableCell style={{ textAlign: 'right' }}>{invoice.total.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                                 <TableCell>
                                     <span className={`px-2 py-1 rounded-full text-xs ${
                                         invoice.invoiceType === 'Memo' 

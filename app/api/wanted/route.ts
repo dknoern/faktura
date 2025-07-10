@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { Wanted } from '@/lib/models/wanted';
-import { getShortUserFromToken } from '@/lib/auth-utils';
+import { getShortUser } from '@/lib/auth-utils';
 
 export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const body = await request.json();
-    const currentUser = await getShortUserFromToken();
+    const currentUser = await getShortUser();
     
     const wanted = new Wanted({
       ...body,

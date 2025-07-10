@@ -3,7 +3,7 @@
 import dbConnect from "@/lib/dbConnect";
 import { productModel } from "@/lib/models/product";
 import { getShowReport } from "@/lib/reports";
-import { getShortUserFromToken } from "../auth-utils";
+import { getShortUser } from "../auth-utils";
 
 export async function bulkEntryToShow(itemNumbers: string[]) {
   try {
@@ -62,7 +62,7 @@ export async function bulkEntryToShow(itemNumbers: string[]) {
       };
     }
 
-    const user = await getShortUserFromToken();
+    const user = await getShortUser();
     // Create history entry for each product and update status
     const historyEntry = {
       user: user,
@@ -131,7 +131,7 @@ export async function bulkReleaseFromShow() {
       };
     }
 
-    const user = await getShortUserFromToken();
+    const user = await getShortUser();
 
     // Create history entry for each product and update status
     const historyEntry = {

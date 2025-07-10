@@ -6,7 +6,7 @@ import { Invoice } from "./models/invoice";
 import { Counter } from "./models/counter";
 import { calcTax } from "./utils/tax";
 import { updateProductHistory } from "./utils/product-history";
-import { getShortUserFromToken } from "./auth-utils";
+import { getShortUser } from "./auth-utils";
 import { format } from "date-fns";
 
 export interface LineItem {
@@ -108,7 +108,7 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
         itemAction = "item memo";
       }
 
-      const user = await getShortUserFromToken();
+      const user = await getShortUser();
       // Use the invoice ID for product history
       const invoiceIdString = invoiceData._id ? invoiceData._id.toString() : '';
       updateProductHistory(invoiceData.lineItems, itemStatus, itemAction, user, invoiceIdString);

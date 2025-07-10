@@ -24,7 +24,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                                  nextUrl.pathname.startsWith('/logoutitems') ||
                                  nextUrl.pathname.startsWith('/reports') ||
                                  nextUrl.pathname.startsWith('/profile') ||
-                                 nextUrl.pathname.startsWith('/proposals');
+                                 nextUrl.pathname.startsWith('/proposals')||
+                                 nextUrl.pathname.startsWith('/wanted')
       if (isOnProtectedRoute) {
         if (isLoggedIn) return true;
         return Response.redirect(new URL('/', nextUrl));
@@ -46,14 +47,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (profile) {
         // Auth0 custom claims are typically namespaced
         const profileAny = profile as any
-        const tenantId = profileAny['https://fakturian.com/tenantId'] || profileAny.tenantId
-        if (tenantId && typeof tenantId === 'string') {
-          token.tenantId = tenantId
-        }
-        
-        // Store the full profile for debugging
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Auth0 profile:', JSON.stringify(profile, null, 2))
+
+        const tenantName = profileAny['https://fakturian.com/tenantName'] || profileAny.tenantName
+        if (tenantName && typeof tenantName === 'string') {
+          token.tenantName = tenantName
         }
       }
       
@@ -68,6 +65,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Also add it to the user object for easier access
         if (session.user) {
           (session.user as any).tenantId = token.tenantId
+        }
+      }
+
+      // Pass tenantName to the session
+      if (token?.tenantName) {
+        (session as any).tenantName = token.tenantName
+        // Also add it to the user object for easier access
+        if (session.user) {
+          (session.user as any).tenantName = token.tenantName
         }
       }
 

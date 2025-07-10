@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getShortUserFromToken } from '@/lib/auth-utils';
+import { getShortUser } from '@/lib/auth-utils';
 
 export async function GET() {
   try {
-    const username = await getShortUserFromToken();
+    const username = await getShortUser();
     
     return NextResponse.json({ username });
   } catch (error) {

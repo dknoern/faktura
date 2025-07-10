@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { Wanted } from '@/lib/models/wanted';
-import { getShortUserFromToken } from '@/lib/auth-utils';
+import { getShortUser } from '@/lib/auth-utils';
 
 export async function GET(
   request: NextRequest,
@@ -31,7 +31,7 @@ export async function PUT(
     await dbConnect();
     const { id } = await params;
     const body = await request.json();
-    const currentUser = await getShortUserFromToken();
+    const currentUser = await getShortUser();
     
     // If foundDate is being set and wasn't set before, add foundBy
     const existingWanted = await Wanted.findById(id);

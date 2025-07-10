@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { productModel } from '@/lib/models/product';
 import mongoose from 'mongoose';
-import { getShortUserFromToken } from '@/lib/auth-utils';
+import { getShortUser } from '@/lib/auth-utils';
 
 export async function GET(
   request: NextRequest,
@@ -70,7 +70,7 @@ export async function PUT(
 
     // Check if status is changing to "At Show" or "In Stock" and add history entry
     if (data.status && data.status !== currentProduct.status) {
-      const username = await getShortUserFromToken();
+      const username = await getShortUser();
       if (data.status === 'At Show' || data.status === 'In Stock' || data.status === 'Sale Pending' || data.status === 'Incoming') {
         let action = '';
         switch (data.status) {

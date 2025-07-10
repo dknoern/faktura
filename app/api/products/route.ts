@@ -3,7 +3,7 @@ import { fetchProducts } from '@/lib/data';
 import dbConnect from '@/lib/dbConnect';
 import { productModel } from '@/lib/models/product';
 import mongoose from 'mongoose';
-import { getShortUserFromToken} from '@/lib/auth-utils';
+import { getShortUser } from '@/lib/auth-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     data.id = tempId.toString();
 
     // Get user from JWT claim (email)
-    const username = await getShortUserFromToken();
+    const username = await getShortUser();
     data.history = [];
 
     const date = new Date();

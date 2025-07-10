@@ -180,7 +180,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-[800px] top-[10%] translate-y-0">
         <DialogHeader>
           <DialogTitle>Select Product ({statuses.join(", ")})</DialogTitle>
         </DialogHeader>

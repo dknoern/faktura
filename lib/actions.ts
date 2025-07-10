@@ -4,7 +4,7 @@ import { Repair } from "./models/repair";
 import { Return } from "./models/return";
 import { productModel } from "./models/product";
 import dbConnect from "./dbConnect";
-import { getShortUserFromToken } from "./auth-utils";
+import { getShortUser } from "./auth-utils";
 import { format } from "date-fns";
 import { Counter } from "./models/counter";
 import { updateProductHistory } from "./utils/product-history";
@@ -78,7 +78,7 @@ export async function createRepair(formData: FormData) {
 
     // update product, set status to "In Repair", also add history item with date, and action= "repair"
 
-    const user = await getShortUserFromToken();
+    const user = await getShortUser();
 
     if (productId != null && productId != '') {
       await productModel.findOneAndUpdate({
@@ -208,7 +208,7 @@ export async function createReturn(data: ReturnData) {
     await returnDoc.save();
     
     // Update product history for returned items
-    const user = await getShortUserFromToken();
+    const user = await getShortUser();
     const refDoc = newReturnNumber.seq.toString();
     const action = 'item returned';
     const status = 'In Stock';
@@ -239,7 +239,7 @@ export async function updateReturn(returnId: number, data: ReturnData) {
     }
     
     // Update product history for returned items
-    const user = await getShortUserFromToken();
+    const user = await getShortUser();
     const refDoc = returnId.toString();
     const action = 'return';
     const status = 'In Stock';
