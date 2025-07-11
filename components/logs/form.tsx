@@ -6,7 +6,10 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
-  Form
+  Form,
+  FormControl,
+  FormField,
+  FormLabel
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
@@ -305,13 +308,18 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
             </Select>
           </div>
 
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <label className="text-sm font-medium">Customer Name</label>
-            <Input
-              value={form.watch("customerName") || ""}
-              onChange={(e) => form.setValue("customerName", e.target.value)}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="customerName"
+            render={({ field }) => (
+              <div className="grid grid-cols-[120px_1fr] items-center">
+                <FormLabel className="text-sm font-medium">Customer Name</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+              </div>
+            )}
+          />
 
 
           <div className="grid grid-cols-[120px_1fr] items-center">

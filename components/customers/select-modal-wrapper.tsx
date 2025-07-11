@@ -108,7 +108,7 @@ export function CustomerSelectModalWrapper({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden top-[10%] translate-y-0">
         <DialogTitle className="text-xl font-semibold mb-4">Select Customer</DialogTitle>
         <div className="overflow-y-auto pr-2" style={{ maxHeight: 'calc(90vh - 120px)' }}>
           {/* Pass the customers table component but with isModal flag */}
