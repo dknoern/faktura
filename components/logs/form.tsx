@@ -322,13 +322,18 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
           />
 
 
-          <div className="grid grid-cols-[120px_1fr] items-center">
-            <label className="text-sm font-medium">Vendor</label>
-            <Input
-              value={form.watch("vendor") || ""}
-              onChange={(e) => form.setValue("vendor", e.target.value)}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="vendor"
+            render={({ field }) => (
+              <div className="grid grid-cols-[120px_1fr] items-center">
+                <FormLabel className="text-sm font-medium">Vendor</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+              </div>
+            )}
+          />
 
           <div className="grid grid-cols-[120px_1fr] items-center">
             <label className="text-sm font-medium">Received By</label>

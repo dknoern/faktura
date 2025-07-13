@@ -174,7 +174,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                             style={{ userSelect: 'text' }}
                         >
                             <TableCell>{product.itemNumber}</TableCell>
-                            <TableCell>{product.title}</TableCell>
+                            <TableCell>{product.title}{product.dial && product.dial.trim() !== '' ? ` - ${product.dial}` : ''}</TableCell>
                             <TableCell>{product.serialNo}</TableCell>
                             <TableCell style={{ textAlign: 'right' }}>{product.sellingPrice ? Math.ceil(product.sellingPrice).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00', '') : ''}</TableCell>
                             <TableCell>{product.modelNumber}</TableCell>

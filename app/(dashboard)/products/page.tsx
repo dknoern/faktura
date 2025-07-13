@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation";
 export default function Page() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [pagination, setPagination] = useState({ total: 0, pages: 1, currentPage: 1, limit: 10 });
+  const [pagination, setPagination] = useState({ total: 0, pages: 1, currentPage: 1, limit: 50 });
   const [, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function Page() {
       const search = searchParams.get('search') || '';
       const sortBy = searchParams.get('sortBy') || 'lastUpdated';
       const sortOrder = searchParams.get('sortOrder') || 'desc';
-      const limit = 10;
+      const limit = 50;
 
       try {
         const response = await fetch(`/api/products?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
