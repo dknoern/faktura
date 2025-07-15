@@ -12,18 +12,10 @@ export function ViewRepair({repair, tenant, imageBaseUrl}:  {repair: Repair, ten
       <div className="flex justify-end gap-4 mb-4 print:hidden">
         <RepairActionMenu repair={repair} />
       </div>
-
       <div className="bg-white p-7 rounded-lg shadow print:shadow-none">
         {/* Repair Content */}
-        <div dangerouslySetInnerHTML={{ __html: generateRepairHtml(repair, tenant, imageBaseUrl) }} />
-
+        <div dangerouslySetInnerHTML={{ __html: generateRepairHtml(repair, tenant, imageBaseUrl, true) }} />
       </div>
-
-
-
     </div>
-
-
-
   );
 } 

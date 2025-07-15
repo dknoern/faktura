@@ -47,7 +47,7 @@ export const formatDate = (dateString: string | null) => {
 };
 
 // Generate repair HTML content
-export const generateRepairHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string): string => {
+export const generateRepairHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string, showCustomerName: boolean = true): string => {
   const formattedDate = formatDate(repair.dateOut);
   const formattedReturnDate = formatDate(repair.returnDate);
   const formattedCustomerApprovedDate = formatDate(repair.customerApprovedDate);
@@ -93,10 +93,10 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant, imageBaseUrl:
           <p>${formattedReturnDate}</p>
         </div>` : ''}
 
-        <div style="margin-bottom: 15px;">
+        ${showCustomerName ? `<div style="margin-bottom: 15px;">
           <h3 style="font-weight: bold;">Customer Name</h3>
           <p style="margin: 5px 0;">${repair.customerFirstName} ${repair.customerLastName}</p>
-        </div>
+        </div>` : ''}
 
         <div style="margin-bottom: 15px;">
           <h3 style="font-weight: bold; margin-bottom: 5px;">Vendor Name</h3>
@@ -140,8 +140,8 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant, imageBaseUrl:
 };
 
 // Generate complete email HTML with proper doctype and head
-export const generateEmailHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string): string => {
-  const repairHtml = generateRepairHtml(repair, tenant, imageBaseUrl);
+export const generateEmailHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string, showCustomerName: boolean = false): string => {
+  const repairHtml = generateRepairHtml(repair, tenant, imageBaseUrl, showCustomerName);
   
   return `
     <!DOCTYPE html>

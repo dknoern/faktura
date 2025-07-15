@@ -94,8 +94,8 @@ export const generateLineItemsHtml = (lineItems: LineItem[]) => {
     return `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #eee; font-size: 12px;">${item.name.toUpperCase()}<p>${item.longDesc || ''}</p>
-          <p style="width: 25%; display: inline-block; padding-left: 10px;">${item.serialNumber ? `Serial No: ${item.serialNumber}` : ''}</p>
-          <p style="width: 25%; display: inline-block; padding-left: 10px;">${item.itemNumber ? `SKU: ${item.itemNumber}` : ''}</p>
+          <p style="width: 25%; display: inline-block; padding-left: 10px; padding-top: 6px;">${item.serialNumber ? `Serial No: ${item.serialNumber}` : ''}</p>
+          <p style="width: 25%; display: inline-block; padding-left: 10px; padding-top: 6px;">${item.itemNumber ? `SKU: ${item.itemNumber}` : ''}</p>
         </td>
         <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-size: 12px; vertical-align: top;">${amount}</td>
       </tr>
@@ -137,11 +137,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
         </div>
       </div>
 
-
-      
-
       <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-
 
         <div style="margin-bottom: 20px; width: 50%;">
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.customerFirstName} ${invoice.customerLastName}</p>

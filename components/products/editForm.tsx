@@ -333,13 +333,9 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                             <Input 
                                                 placeholder="" 
                                                 {...field} 
-                                                value={field.value || ""} 
-                                                readOnly={!isNewProduct}
-                                                disabled={!isNewProduct}
-                                                className={!isNewProduct ? "cursor-not-allowed" : ""}
+                                                value={field.value || ""}
                                             />
                                         </FormControl>
-
                                         <FormMessage />
                                     </FormItem>
                                 )}
