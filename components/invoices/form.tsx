@@ -146,11 +146,19 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
     }))
   }, [formData.lineItems, formData.shipping, formData.tax])
 
-  // Require that all line items have a description and amount before allowing save
+  // Require that all line items have a description and amount, and invoice type is selected before allowing save
   const allItemsValid = formData.lineItems.length > 0 && formData.lineItems.every(item => item.name.trim() !== "");
+  const invoiceTypeValid = formData.invoiceType && formData.invoiceType.trim() !== "";
+  const canSubmit = allItemsValid && invoiceTypeValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!invoiceTypeValid) {
+      alert("Please select an invoice type before saving.");
+      return;
+    }
+    
     if (!allItemsValid) {
       alert("Please ensure every item has a description and amount.");
       return;
@@ -518,7 +526,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
-        <Button type="submit" disabled={!allItemsValid}>
+        <Button type="submit" disabled={!canSubmit}>
           {formData._id ? "Update Invoice" : "Create Invoice"}
         </Button>
       </div>

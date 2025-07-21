@@ -492,6 +492,7 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
             onSelect={handleCustomerSelect}
             customers={customers}
             pagination={pagination}
+            productId={id}
         />
         
         {/* Customer selection modal for repair creation */}
@@ -501,6 +502,8 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
             onSelect={handleCustomerSelectForRepair}
             customers={customers}
             pagination={pagination}
+            productId={id}
+            flowType='repair'
         />
 
         {/* Delete confirmation dialog */}

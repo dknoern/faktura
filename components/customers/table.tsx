@@ -44,6 +44,8 @@ interface CustomersTableProps {
     modalRouter?: any
     onSearch?: (query: string) => void
     onPageChange?: (page: number) => void
+    productId?: string
+    flowType?: 'invoice' | 'repair'
 }
 
 export function CustomersTable({ 
@@ -53,7 +55,9 @@ export function CustomersTable({
     onSelectCustomer,
     modalRouter,
     onSearch,
-    onPageChange
+    onPageChange,
+    productId,
+    flowType = 'invoice'
 }: CustomersTableProps) {
 
     // Always call hooks unconditionally at the top level
@@ -208,7 +212,25 @@ export function CustomersTable({
                     />
                 </div>
 
-                    <Button variant="outline" onClick={() => router.push('/customers/new')}
+                    <Button variant="outline" onClick={() => {
+                        if (isModal && onSelectCustomer) {
+                            // Clean up modal scroll locks before navigation
+                            document.body.style.removeProperty('overflow');
+                            document.body.style.removeProperty('padding-right');
+                            
+                            // If in modal mode for customer selection, pass return parameters
+                            const params = new URLSearchParams({
+                                returnTo: flowType,
+                                selectCustomer: 'true'
+                            });
+                            if (productId) {
+                                params.set('productId', productId);
+                            }
+                            router.push(`/customers/new?${params.toString()}`);
+                        } else {
+                            router.push('/customers/new');
+                        }
+                    }}
                         className="ml-4 flex items-center gap-1"
                     >
                         <PlusCircle size={18} />

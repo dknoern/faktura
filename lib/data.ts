@@ -275,14 +275,7 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
         
         if (search) {
             const searchConditions = {
-                $or: [
-                    { repairNumber: { $regex: search, $options: 'i' } },
-                    { itemNumber: { $regex: search, $options: 'i' } },
-                    { description: { $regex: search, $options: 'i' } },
-                    { customerFirstName: { $regex: search, $options: 'i' } },
-                    { customerLastName: { $regex: search, $options: 'i' } },
-                    { vendor: { $regex: search, $options: 'i' } } 
-                ]
+                search: { $regex: search, $options: 'i' }
             };
             
             // Combine filter and search conditions
@@ -351,15 +344,7 @@ export async function fetchOutstandingRepairs(page = 1, limit = 10, search = '')
                 $and: [
                     { returnDate: { $eq: null } },
                     { dateOut: { $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 2)) } },
-                    {
-                        $or: [
-                            { repairNumber: { $regex: search, $options: 'i' } },
-                            { itemNumber: { $regex: search, $options: 'i' } },
-                            { description: { $regex: search, $options: 'i' } },
-                            { customerFirstName: { $regex: search, $options: 'i' } },
-                            { customerLastName: { $regex: search, $options: 'i' } }
-                        ]
-                    }
+                    { search: { $regex: search, $options: 'i' } }
                 ]
             };
         }

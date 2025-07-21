@@ -205,6 +205,20 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
         </CardContent>
       </Card>
 
+      {/* Product History */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Product History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ProductHistory 
+            history={productHistory} 
+            productId={product._id}
+            onHistoryUpdate={handleHistoryUpdate}
+          />
+        </CardContent>
+      </Card>
+
       {/* Financial Information */}
       <Card>
         <CardHeader>
@@ -283,19 +297,6 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
         </Card>
       )}
 
-      {/* Product History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Product History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ProductHistory 
-            history={productHistory} 
-            productId={product._id}
-            onHistoryUpdate={handleHistoryUpdate}
-          />
-        </CardContent>
-      </Card>
 
       {/* Repairs */}
       {repairs && repairs.length > 0 && (

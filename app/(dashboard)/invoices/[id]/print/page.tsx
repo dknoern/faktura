@@ -46,7 +46,7 @@ export default async function PrintInvoicePage({ params }: PrintInvoicePageProps
             }
             
             @page {
-              margin: 0.5in;
+              margin: 0.15in;
               size: auto;
             }
           }

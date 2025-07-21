@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -59,8 +59,13 @@ type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 export function CustomerForm({ customer }: { customer: z.infer<typeof customerSchema> }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Check if we're in a return flow (e.g., from invoice creation)
+  const returnTo = searchParams.get('returnTo');
+  const selectCustomer = searchParams.get('selectCustomer') === 'true';
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
@@ -90,6 +95,15 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
       status: "Active",
     },
   });
+  
+  // Debug: Log form state to help diagnose issues
+  console.log('CustomerForm Debug:', {
+    customer,
+    returnTo,
+    selectCustomer,
+    formValues: form.getValues(),
+    isSubmitting
+  });
 
   async function onSubmit(data: CustomerFormValues) {
     try {
@@ -105,7 +119,25 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
         return;
       }
 
-      router.push("/customers");
+      // Check if we need to redirect back to invoice or repair creation
+      if ((returnTo === 'invoice' || returnTo === 'repair') && selectCustomer && result.data?._id) {
+        const productId = searchParams.get('productId');
+        
+        if (returnTo === 'invoice') {
+          const invoiceUrl = productId 
+            ? `/invoices/new?customerId=${result.data._id}&productId=${productId}`
+            : `/invoices/new?customerId=${result.data._id}`;
+          router.push(invoiceUrl);
+        } else if (returnTo === 'repair') {
+          const repairUrl = productId 
+            ? `/repairs/new?customerId=${result.data._id}&productId=${productId}`
+            : `/repairs/new?customerId=${result.data._id}`;
+          router.push(repairUrl);
+        }
+      } else {
+        // Default redirect to customers list
+        router.push("/customers");
+      }
     } catch (error) {
       console.error('Error saving customer:', error);
       setError("An unexpected error occurred. Please try again.");
@@ -253,7 +285,7 @@ export function CustomerForm({ customer }: { customer: z.infer<typeof customerSc
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Customer Type <span className="text-red-500">*</span></FormLabel>
-                <Select onValueChange={field.onChange} value={customer.customerType || "Direct"} defaultValue={customer.customerType}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select customer type" />

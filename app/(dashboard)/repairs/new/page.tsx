@@ -14,7 +14,7 @@ export default async function NewRepairPage({ searchParams }: { searchParams: Se
 
     // If no customer ID is provided, redirect back to repairs page
     if (!params.customerId) {
-        redirect("/`repairs");
+        redirect("/repairs");
     }
 
     let product = null;

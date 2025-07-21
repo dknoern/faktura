@@ -23,6 +23,8 @@ interface CustomerSelectModalWrapperProps {
     currentPage: number
     limit: number
   }
+  productId?: string
+  flowType?: 'invoice' | 'repair'
 }
 
 export function CustomerSelectModalWrapper({
@@ -31,6 +33,8 @@ export function CustomerSelectModalWrapper({
   onSelect,
   customers: initialCustomers,
   pagination: initialPagination,
+  productId,
+  flowType = 'invoice',
 }: CustomerSelectModalWrapperProps) {
   
   // State for customers and pagination
@@ -119,6 +123,8 @@ export function CustomerSelectModalWrapper({
             onSelectCustomer={onSelect}
             onSearch={handleSearch}
             onPageChange={handlePageChange}
+            productId={productId}
+            flowType={flowType}
           />
         </div>
       </DialogContent>
