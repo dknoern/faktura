@@ -93,11 +93,11 @@ export const generateLineItemsHtml = (lineItems: LineItem[]) => {
     const amount = formatCurrency(item.amount);
     return `
       <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; font-size: 12px;">${item.name.toUpperCase()}<p>${item.longDesc || ''}</p>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; font-size: 11px;">${item.name.toUpperCase()}<p>${item.longDesc || ''}</p>
           <p style="width: 25%; display: inline-block; padding-left: 10px; padding-top: 6px;">${item.serialNumber ? `Serial No: ${item.serialNumber}` : ''}</p>
           <p style="width: 25%; display: inline-block; padding-left: 10px; padding-top: 6px;">${item.itemNumber ? `SKU: ${item.itemNumber}` : ''}</p>
         </td>
-        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-size: 12px; vertical-align: top;">${amount}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-size: 11px; vertical-align: top;">${amount}</td>
       </tr>
     `;
   }).join('');
@@ -115,14 +115,14 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
   const invoiceLabel = invoice.invoiceType === 'Partner' ? 'PARTNER INVOICE' : invoice.invoiceType === 'Memo' ? 'MEMO' : 'INVOICE';
 
   return `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; font-size: 12px">
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; font-size: 11px">
 
     <!-- Header -->
       <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
 
         <div>
           <img src="${logoUrl}" height="76px" width="190px" alt="Company Logo" />
-          <div style="color: #B69D57; font-size: 24px; margin-top: 10px;">${invoiceLabel}
+          <div style="color: #B69D57; font-size: 24px; margin-top: 8px;">${invoiceLabel}
           </div>
         </div>
         <div style="text-align: left;">
@@ -137,9 +137,9 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
         </div>
       </div>
 
-      <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
 
-        <div style="margin-bottom: 20px; width: 50%;">
+        <div style="margin-bottom: 0px; width: 50%;">
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.customerFirstName} ${invoice.customerLastName}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.shipAddress1 || ''}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.shipAddress2 || ''}</p>
@@ -159,7 +159,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
       </div>
       
       <!-- Items -->
-      <div style="margin-bottom: 20px;">
+      <div style="margin-bottom: 10px;">
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr>
@@ -191,7 +191,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
                     <td style="text-align: right; font-weight: bold; font-size: 14px;"> <strong>${formattedTotal}</strong></td>
                   </tr>
                   <tr>
-                    <td colspan="2" style="padding-top: 40px; text-align: right;">
+                    <td colspan="2" style="padding-top: 11px; text-align: right;">
                       Thank you for your business
                     </td>
                   </tr>
@@ -203,7 +203,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
       </div>
       
       <!-- Warranty and Return Policy -->
-      <div style="margin-bottom: 15px; font-size: 12px; border-bottom: 2px solid #eee;">
+      <div style="margin-bottom: 15px; font-size: 10px; border-bottom: 2px solid #eee;">
         <div style="margin-bottom: 10px;">
           <div style="font-weight: bold;">Warranty:</div>
           <p style="color: #666;">${tenant.warranty || 'N/A'}</p>
@@ -215,7 +215,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
       </div>
       
       <!-- Footer -->
-      <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 10px;">
         <div style="display: flex; width: 33%;">
           <div style="margin-right: 10px; color: #B69D57;">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -256,7 +256,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
       </div>
       
       <!-- Bank Wire Transfer Instructions -->
-      <div style="font-size: 12px; border-bottom: 2px solid #eee; padding-bottom: 20px;">
+      <div style="font-size: 10px; border-bottom: 2px solid #eee; padding-bottom: 20px;">
         <div>BANK WIRE TRANSFER INSTRUCTIONS</div>
         <p>${tenant.bankWireTransferInstructions || 'N/A'}</p>
       </div>

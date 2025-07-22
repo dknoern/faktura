@@ -13,13 +13,21 @@ import { Wanted } from './models/wanted';
 
 export async function fetchCustomers(page = 1, limit = 10, search = '') {
     try {
-
         await dbConnect();
         const skip = (page - 1) * limit;
 
         let query = {}; // Define an empty query object
         if (search) {
-            query = { search: { $regex: search, $options: 'i' } };
+            // Split search into tokens (words)
+            const searchTokens = search.trim().split(/\s+/);
+            
+            // Create a regex condition for each token
+            const searchConditions = searchTokens.map(token => (
+                { search: { $regex: token, $options: 'i' } }
+            ));
+            
+            // Use $and to ensure ALL tokens must be found (in any order)
+            query = { $and: searchConditions };
         }
 
         const customers = await customerModel.find(query)
@@ -49,23 +57,32 @@ export async function fetchProducts(page = 1, limit = 10, search = '', sortBy = 
         await dbConnect();
         const skip = (page - 1) * limit;
 
+        // Base query conditions that apply to all queries
+        const baseConditions = [
+            { status: { $ne: 'Deleted' } }, // Exclude items with status "Deleted"
+            { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
+            { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
+            { title: { $ne: null } } // Exclude items with null title
+        ];
+        
         let query: any = {
-            $and: [
-                { status: { $ne: 'Deleted' } }, // Exclude items with status "Deleted"
-                { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
-                { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
-                { title: { $ne: null } } // Exclude items with null title
-            ]
+            $and: baseConditions
         };
         
         if (search) {
+            // Split search into tokens (words)
+            const searchTokens = search.trim().split(/\s+/);
+            
+            // Create a regex condition for each token
+            const searchConditions = searchTokens.map(token => (
+                { search: { $regex: token, $options: 'i' } }
+            ));
+            
+            // Use $and to ensure ALL tokens must be found (in any order)
             query = {
                 $and: [
-                    { search: { $regex: search, $options: 'i' } },
-                    { status: { $ne: 'Deleted' } }, // Also exclude deleted items when searching
-                    { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
-                    { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
-                    { title: { $ne: null } } // Exclude items with null title
+                    { $and: searchConditions },
+                    ...baseConditions
                 ]
             };
         }
@@ -136,7 +153,16 @@ export async function fetchInvoices(page = 1, limit = 10, search = '') {
 
         let query = {};
         if (search) {
-            query = { search: { $regex: search, $options: 'i' } };
+            // Split search into tokens (words)
+            const searchTokens = search.trim().split(/\s+/);
+            
+            // Create a regex condition for each token
+            const searchConditions = searchTokens.map(token => (
+                { search: { $regex: token, $options: 'i' } }
+            ));
+            
+            // Use $and to ensure ALL tokens must be found (in any order)
+            query = { $and: searchConditions };
         }
 
         const invoices = await Invoice.find(query)
@@ -169,7 +195,16 @@ export async function fetchProposals(page = 1, limit = 10, search = '') {
 
         let query = {};
         if (search) {
-            query = { search: { $regex: search, $options: 'i' } };
+            // Split search into tokens (words)
+            const searchTokens = search.trim().split(/\s+/);
+            
+            // Create a regex condition for each token
+            const searchConditions = searchTokens.map(token => (
+                { search: { $regex: token, $options: 'i' } }
+            ));
+            
+            // Use $and to ensure ALL tokens must be found (in any order)
+            query = { $and: searchConditions };
         }
 
         const proposals = await Proposal.find(query)
@@ -213,7 +248,16 @@ export async function fetchReturns(page = 1, limit = 10, search = '') {
 
         let query = {};
         if (search) {
-            query = { search: { $regex: search, $options: 'i' } };
+            // Split search into tokens (words)
+            const searchTokens = search.trim().split(/\s+/);
+            
+            // Create a regex condition for each token
+            const searchConditions = searchTokens.map(token => (
+                { search: { $regex: token, $options: 'i' } }
+            ));
+            
+            // Use $and to ensure ALL tokens must be found (in any order)
+            query = { $and: searchConditions };
         }
 
         const returns = await Return.find(query)
@@ -273,10 +317,18 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
         }
         // If filter is 'all', we keep the base query with date filtering
         
+        // If search parameter is provided, add search condition
         if (search) {
-            const searchConditions = {
-                search: { $regex: search, $options: 'i' }
-            };
+            // Split search into tokens (words)
+            const searchTokens = search.trim().split(/\s+/);
+            
+            // Create a regex condition for each token
+            const tokenConditions = searchTokens.map(token => (
+                { search: { $regex: token, $options: 'i' } }
+            ));
+            
+            // Combine token conditions with $and to ensure ALL tokens must be found (in any order)
+            const searchConditions = { $and: tokenConditions };
             
             // Combine filter and search conditions
             if (filter === 'outstanding') {
@@ -375,7 +427,16 @@ export async function fetchLogs(page = 1, limit = 10, search = '') {
 
         let query = {};
         if (search) {
-            query = { search: { $regex: search, $options: 'i' } };
+            // Split search into tokens (words)
+            const searchTokens = search.trim().split(/\s+/);
+            
+            // Create a regex condition for each token
+            const searchConditions = searchTokens.map(token => (
+                { search: { $regex: token, $options: 'i' } }
+            ));
+            
+            // Use $and to ensure ALL tokens must be found (in any order)
+            query = { $and: searchConditions };
         }
 
         const logs = await logModel.find(query)
@@ -399,7 +460,6 @@ export async function fetchLogs(page = 1, limit = 10, search = '') {
     }
 }
 
-
 export async function fetchOuts(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
@@ -407,7 +467,16 @@ export async function fetchOuts(page = 1, limit = 10, search = '') {
 
         let query = {};
         if (search) {
-            query = { search: { $regex: search, $options: 'i' } };
+            // Split search into tokens (words)
+            const searchTokens = search.trim().split(/\s+/);
+            
+            // Create a regex condition for each token
+            const searchConditions = searchTokens.map(token => (
+                { search: { $regex: token, $options: 'i' } }
+            ));
+            
+            // Use $and to ensure ALL tokens must be found (in any order)
+            query = { $and: searchConditions };
         }
 
         const outs = await Out.find(query)
@@ -415,7 +484,7 @@ export async function fetchOuts(page = 1, limit = 10, search = '') {
             .skip(skip)
             .limit(limit);
 
-        const totalCount = await Out.countDocuments();
+        const totalCount = await Out.countDocuments(query);
         return {
             outs: JSON.parse(JSON.stringify(outs)),
             pagination: {
@@ -638,14 +707,20 @@ export async function fetchWanted(page = 1, limit = 10, search = '') {
         let query: any = {};
         
         if (search) {
-            const searchConditions = {
+            // Split search into tokens (words)
+            const searchTokens = search.trim().split(/\s+/);
+            
+            // For each token, create a condition that checks all searchable fields
+            const tokenConditions = searchTokens.map(token => ({
                 $or: [
-                    { title: { $regex: search, $options: 'i' } },
-                    { description: { $regex: search, $options: 'i' } },
-                    { customerName: { $regex: search, $options: 'i' } }
+                    { title: { $regex: token, $options: 'i' } },
+                    { description: { $regex: token, $options: 'i' } },
+                    { customerName: { $regex: token, $options: 'i' } }
                 ]
-            };
-            query = searchConditions;
+            }));
+            
+            // Use $and to ensure ALL tokens must be found (in any order)
+            query = { $and: tokenConditions };
         }
 
         const wanted = await Wanted.find(query)
