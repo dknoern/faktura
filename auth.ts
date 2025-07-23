@@ -52,6 +52,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (tenantName && typeof tenantName === 'string') {
           token.tenantName = tenantName
         }
+
+        const fullName = profileAny['https://fakturian.com/fullName'] || profileAny.fullName
+        if (fullName && typeof fullName === 'string') {
+          token.fullName = fullName
+        }
       }
       
       return token
@@ -77,6 +82,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
 
+      // Pass fullName to the session
+      if (token?.fullName) {
+        (session as any).fullName = token.fullName
+        // Also add it to the user object for easier access
+        if (session.user) {
+          (session.user as any).fullName = token.fullName
+        }
+      }
+
       return session
     },
   },
@@ -87,9 +101,11 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string
     tenantId?: string
+    fullName?: string
   }
   interface User {
     tenantId?: string
+    fullName?: string
   }
 }
 
@@ -97,5 +113,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string
     tenantId?: string
+    fullName?: string
+    tenantName?: string
   }
 }

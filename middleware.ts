@@ -23,15 +23,24 @@ export default auth((req) => {
     requestHeaders.set('x-user-email', session.user.email || '')
     requestHeaders.set('x-user-name', session.user.name || '')
 
-    const shortUser = session.user.email?.split('@')[0] || 'xSystem'
+    const shortUser = session.user.email?.split('@')[0] || 'System'
     requestHeaders.set('x-user-short', shortUser)
 
     if ((session as any).tenantId) {
       requestHeaders.set('x-tenant-id', (session as any).tenantId)
     }
     if ((session as any).tenantName) {
-      console.log("tenantName", (session as any).tenantName)
       requestHeaders.set('x-tenant-name', (session as any).tenantName)
+    }
+    // Try to get fullName from custom claim first, then fallback to user.name
+    let fullName = (session as any).fullName;
+    if (!fullName && session.user?.name) {
+      // If no custom fullName claim, use the user's name as fallback
+      fullName = session.user.name;
+    }
+    
+    if (fullName) {
+      requestHeaders.set('x-full-name', fullName)
     }
   }
   

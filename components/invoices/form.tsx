@@ -36,7 +36,7 @@ interface InvoiceFormData {
   shipping?: number
   total: number
   methodOfSale?: string
-  salesPerson?: string
+  salesPerson: string
   invoiceType?: string
   shipToName?: string
   shipAddress1?: string
@@ -82,7 +82,7 @@ interface Product {
   longDesc?: string
 }
 
-export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product }) {
+export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesPerson }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, salesPerson?: string }) {
   const router = useRouter()
   // Create initial line items if a product is selected
   const initialLineItems = selectedProduct ? [
@@ -118,7 +118,8 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
           tax: 0,
           shipping: 0,
           lineItems: initialLineItems,
-          copyAddress: false
+          copyAddress: false,
+          salesPerson: salesPerson || ""
         }
   )
 
@@ -146,16 +147,22 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
     }))
   }, [formData.lineItems, formData.shipping, formData.tax])
 
-  // Require that all line items have a description and amount, and invoice type is selected before allowing save
+  // Require that all line items have a description and amount, invoice type and sales person are selected before allowing save
   const allItemsValid = formData.lineItems.length > 0 && formData.lineItems.every(item => item.name.trim() !== "");
   const invoiceTypeValid = formData.invoiceType && formData.invoiceType.trim() !== "";
-  const canSubmit = allItemsValid && invoiceTypeValid;
+  const salesPersonValid = formData.salesPerson && formData.salesPerson.trim() !== "";
+  const canSubmit = allItemsValid && invoiceTypeValid && salesPersonValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!invoiceTypeValid) {
       alert("Please select an invoice type before saving.");
+      return;
+    }
+    
+    if (!salesPersonValid) {
+      alert("Please enter a sales person before saving.");
       return;
     }
     
@@ -355,10 +362,11 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct }: { in
         {/* Right Column */}
         <div className="space-y-4">
           <div className="grid grid-cols-[120px_1fr] items-center">
-            <label className="text-sm font-medium">Sales Person</label>
+            <label className="text-sm font-medium">Sales Person <span className="text-red-500">*</span></label>
             <Input
-              value={formData.salesPerson || ""}
+              value={formData.salesPerson}
               onChange={(e) => setFormData({ ...formData, salesPerson: e.target.value })}
+              required
             />
           </div>
           
