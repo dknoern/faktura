@@ -112,7 +112,8 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
 
   const logoUrl = `${imageBaseUrl}/api/images/logo-${tenant._id}.png`;
 
-  const invoiceLabel = invoice.invoiceType === 'Partner' ? 'PARTNER INVOICE' : invoice.invoiceType === 'Memo' ? 'MEMO' : 'INVOICE';
+  const invoiceLabel = invoice.invoiceType === 'Partner' ? 'PARTNER INVOICE' : invoice.invoiceType === 'Memo' ? 'MEMO' : invoice.invoiceType === 'Estimate' ? 'ESTIMATE' : 'INVOICE';
+  const invoiceNumberLabel = invoice.invoiceType === 'Partner' ? 'Partner Invoice' : invoice.invoiceType === 'Memo' ? 'Memo' : invoice.invoiceType === 'Estimate' ? 'Estimate' : 'Invoice';
 
   return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; font-size: 11px">
@@ -126,7 +127,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
           </div>
         </div>
         <div style="text-align: left;">
-          <p style="margin: 1px 0;">Invoice #${invoice._id}</p>
+          <p style="margin: 1px 0;">${invoiceNumberLabel} #${invoice._id}</p>
           <p style="margin: 1px 0;">Date: ${formattedDate}</p>
           ${invoice.shipVia ? `<p style="margin: 1px 0;">Ship Via: ${invoice.shipVia}</p>` : ''}
           ${invoice.trackingNumber ? `<p style="margin: 1px 0;">Tracking Number: ${invoice.trackingNumber}</p>` : ''}
