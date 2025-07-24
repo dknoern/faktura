@@ -6,6 +6,7 @@ import { Repair } from './models/repair';
 import { Invoice } from './models/invoice';
 import { logModel } from './models/log';
 import { fetchOuts } from './data';
+import { Wanted } from './models/wanted';
 
 export interface DashboardStats {
   totalInventory: number;
@@ -69,9 +70,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       status: 'At Show' 
     });
 
-    // Total items wanted (Wanted status)
-    const totalItemsWanted = await productModel.countDocuments({ 
-      status: 'Wanted' 
+    // Total items wanted where there is no found date
+    // count records in wanteds collection that are not found
+    const totalItemsWanted = await Wanted.countDocuments({ 
+      foundDate: null 
     });
     
     return {

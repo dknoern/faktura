@@ -26,10 +26,7 @@ export async function calcTax(invoice: Invoice): Promise<number> {
   console.log('Calculating tax for invoice', invoice._id);
 
   // Special cases where we don't need to calculate tax
-  if (invoice.invoiceType === 'Estimate') {
-    console.log('Estimate, will not calculate tax');
-    return 0;
-  } else if (!invoice.shipState) {
+  if (!invoice.shipState) {
     console.log("State not specified, will not calculate tax");
     return 0;
   } else if (invoice.taxExempt) {
@@ -44,6 +41,10 @@ export async function calcTax(invoice: Invoice): Promise<number> {
     console.log("Manually calculating TX tax:", totalTax);
     return totalTax;
   }
+
+  const commit = invoice.invoiceType != 'Estimate';
+
+  console.log('Invoice type:', invoice.invoiceType, 'Committing to Avatax:', commit)
 
   try {
 
@@ -64,7 +65,7 @@ export async function calcTax(invoice: Invoice): Promise<number> {
       type: Enums.DocumentType.SalesInvoice,
       date: new Date(invoice.date || Date.now()),
       companyCode: 'DEFAULT',
-      commit: true,
+      commit: commit,
       currencyCode: 'USD',
       taxCode: 'PC040206',
       addresses: {
