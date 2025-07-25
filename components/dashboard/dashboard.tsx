@@ -7,6 +7,7 @@ import {  type DashboardStats, type MonthlySalesData, type RecentTransaction } f
 import { Package, Wrench, Plane, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight, Gift } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { BRAND_CONFIG } from "@/lib/constants";
+import Link from "next/link";
 
 interface DashboardProps {
   stats: DashboardStats;
@@ -69,22 +70,25 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Items in Inventory
-            </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalInventory.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              Items currently in stock
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/products" className="block transition-transform hover:scale-105">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Items in Inventory
+              </CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalInventory.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                Items currently in stock
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
         
-        <Card>
+        <Link href="/repairs" className="block transition-transform hover:scale-105">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Repairs Out
@@ -98,8 +102,10 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
             </p>
           </CardContent>
         </Card>
+        </Link>
         
-        <Card>
+        <Link href="/reports/out-at-show" className="block transition-transform hover:scale-105">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Items Out at Show
@@ -113,8 +119,10 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
             </p>
           </CardContent>
         </Card>
+        </Link>
 
-        <Card>
+        <Link href="/wanted" className="block transition-transform hover:scale-105">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Items Wanted
@@ -128,6 +136,7 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
             </p>
           </CardContent>
         </Card>
+        </Link>
       </div>
 
       {/* Monthly Sales Chart */}
