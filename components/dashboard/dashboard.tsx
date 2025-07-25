@@ -70,7 +70,7 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Link href="/products" className="block transition-transform hover:scale-105">
+        <Link href="/products">
           <Card className="cursor-pointer hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -87,7 +87,7 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
           </Card>
         </Link>
         
-        <Link href="/repairs" className="block transition-transform hover:scale-105">
+        <Link href="/repairs">
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -104,7 +104,7 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
         </Card>
         </Link>
         
-        <Link href="/reports/out-at-show" className="block transition-transform hover:scale-105">
+        <Link href="/reports/out-at-show">
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -121,7 +121,7 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
         </Card>
         </Link>
 
-        <Link href="/wanted" className="block transition-transform hover:scale-105">
+        <Link href="/wanted">
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
