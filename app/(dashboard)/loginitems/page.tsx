@@ -8,7 +8,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
 
   const params = await searchParams;
   const page = params.page ? parseInt(params.page) : 1;
-  const limit = 10;
+  const limit = 20;
   const search = params.search || '';
 
   const { logs, pagination } = await fetchLogs(page, limit, search);
