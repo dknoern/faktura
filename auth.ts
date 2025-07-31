@@ -53,6 +53,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.tenantName = tenantName
         }
 
+        const tenantId = profileAny['https://fakturian.com/tenantId'] || profileAny.tenantId
+        if (tenantId && typeof tenantId === 'string') {
+          token.tenantId = tenantId
+        }
+
         const fullName = profileAny['https://fakturian.com/fullName'] || profileAny.fullName
         if (fullName && typeof fullName === 'string') {
           token.fullName = fullName
@@ -82,6 +87,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
 
+      // Pass tenantId to the session
+      if (token?.tenantId) {
+        (session as any).tenantId = token.tenantId
+        // Also add it to the user object for easier access
+        if (session.user) {
+          (session.user as any).tenantId = token.tenantId
+        }
+      }
+
       // Pass fullName to the session
       if (token?.fullName) {
         (session as any).fullName = token.fullName
@@ -101,10 +115,12 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string
     tenantId?: string
+    tenantName?: string
     fullName?: string
   }
   interface User {
     tenantId?: string
+    tenantName?: string
     fullName?: string
   }
 }

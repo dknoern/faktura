@@ -40,7 +40,9 @@ export async function createLog(data: LogData) {
     // loop through line items and call receiveProduct
     if (data.lineItems) {
       for (const lineItem of data.lineItems) {
-        await receiveProduct(log, lineItem);
+        if (lineItem.productId) {
+          await receiveProduct(log, lineItem);
+        }
         
         // Close any open repairs for this line item
         if (lineItem.repairId || lineItem.productId) {
@@ -48,7 +50,7 @@ export async function createLog(data: LogData) {
         }
       }
     }
-
+    
 
     revalidatePath('/loginitems');
     return { success: true, data: JSON.parse(JSON.stringify(log)) };
@@ -91,6 +93,8 @@ export async function updateLog(id: string, data: LogData) {
 
 async function receiveProduct(log: any, lineItem: any) {
   try {
+
+    // don't try if productId is not def
     const product = await productModel.findById(lineItem.productId).select('status history');
     
     if (!product) {
@@ -193,26 +197,11 @@ async function updateRepairDetails(lineItem: any, comments: string) {
 
 async function closeRepair(lineItem: any, comments: string) {
   try {
-    console.log('marking repairs for repairId', lineItem.repairId, 'or productId', lineItem.productId);
+    console.log('closing repair for repairId', lineItem.repairId);
 
-    const result = await Repair.updateMany(
+    const result = await Repair.updateOne(
       {
-        $and: [
-          { returnDate: { $eq: null } },
-          {
-            $or: [
-              {
-                _id: lineItem.repairId // _id never null
-              },
-              {
-                $and: [
-                  { itemId: lineItem.productId },
-                  { itemId: { $ne: null } } // itemId could be null if not inventory item
-                ]
-              }
-            ]
-          }
-        ]
+        _id: lineItem.repairId
       },
       {
         returnDate: new Date(),
