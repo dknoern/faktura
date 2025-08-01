@@ -94,9 +94,18 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
     }
     
     // Calculate tax
-    const calculatedTax = await calcTax(invoiceData as any);
-    invoiceData.tax = calculatedTax;
-    invoiceData.total = (invoiceData.subtotal || 0) + (invoiceData.tax || 0) + (invoiceData.shipping || 0);
+    try {
+      const calculatedTax = await calcTax(invoiceData as any);
+      invoiceData.tax = calculatedTax;
+      invoiceData.total = (invoiceData.subtotal || 0) + (invoiceData.tax || 0) + (invoiceData.shipping || 0);
+    } catch (taxError) {
+      console.error('Tax calculation failed.');
+      // Return the specific tax error to the frontend
+      return {
+        success: false,
+        error: taxError instanceof Error ? taxError.message : 'Tax calculation failed'
+      };
+    }
     
     // Update item status to sold, but only if NOT Partner and NOT Estimate
     if (invoiceData.invoiceType !== "Partner" && invoiceData.invoiceType !== "Estimate") {

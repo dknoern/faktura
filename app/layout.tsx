@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import "../lib/console-timestamp"; // Add timestamps to all console logs
 
 
 const geistSans = localFont({

@@ -8,6 +8,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { LineItems, LineItem } from "./line-items"
 import { upsertInvoice } from "@/lib/invoiceActions"
+import { toast } from "react-hot-toast"
 
 const formatDateTime = (input: string) => {
   const dateObj = new Date(input);
@@ -182,7 +183,8 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
       
       router.push("/invoices")
     } catch (error) {
-      console.error("Error saving invoice:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to save invoice"
+      toast.error(errorMessage)
     }
   }
 

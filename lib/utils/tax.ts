@@ -103,13 +103,27 @@ export async function calcTax(invoice: Invoice): Promise<number> {
     console.log("Total tax from Avalara for invoice", invoice._id, "is", totalTax);
     return totalTax;
   } catch (error: any) {
-    console.error('Avatax calculation error:', error);
+    // Log only the core error message without stack trace
+    let coreErrorMessage = "Failed to calculate tax";
+    if (error && typeof error === 'object') {
+      if (error.message) {
+        coreErrorMessage = error.message;
+      } else if (error.details && error.details.message) {
+        coreErrorMessage = error.details.message;
+      } else if (error.error && error.error.message) {
+        coreErrorMessage = error.error.message;
+      }
+    }
+    
+    console.error('Avatax calculation error:', coreErrorMessage);
     console.log('Invoice data causing error:', JSON.stringify({
       _id: invoice._id || 'undefined',
       customerId: invoice.customerId || 'undefined',
       shipState: invoice.shipState || 'undefined'
     }));
 
-    throw new Error("Failed to calculate tax");
+    // Return the error message with context for frontend
+    const errorMessage = "Tax calculation failure: " + coreErrorMessage;
+    throw new Error(errorMessage);
   }
 }
