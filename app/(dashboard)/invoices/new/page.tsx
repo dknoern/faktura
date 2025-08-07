@@ -16,6 +16,8 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: S
     const customerId = parseInt(params.customerId);
     const customerData = await fetchCustomerById(customerId);
     const fullName = await getFullName()
+    console.log('in new invoice form, fullName is',fullName)
+
 
 
     // If customer not found, redirect back to invoices page

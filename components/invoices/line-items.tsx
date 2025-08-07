@@ -232,7 +232,7 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
         isOpen={isProductModalOpen}
         onClose={handleModalClose}
         onProductSelect={handleProductSelect}
-        statuses={["In Stock"]}
+        statuses={["In Stock", "Memo"]}
       />
     </div>
   )
