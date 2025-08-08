@@ -126,6 +126,12 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
         window.location.href = `/invoices/new?customerId=${customer._id}&productId=${id}`;
     };
 
+    // Handle customer select modal close for invoice
+    const handleCustomerSelectModalClose = () => {
+        // Simple solution: reload page like we do for repairs to avoid any state issues
+        window.location.reload();
+    };
+
     const handleCustomerSelectForRepair = (customer: any) => {
         setShowCustomerSelectModalForRepair(false);
         
@@ -403,7 +409,7 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
                     <ImagePlus className="h-4 w-4" />
                     Add Image
                 </DropdownMenuItem>
-                {productStatus === "In Stock" && (
+                {(productStatus === "In Stock" || productStatus === "Memo") && (
                 <DropdownMenuItem onSelect={() => setShowCustomerSelectModal(true)} className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     Create Invoice
@@ -488,7 +494,7 @@ export function ProductActionMenu({ id, customers = [], productStatus, paginatio
         {/* Customer selection modal for invoice creation */}
         <CustomerSelectModalWrapper
             isOpen={showCustomerSelectModal}
-            onClose={() => setShowCustomerSelectModal(false)}
+            onClose={handleCustomerSelectModalClose}
             onSelect={handleCustomerSelect}
             customers={customers}
             pagination={pagination}

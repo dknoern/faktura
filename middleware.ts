@@ -32,15 +32,8 @@ export default auth((req) => {
     if ((session as any).tenantName) {
       requestHeaders.set('x-tenant-name', (session as any).tenantName)
     }
-    // Try to get fullName from custom claim first, then fallback to user.name
-    let fullName = (session as any).fullName;
-    if (!fullName && session.user?.name) {
-      // If no custom fullName claim, use the user's name as fallback
-      fullName = session.user.name;
-    }
-    
-    if (fullName) {
-      requestHeaders.set('x-full-name', fullName)
+    if((session as any).fullName) {
+      requestHeaders.set('x-full-name', (session as any).fullName)
     }
   }
   

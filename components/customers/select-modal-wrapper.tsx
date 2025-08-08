@@ -79,23 +79,6 @@ export function CustomerSelectModalWrapper({
     }
   }, [isOpen, fetchCustomers])
   
-  // Fix for scrolling issues - ensure body scroll is restored
-  useEffect(() => {
-    // When dialog closes, ensure body scroll is enabled
-    if (!isOpen) {
-      // Small timeout to ensure this runs after dialog's own effects
-      setTimeout(() => {
-        document.body.style.removeProperty('overflow')
-        document.body.style.removeProperty('padding-right')
-      }, 100)
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      document.body.style.removeProperty('overflow')
-      document.body.style.removeProperty('padding-right')
-    }
-  }, [isOpen])
 
 
 
