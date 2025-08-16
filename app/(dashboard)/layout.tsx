@@ -44,7 +44,7 @@ export default async function Layout({
       className={`flex h-screen flex-col md:flex-row overflow-hidden ${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <SidebarProvider>
-        <AppSidebar tenantName={tenant?.name || 'Lager'} />
+        <AppSidebar tenant={tenant} />
         <SidebarInset className="flex flex-col h-full w-full min-w-0 relative">
           <div className="h-full overflow-y-auto">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background border-b w-full">

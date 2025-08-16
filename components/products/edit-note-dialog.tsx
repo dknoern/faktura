@@ -117,8 +117,8 @@ export function EditNoteDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="note" className="text-right">
+          <div className="grid gap-2">
+            <Label htmlFor="note">
               Note
             </Label>
             <Input
@@ -132,13 +132,12 @@ export function EditNoteDialog({
                   handleSave();
                 }
               }}
-              className="col-span-3"
               disabled={isSubmitting}
               placeholder="Enter note..."
             />
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex flex-row justify-end gap-2 sm:gap-2">
           <Button
             type="button"
             variant="outline"
@@ -152,7 +151,7 @@ export function EditNoteDialog({
             onClick={handleSave}
             disabled={isSubmitting || !note.trim()}
           >
-            {isSubmitting ? "Saving..." : "Save changes"}
+            {isSubmitting ? "Saving..." : "Save note"}
           </Button>
         </DialogFooter>
       </DialogContent>

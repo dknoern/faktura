@@ -6,7 +6,7 @@ import {
   Package,
   Users,
   FileText,
-  //Lightbulb,
+  Lightbulb,
   Repeat2,
   Wrench,
   SquarePen,
@@ -49,12 +49,12 @@ const data = {
       title: "Invoices",
       url: "/invoices",
       icon: FileText,
-    },/*
+    },
     {
       title: "Proposals",
       url: "/proposals",
       icon: Lightbulb,
-    },*/
+    },
     {
       title: "Returns",
       url: "/returns",
@@ -134,11 +134,56 @@ const data = {
   ],
 }
 
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  tenantName: string;
+interface TenantFeatures {
+  products?: boolean;
+  customers?: boolean;
+  proposals?: boolean;
+  invoices?: boolean;
+  returns?: boolean;
+  repairs?: boolean;
+  wanted?: boolean;
+  loginitems?: boolean;
+  logoutitems?: boolean;
+  reports?: boolean;
 }
 
-export function AppSidebar({ tenantName, ...props }: AppSidebarProps) {
+interface Tenant {
+  _id?: string;
+  name?: string;
+  features?: TenantFeatures;
+  [key: string]: any;
+}
+
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  tenant?: Tenant | null;
+}
+
+export function AppSidebar({ tenant, ...props }: AppSidebarProps) {
+  const tenantName = tenant?.name || 'Lager';
+  const features = tenant?.features || {};
+
+  // Filter menu items based on tenant features
+  const filteredNavMain = data.navMain.filter(item => {
+    // Always show Home
+    if (item.title === 'Home') return true;
+    
+    // Map menu titles to feature keys
+    const featureMap: { [key: string]: keyof TenantFeatures } = {
+      'Products': 'products',
+      'Customers': 'customers',
+      'Proposals': 'proposals',
+      'Invoices': 'invoices',
+      'Returns': 'returns',
+      'Repairs': 'repairs',
+      'Wanted': 'wanted',
+      'Log In Items': 'loginitems',
+      'Log Out Items': 'logoutitems',
+      'Reports': 'reports'
+    };
+    
+    const featureKey = featureMap[item.title];
+    return featureKey ? features[featureKey] === true : false;
+  });
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -159,7 +204,7 @@ export function AppSidebar({ tenantName, ...props }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={filteredNavMain} />
       </SidebarContent>
       <SidebarFooter>
       </SidebarFooter>
