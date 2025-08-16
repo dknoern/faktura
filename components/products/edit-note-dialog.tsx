@@ -106,7 +106,7 @@ export function EditNoteDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] top-[10%] translate-y-0">
         <DialogHeader>
           <DialogTitle>{mode === 'add' ? 'Add New Note' : 'Edit Note'}</DialogTitle>
           <DialogDescription>
