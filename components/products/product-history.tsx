@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "react-hot-toast";
-import { addProductHistoryNote } from "@/app/actions/inventory";
+import { EditNoteDialog } from "./edit-note-dialog";
+import { Edit, PlusCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -29,45 +28,66 @@ interface ProductHistoryProps {
 }
 
 export function ProductHistory({ history, productId, onHistoryUpdate }: ProductHistoryProps) {
-  const [note, setNote] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number>(-1);
+  const [editingNote, setEditingNote] = useState('');
+  const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('edit');
+  const [localHistory, setLocalHistory] = useState<HistoryEvent[]>(history);
 
-  const handleAddNote = async () => {
-    if (!note.trim()) {
-      toast.error("Please enter a note before submitting.");
-      return;
-    }
+  const handleAddNewNote = () => {
+    setDialogMode('add');
+    setEditingNote('');
+    setEditingIndex(-1);
+    setEditDialogOpen(true);
+  };
 
-    setIsSubmitting(true);
-    
-    try {
-      const result = await addProductHistoryNote(productId, note.trim());
+  const handleEditNote = (index: number, currentNote: string) => {
+    setDialogMode('edit');
+    setEditingIndex(index);
+    setEditingNote(currentNote);
+    setEditDialogOpen(true);
+  };
+
+  const handleNoteUpdated = (updatedNote: string, isNewNote?: boolean) => {
+    if (isNewNote) {
+      // Add new note to the end of history
+      const newHistoryEntry = {
+        date: new Date().toISOString(),
+        user: 'Current User', // This will be set by the server action
+        action: updatedNote
+      };
+      setLocalHistory(prev => [...prev, newHistoryEntry]);
       
-      if (result.success) {
-        toast.success("Note added to product history.");
-        
-        // Clear the input
-        setNote('');
-        
-        // Call the callback to update the parent component
-        if (onHistoryUpdate && result.data) {
-          onHistoryUpdate(result.data);
-        }
-      } else {
-        toast.error(result.error || "Failed to add note.");
+      // Call the callback to update the parent component
+      if (onHistoryUpdate) {
+        onHistoryUpdate(newHistoryEntry);
       }
-    } catch (error) {
-      toast.error("An unexpected error occurred: " + error);
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      // Update existing note
+      const updatedHistory = [...localHistory];
+      updatedHistory[editingIndex] = {
+        ...updatedHistory[editingIndex],
+        action: updatedNote,
+        date: new Date().toISOString()
+      };
+      setLocalHistory(updatedHistory);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleAddNote();
-    }
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setEditingIndex(-1);
+    setEditingNote('');
+  };
+
+  // Function to check if an action is a user-added note
+  const isUserNote = (action: string) => {
+    // Consider it a note if it doesn't match common system actions
+    const systemActions = [
+      'entered', 'sold item', 'in repair', 'received', 'item returned', 'returned from repair',
+      'Sent to show', 'Returned to stock', 'Out to Show', 'Return to Stock'
+    ];
+    return !systemActions.some(sysAction => action.toLowerCase().includes(sysAction.toLowerCase()));
   };
 
   if (!history || history.length === 0) {
@@ -75,26 +95,6 @@ export function ProductHistory({ history, productId, onHistoryUpdate }: ProductH
       <div className="space-y-4">
         <div className="text-center py-8 text-gray-500">
           No history available for this product.
-        </div>
-        
-        {/* Add note section */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium">Add note</h4>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Enter a note about this product..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isSubmitting}
-            />
-            <Button 
-              onClick={handleAddNote}
-              disabled={isSubmitting || !note.trim()}
-            >
-              {isSubmitting ? 'Adding...' : 'Add'}
-            </Button>
-          </div>
         </div>
       </div>
     );
@@ -111,50 +111,66 @@ export function ProductHistory({ history, productId, onHistoryUpdate }: ProductH
           </TableRow>
         </TableHeader>
         <TableBody>
-          {history.map((historyEvent, index) => (
+          {localHistory.map((historyEvent, index) => (
             <TableRow key={index}>
               <TableCell>{new Date(historyEvent.date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })}</TableCell>
               <TableCell className="font-medium">{historyEvent.user}</TableCell>
               <TableCell>
-                {historyEvent.action}
-                {historyEvent.action === "sold item" && historyEvent.refDoc ? (
-                  <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${historyEvent.refDoc}/view`}>
-                    {historyEvent.refDoc}
-                  </Link></span>
-                ) : historyEvent.action === "received" && historyEvent.refDoc ? (
-                  <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/loginitems/${historyEvent.refDoc}/view`}>
-                    log
-                  </Link></span>
-                ) : historyEvent.action.startsWith("in repair") && historyEvent.refDoc ? (
-                  <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/repairs/${historyEvent.refDoc}/view`}>
-                    repair
-                  </Link></span>
-                ) : null}
+                <div className="flex items-center justify-between group">
+                  <div className="flex-1">
+                    {historyEvent.action}
+                    {historyEvent.action === "sold item" && historyEvent.refDoc ? (
+                      <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${historyEvent.refDoc}/view`}>
+                        {historyEvent.refDoc}
+                      </Link></span>
+                    ) : historyEvent.action === "received" && historyEvent.refDoc ? (
+                      <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/loginitems/${historyEvent.refDoc}/view`}>
+                        log
+                      </Link></span>
+                    ) : historyEvent.action.startsWith("in repair") && historyEvent.refDoc ? (
+                      <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/repairs/${historyEvent.refDoc}/view`}>
+                        repair
+                      </Link></span>
+                    ) : null}
+                  </div>
+                  {isUserNote(historyEvent.action) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="opacity-50 group-hover:opacity-100 transition-opacity ml-2"
+                      onClick={() => handleEditNote(index, historyEvent.action)}
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       
-      {/* Add note section */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium">Add note</h4>
-        <div className="flex gap-2">
-          <Input
-            placeholder="Enter a note about this product..."
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={isSubmitting}
-          />
-          <Button 
-            onClick={handleAddNote}
-            disabled={isSubmitting || !note.trim()}
-          >
-            {isSubmitting ? 'Adding...' : 'Add'}
-          </Button>
-        </div>
+      {/* Add New Note button */}
+      <div className="mt-4">
+        <Button 
+          onClick={handleAddNewNote}
+          variant="outline"
+          size="sm"
+        >
+          <PlusCircle size={18} /> New Note
+        </Button>
       </div>
+      
+      {/* Edit Note Dialog */}
+      <EditNoteDialog
+        isOpen={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        productId={productId}
+        historyIndex={editingIndex}
+        currentNote={editingNote}
+        onNoteUpdated={handleNoteUpdated}
+        mode={dialogMode}
+      />
     </div>
   );
 }

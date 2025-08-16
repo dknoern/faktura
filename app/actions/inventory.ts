@@ -73,6 +73,64 @@ export async function getRepairItemById(id: string) {
   }
 }
 
+// Function to update a product history note
+export async function updateProductHistoryNote(productId: string, historyIndex: number, newNote: string) {
+  try {
+    await dbConnect();
+    
+    // Get current user
+    const user = await getShortUser();
+    
+    if (!user) {
+      return { success: false, error: 'User not authenticated' };
+    }
+    
+    // Get the product first to validate the history index
+    const product = await productModel.findById(productId);
+    
+    if (!product) {
+      return { success: false, error: 'Product not found' };
+    }
+    
+    if (!product.history || historyIndex < 0 || historyIndex >= product.history.length) {
+      return { success: false, error: 'Invalid history index' };
+    }
+    
+    // Update the specific history entry
+    const updateQuery: any = {};
+    updateQuery[`history.${historyIndex}.action`] = newNote;
+    updateQuery[`history.${historyIndex}.date`] = new Date(); // Update timestamp
+    
+    const updatedProduct = await productModel.findByIdAndUpdate(
+      productId,
+      { $set: updateQuery },
+      { 
+        new: true,
+        runValidators: false
+      }
+    );
+    
+    if (!updatedProduct) {
+      return { success: false, error: 'Failed to update product history' };
+    }
+    
+    // Return the updated entry
+    const updatedEntry = {
+      date: updatedProduct.history[historyIndex].date.toISOString(),
+      user: updatedProduct.history[historyIndex].user,
+      action: updatedProduct.history[historyIndex].action
+    };
+    
+    return { 
+      success: true, 
+      data: updatedEntry
+    };
+  } catch (error) {
+    console.error('Error updating product history note:', error);
+    return { success: false, error: 'Failed to update note in product history' };
+  }
+}
+
 // Function to add a note to product history
 export async function addProductHistoryNote(productId: string, note: string) {
   try {
