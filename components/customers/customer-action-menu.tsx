@@ -7,7 +7,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit, ChevronDown, Paperclip } from "lucide-react";
+import { Edit, ChevronDown, Paperclip, FileText, Wrench, Gift } from "lucide-react";
 import { customerSchema } from "@/lib/models/customer";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -37,6 +37,18 @@ export function CustomerActionMenu({ customer, onAttachmentUpload }: CustomerAct
         onAttachmentUpload?.();
     };
 
+    const handleNewInvoice = () => {
+        router.push(`/invoices/new?customerId=${customer._id}`);
+    };
+
+    const handleNewRepair = () => {
+        router.push(`/repairs/new?customerId=${customer._id}`);
+    };
+
+    const handleNewWanted = () => {
+        router.push(`/wanted/new?customerId=${customer._id}`);
+    };
+
     return (
         <>
             <DropdownMenu>
@@ -56,6 +68,18 @@ export function CustomerActionMenu({ customer, onAttachmentUpload }: CustomerAct
                     <DropdownMenuItem onClick={handleAddAttachment}>
                         <Paperclip className="mr-2 h-4 w-4" />
                         Add Attachment
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleNewInvoice}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        New Invoice
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleNewRepair}>
+                        <Wrench className="mr-2 h-4 w-4" />
+                        New Repair
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleNewWanted}>
+                        <Gift className="mr-2 h-4 w-4" />
+                        New Wanted
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
