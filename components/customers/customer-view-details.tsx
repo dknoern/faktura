@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { customerSchema } from "@/lib/models/customer";
 import { z } from "zod";
 import { CustomerActionMenu } from "./customer-action-menu";
+import { CustomerAttachments } from "./customer-attachments";
+import { useState } from "react";
 
 type Customer = z.infer<typeof customerSchema>;
 
@@ -12,7 +14,22 @@ interface CustomerViewDetailsProps {
     customer: Customer;
 }
 
-export function CustomerViewDetails({ customer }: CustomerViewDetailsProps) {
+export function CustomerViewDetails({ customer: initialCustomer }: CustomerViewDetailsProps) {
+    const [customer, setCustomer] = useState(initialCustomer);
+
+    const handleAttachmentChange = async () => {
+        // Refresh customer data to get updated attachments
+        try {
+            const response = await fetch(`/api/customers/${customer._id}`);
+            if (response.ok) {
+                const updatedCustomer = await response.json();
+                setCustomer(updatedCustomer);
+            }
+        } catch (error) {
+            console.error('Error refreshing customer data:', error);
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Header with Action Menu */}
@@ -27,7 +44,7 @@ export function CustomerViewDetails({ customer }: CustomerViewDetailsProps) {
                         </p>
                     )}
                 </div>
-                <CustomerActionMenu customer={customer} />
+                <CustomerActionMenu customer={customer} onAttachmentUpload={handleAttachmentChange} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -142,6 +159,9 @@ export function CustomerViewDetails({ customer }: CustomerViewDetailsProps) {
                     </Card>
                 )}
             </div>
+
+            {/* Attachments Section */}
+            <CustomerAttachments customer={customer} onAttachmentDeleted={handleAttachmentChange} />
         </div>
     );
 }

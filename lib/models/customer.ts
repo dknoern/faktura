@@ -32,6 +32,13 @@ export const customerSchema = z.object({
   copyAddress: z.boolean().optional(),
   customerType: z.string().optional(),
   status:  z.string().optional(),
+  attachments: z.array(z.object({
+    fileName: z.string(),
+    originalName: z.string(),
+    uploadDate: z.date(),
+    fileSize: z.number(),
+    mimeType: z.string(),
+  })).optional(),
 });
 
 

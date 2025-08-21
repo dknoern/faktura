@@ -27,7 +27,37 @@ export async function saveImage(buffer: Buffer, fileName: string): Promise<void>
     }
 }
 
+export async function saveFile(buffer: Buffer, fileName: string): Promise<void> {
+    if (IMAGE_BUCKET && s3Client) {
+        // Save to S3
+        await s3Client.send(new PutObjectCommand({
+            Bucket: IMAGE_BUCKET,
+            Key: fileName,
+            Body: buffer,
+            ContentType: getContentType(fileName)
+        }));
+    } else {
+        // Save to file system
+        const filePath = path.join(UPLOADS_DIR, fileName);
+        await writeFile(filePath, buffer);
+    }
+}
+
 export async function deleteImage(fileName: string): Promise<void> {
+    if (IMAGE_BUCKET && s3Client) {
+        // Delete from S3
+        await s3Client.send(new DeleteObjectCommand({
+            Bucket: IMAGE_BUCKET,
+            Key: fileName
+        }));
+    } else {
+        // Delete from file system
+        const filePath = path.join(UPLOADS_DIR, fileName);
+        await fs.unlink(filePath);
+    }
+}
+
+export async function deleteFile(fileName: string): Promise<void> {
     if (IMAGE_BUCKET && s3Client) {
         // Delete from S3
         await s3Client.send(new DeleteObjectCommand({
@@ -68,6 +98,22 @@ function getContentType(fileName: string): string {
         case '.jpg':
         case '.jpeg':
             return 'image/jpeg';
+        case '.gif':
+            return 'image/gif';
+        case '.webp':
+            return 'image/webp';
+        case '.pdf':
+            return 'application/pdf';
+        case '.doc':
+            return 'application/msword';
+        case '.docx':
+            return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        case '.xls':
+            return 'application/vnd.ms-excel';
+        case '.xlsx':
+            return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        case '.txt':
+            return 'text/plain';
         default:
             return 'application/octet-stream';
     }
