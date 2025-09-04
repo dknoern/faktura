@@ -27,14 +27,8 @@ export async function createLog(data: LogData) {
   try {
     await dbConnect();
 
-    data.search = (formatDate(new Date()) + " "
-    + data.receivedFrom + " "
-    + valueOrBlank(data.customerName) + " "
-    + (data.lineItems?.map(function (k:any) { return k.name }).join(",") || "") + " "
-    + (data.lineItems?.map(function (k:any) { return valueOrBlank(k.itemNumber) }).join(" ") || "") + " "
-    + (data.lineItems?.map(function (k:any) { return valueOrBlank(k.repairNumber) }).join(" ") || "") + " "
-    + valueOrBlank(data.comments)).replace(/\s+/g, ' ').trim();
-    
+    data.search = buildSearchString(data);
+   
     const log = await logModel.create(data);
 
     // loop through line items and call receiveProduct
@@ -67,6 +61,8 @@ export async function updateLog(id: string, data: LogData) {
     const collection = logModel.collection;
 
     const _id = new Types.ObjectId(id);
+
+    data.search = buildSearchString(data);
 
     const log = await collection.findOneAndUpdate({_id}, {$set: data});
     
@@ -214,4 +210,14 @@ async function closeRepair(lineItem: any, comments: string) {
   } catch (error) {
     console.error('Error closing repair:', error);
   }
+}
+
+function buildSearchString(data: { date: Date; receivedFrom: string; id?: string | undefined; comments?: string | undefined; user?: string | undefined; customerName?: string | undefined; vendor?: string | undefined; search?: string | undefined; lineItems?: { itemNumber?: string | undefined; name?: string | undefined; repairNumber?: string | undefined; repairCost?: number | undefined; productId?: string | undefined; repairId?: string | undefined; }[] | undefined; }): string | undefined {
+  return (formatDate(new Date()) + " "
+    + data.receivedFrom + " "
+    + valueOrBlank(data.customerName) + " "
+    + (data.lineItems?.map(function (k:any) { return k.name }).join(",") || "") + " "
+    + (data.lineItems?.map(function (k:any) { return valueOrBlank(k.itemNumber) }).join(" ") || "") + " "
+    + (data.lineItems?.map(function (k:any) { return valueOrBlank(k.repairNumber) }).join(" ") || "") + " "
+    + valueOrBlank(data.comments)).replace(/\s+/g, ' ').trim();
 }
