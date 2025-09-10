@@ -69,6 +69,15 @@ interface Customer {
   phone?: string
   address1?: string
   address2?: string
+  address3: string
+  billingAddress1: string
+  billingAddress2: string
+  billingAddress3: string
+  billingCity: string
+  billingState: string
+  billingZip: string
+  billingCountry: string
+  copyAddress?: boolean
   city?: string
   state?: string
   zip?: string
@@ -106,11 +115,18 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
           customerLastName: selectedCustomer?.lastName || "",
           shipAddress1: selectedCustomer?.address1 || "",
           shipAddress2: selectedCustomer?.address2 || "",
-          shipAddress3: "",
+          shipAddress3: selectedCustomer?.address3 || "",
           shipCity: selectedCustomer?.city || "",
           shipState: selectedCustomer?.state || "",
           shipZip: selectedCustomer?.zip || "",
           shipCountry: "USA",
+          billingAddress1: selectedCustomer?.billingAddress1 || "",
+          billingAddress2: selectedCustomer?.billingAddress2 || "",
+          billingAddress3: selectedCustomer?.billingAddress3 || "",
+          billingCity: selectedCustomer?.billingCity || "",
+          billingState: selectedCustomer?.billingState || "",
+          billingZip: selectedCustomer?.billingZip || "",
+          billingCountry: "USA",
           customerEmail: selectedCustomer?.email || "",
           customerPhone: selectedCustomer?.phone || "",
           date: new Date().toISOString(),
@@ -119,7 +135,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
           tax: 0,
           shipping: 0,
           lineItems: initialLineItems,
-          copyAddress: false,
+          copyAddress: selectedCustomer?.copyAddress || false,
           salesPerson: salesPerson || ""
         }
   )
