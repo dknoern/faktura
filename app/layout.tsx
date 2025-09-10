@@ -36,7 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en">
         <body>
-          <div className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`} style={{ background: `url("/rolex-sky-dweller.jpg") center/cover no-repeat` }}>
+          <div className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`} style={{ 
+            background: `url("/rolex-sky-dweller.jpg") center/cover no-repeat, linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)` 
+          }}>
             {children}
           </div>
           <Toaster position="top-right" />

@@ -37,15 +37,15 @@ export default async function KioskLayout({
       className={`min-h-screen ${geistSans.variable} ${geistMono.variable} antialiased relative`}
     >
       {/* Full screen background image */}
-      <div className="fixed inset-0 z-0">
-        <Image
-          src="/rolex-sky-dweller.jpg"
-          alt="Luxury watches background"
-          fill
-          className="object-cover"
-          priority
-        />
-      </div>
+      <div 
+        className="fixed inset-0 z-0" 
+        style={{ 
+          background: `url("/rolex-sky-dweller.jpg") no-repeat center center, linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)`,
+          backgroundSize: 'cover',
+          width: '100vw',
+          height: '100vh'
+        }}
+      />
       {/* Fixed header with logo and user button */}
       <header className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between  px-4">
         <div className="flex items-center gap-4">

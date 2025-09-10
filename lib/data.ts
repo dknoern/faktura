@@ -12,7 +12,6 @@ import { Counter } from './models/counter';
 import { Wanted } from './models/wanted';
 import { getTenantName } from './auth-utils';
 import { getTenantId } from './auth-utils';
-import console from 'console';
 
 export async function fetchCustomers(page = 1, limit = 10, search = '') {
     try {
