@@ -38,12 +38,15 @@ export default async function KioskLayout({
     >
       {/* Full screen background image */}
       <div 
-        className="fixed inset-0 z-0" 
-        style={{ 
-          background: `url("/rolex-sky-dweller.jpg") no-repeat center center, linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)`,
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: `url("/kiosk-bg.jpg")`,
           backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
           width: '100vw',
-          height: '100vh'
+          height: '100vh',
+          backgroundColor: '#1e3a8a' // Fallback color instead of gradient
         }}
       />
       {/* Fixed header with logo and user button */}
