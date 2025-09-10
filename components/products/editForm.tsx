@@ -31,6 +31,7 @@ import { Checkbox } from "../ui/checkbox"
 import Link from "next/link"
 import { productSchema } from "../../lib/models/product"
 import { toast } from "react-hot-toast"
+import { getManufacturers } from "../../lib/utils/ref-data"
 
 export default function ProductEditForm({ product, repairs }: { product: z.infer<typeof productSchema>, repairs: Array<{ _id: string, dateOut: string, returnDate?: string, repairNotes: string, vendor: string, repairCost: number }> }) {
     const router = useRouter();
@@ -282,40 +283,11 @@ export default function ProductEditForm({ product, repairs }: { product: z.infer
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="A. Lange & Sohne">A. Lange & Sohne</SelectItem>
-                                                <SelectItem value="Audemars Piguet">Audemars Piguet</SelectItem>
-                                                <SelectItem value="Baume & Mercier">Baume & Mercier</SelectItem>
-                                                <SelectItem value="Blancpain">Blancpain</SelectItem>
-                                                <SelectItem value="Breguet">Breguet</SelectItem>
-                                                <SelectItem value="Breitling">Breitling</SelectItem>
-                                                <SelectItem value="Bvlgari">Bvlgari</SelectItem>
-                                                <SelectItem value="Cartier">Cartier</SelectItem>
-                                                <SelectItem value="Chanel">Chanel</SelectItem>
-                                                <SelectItem value="Chopard">Chopard</SelectItem>
-                                                <SelectItem value="Chronoswiss">Chronoswiss</SelectItem>
-                                                <SelectItem value="Concord">Concord</SelectItem>
-                                                <SelectItem value="Corum">Corum</SelectItem>
-                                                <SelectItem value="Ebel">Ebel</SelectItem>
-                                                <SelectItem value="F.P. Journe">F.P. Journe</SelectItem>
-                                                <SelectItem value="Franck Muller">Franck Muller</SelectItem>
-                                                <SelectItem value="Gerald Genta">Gerald Genta</SelectItem>
-                                                <SelectItem value="Girard-Perregaux">Girard-Perregaux</SelectItem>
-                                                <SelectItem value="Hublot">Hublot</SelectItem>
-                                                <SelectItem value="IWC">IWC</SelectItem>
-                                                <SelectItem value="Jaeger-LeCoultre">Jaeger-LeCoultre</SelectItem>
-                                                <SelectItem value="Movado">Movado</SelectItem>
-                                                <SelectItem value="Omega">Omega</SelectItem>
-                                                <SelectItem value="Panerai">Panerai</SelectItem>
-                                                <SelectItem value="Parmigiani">Parmigiani</SelectItem>
-                                                <SelectItem value="Patek Philippe & Co">Patek Philippe & Co</SelectItem>
-                                                <SelectItem value="Piaget">Piaget</SelectItem>
-                                                <SelectItem value="Roger Dubuis">Roger Dubuis</SelectItem>
-                                                <SelectItem value="Rolex">Rolex</SelectItem>
-                                                <SelectItem value="Ulysse Nardin">Ulysse Nardin</SelectItem>
-                                                <SelectItem value="Vacheron Constantin">Vacheron Constantin</SelectItem>
-                                                <SelectItem value="Additional Brands">Additional Brands</SelectItem>
-                                                <SelectItem value="Maurice Lacroix">Maurice Lacroix</SelectItem>
-                                                <SelectItem value="Zenith">Zenith</SelectItem>
+                                                {getManufacturers().map((manufacturer) => (
+                                                    <SelectItem key={manufacturer.value} value={manufacturer.value}>
+                                                        {manufacturer.label}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />

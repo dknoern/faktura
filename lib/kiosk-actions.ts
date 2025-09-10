@@ -1,0 +1,205 @@
+"use server"
+
+import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
+import dbConnect from "@/lib/dbConnect"
+import { customerModel } from "@/lib/models/customer"
+
+
+import { createLog } from "@/app/actions/logs"
+import { KioskTransaction } from "@/lib/models/kiosk-transaction"
+import { getNextRepairNumber, createRepairRecord } from "@/lib/repair-utils"
+import { z } from "zod"
+import { logSchema, lineItemSchema } from "./models/log"
+type LogData = z.infer<typeof logSchema>;
+type LineItem = z.infer<typeof lineItemSchema>;
+
+async function uploadImageToLog(logId: string, file: File): Promise<boolean> {
+  try {
+    console.log("Uploading image to log", logId)
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("id", logId);
+
+    // Use absolute URL for server-side fetch
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    return false;
+  }
+} 
+
+export async function enterKioskMode() {
+  // Set a cookie to persist kiosk mode across requests
+  const cookieStore = await cookies()
+  cookieStore.set('kiosk-mode', 'true', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7 // 7 days
+  })
+  
+  redirect('/kiosk')
+}
+
+interface SearchCustomersParams {
+  phone?: string
+  email?: string
+}
+
+export async function searchCustomers(params: SearchCustomersParams) {
+  await dbConnect()
+  
+  const query: any = {}
+  
+  // Build search query - match any of the provided fields
+  const orConditions = []
+  
+  if (params.phone) {
+    orConditions.push({ phone: { $regex: params.phone, $options: 'i' } })
+    orConditions.push({ cell: { $regex: params.phone, $options: 'i' } })
+  }
+  
+  if (params.email) {
+    orConditions.push({ email: { $regex: params.email, $options: 'i' } })
+  }
+  
+  if (orConditions.length > 0) {
+    query.$or = orConditions
+  }
+  
+  // Only return active customers
+  query.status = { $ne: "Deleted" }
+  
+  const customers = await customerModel.find(query)
+    .select('firstName lastName email company phone cell')
+    .limit(20)
+    .lean()
+  
+  return customers.map((customer: any) => ({
+    _id: customer._id.toString(),
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    email: customer.email,
+    company: customer.company,
+    phone: customer.phone || customer.cell
+  }))
+}
+
+export async function submitKioskTransaction(transaction: KioskTransaction, images?: File[]) {
+  try {
+
+    // Create repair records first if there are repairs
+    const createdRepairs: { repairNumber: string; repairId: string }[] = []
+    
+    if (transaction.repairs && transaction.repairs.length > 0) {
+      // Get starting repair number
+      let currentRepairNumber = parseInt(await getNextRepairNumber())
+      
+      for (const repair of transaction.repairs) {
+        const repairResult = await createRepairRecord({
+          repairNumber: currentRepairNumber.toString(),
+          customerId: transaction.customer._id || '',
+          customerFirstName: transaction.customer.firstName,
+          customerLastName: transaction.customer.lastName,
+          email: transaction.customer.email,
+          phone: transaction.customer.phone,
+          brand: repair.brand,
+          material: repair.material,
+          referenceNumber: repair.referenceNumber,
+          repairOptions: repair.repairOptions,
+          repairNotes: repair.description || ''
+        })
+        
+        if (repairResult.success) {
+          createdRepairs.push({
+            repairNumber: repairResult.repairNumber!,
+            repairId: repairResult.repairId!
+          })
+        }
+        
+        currentRepairNumber++
+      }
+    }
+
+    // Build line items array
+    const lineItems: LineItem[] = []
+    
+    // Add repair items with actual repair numbers
+    transaction.repairs?.forEach((repair, index) => {
+      const selectedOptions = []
+      if (repair.repairOptions.service) selectedOptions.push("Service")
+      if (repair.repairOptions.polish) selectedOptions.push("Polish") 
+      if (repair.repairOptions.batteryChange) selectedOptions.push("Battery Change")
+      if (repair.repairOptions.other) selectedOptions.push("Other")
+      
+      const repairNumber = createdRepairs[index]?.repairNumber || `KIOSK-${Date.now()}-${index + 1}`
+      
+      lineItems.push({
+        itemNumber: '',
+        name: `${repair.brand} ${repair.material} repair${repair.referenceNumber ? ` (Ref: ${repair.referenceNumber})` : ''} ${repair.description ? ` - ${repair.description}` : ''}`,
+        repairNumber: repairNumber,
+      })
+    })
+    
+    // Add offer items
+    transaction.offers?.forEach((offer) => {
+      lineItems.push({
+        itemNumber: '',
+        name: `${offer.brand} ${offer.model} ${offer.material} ${offer.material} ${offer.condition} offer ${offer.description ? ` - ${offer.description}` : ''}`,
+        repairNumber: '',
+      })
+    })
+
+    const logData: LogData = {
+      date: new Date(),
+      receivedFrom: "Other",
+      comments: transaction.comments || '',
+      customerName: `${transaction.customer.firstName} ${transaction.customer.lastName}`,
+      vendor: '',
+      user: "Kiosk",
+      lineItems,
+      signature: transaction.signature,
+      signatureDate: transaction.signatureDate
+    }
+
+    const result = await createLog(logData)
+
+    if (result.success) {
+      const logId = result.data?._id;
+      
+      // Upload images after log creation if images are provided
+      if (images && images.length > 0 && logId) {
+        const uploadPromises = images.map(image => uploadImageToLog(logId, image));
+        const uploadResults = await Promise.all(uploadPromises);
+        const successfulUploads = uploadResults.filter(result => result).length;
+        
+        console.log(`Uploaded ${successfulUploads} of ${images.length} images to log ${logId}`);
+      }
+      
+      return {
+        success: true,
+        logId: logId,
+        repairsCreated: createdRepairs.length,
+        imagesUploaded: images ? images.length : 0
+      }
+    } else {
+      return {
+        success: false,
+        message: result.error || "Failed to create log entry"
+      }
+    }
+  } catch (error) {
+    console.error('Error submitting kiosk transaction:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}

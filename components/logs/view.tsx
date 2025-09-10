@@ -35,6 +35,8 @@ interface Log {
   vendor?: string;
   search?: string;
   lineItems?: LineItem[];
+  signature?: string;
+  signatureDate?: Date | string;
 }
 
 interface ViewLogProps {
@@ -125,6 +127,34 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm whitespace-pre-wrap">{log.comments}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Signature Information */}
+            {log.signature && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Signature Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {log.signatureDate && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Signed On</label>
+                      <p className="text-sm">{formatDateTime(log.signatureDate)}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Customer Signature</label>
+                    <div className="mt-2 border rounded-lg p-4 bg-gray-50">
+                      <img 
+                        src={log.signature} 
+                        alt="Customer Signature" 
+                        className="max-w-full h-auto"
+                        style={{ maxHeight: '200px' }}
+                      />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}

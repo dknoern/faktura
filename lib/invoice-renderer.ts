@@ -152,9 +152,9 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
         ${!invoice.copyAddress ? `
         <div style="margin-bottom: 20px; width: 50%; align-items: left;">
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold; margin-bottom: 0;">${invoice.billingAddress1 ? 'BILLING ADDRESS' : ''}</p>
-          <p style="margin: 0 0; text-transform: uppercase;">${invoice.billingAddress1 || ''}</p>
-          <p style="margin: 0 0; text-transform uppercase;">${invoice.billingAddress2 || ''}</p>
-          <p style="margin: 0 0; text-transform uppercase;">${invoice.billingCity || ''}${invoice.billingState ? ', ' + invoice.billingState : ''} ${invoice.billingZip || ''}</p>
+          <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.billingAddress1 || ''}</p>
+          <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.billingAddress2 || ''}</p>
+          <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.billingCity || ''}${invoice.billingState ? ', ' + invoice.billingState : ''} ${invoice.billingZip || ''}</p>
         </div>
         ` : ''}
       </div>

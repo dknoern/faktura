@@ -9,6 +9,21 @@ import { format } from "date-fns";
 import { Counter } from "./models/counter";
 import { updateProductHistory } from "./utils/product-history";
 
+// Helper function to get next repair number
+async function getNextRepairNumber(): Promise<string> {
+  try {
+    const counter = await Counter.findByIdAndUpdate(
+      'repairNumber',
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    return counter.seq.toString();
+  } catch (error) {
+    console.error("Error getting next repair number:", error);
+    throw error;
+  }
+}
+
 export type State = {
   errors?: {
     id?: string[];
@@ -39,8 +54,30 @@ export async function createRepair(formData: FormData) {
     const productId = formData.get("selectedProductId");
     const customerId = formData.get("selectedCustomerId");
 
+    // Get repair number from form or generate new one if blank
+    let repairNumber = formData.get("repairNumber") as string;
+    if (!repairNumber || repairNumber.trim() === '') {
+      console.log('repairNumber is blank, generating new one')
+      repairNumber = await getNextRepairNumber();
+      console.log('new repairNumber', repairNumber)
+    } else {
+      console.log('repairNumber is not blank, checking if it is a valid number')
+      // get current value of repairNumber seq from Counter
+      const counter = await Counter.findOne({ _id: 'repairNumber' });
+      const counterValue = counter?.seq;
+      console.log('current counter value', counterValue)
+
+      // if repairNumber is a number and less than 50000 but more than the counter value, set the counter value to repairNumber
+  // check that repaiarNumber can be parsed as a number
+      console.log('checking if repairNumber is a number and less than 50000 but more than the counter value')
+      if (Number(repairNumber) >= 50000 && Number(repairNumber) > counterValue ) {
+        console.log('repairNumber is a number and less than 50000 but more than the counter value, updating counter')
+        await Counter.findOneAndUpdate({ _id: 'repairNumber' }, { seq: repairNumber });
+      }
+    }
+
     const repair = new Repair({
-      repairNumber: formData.get("repairNumber"),
+      repairNumber: repairNumber,
       itemNumber: formData.get("itemNumber"),
       description: formData.get("description"),
       dateOut: new Date(),

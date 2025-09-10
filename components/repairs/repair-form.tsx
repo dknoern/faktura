@@ -21,7 +21,7 @@ interface Product {
 
 interface RepairFormProps {
   repair?: {
-    repairNumber: string;
+    repairNumber: string | null;
     itemNumber: string;
     description: string;
     dateOut: string | null;
@@ -85,7 +85,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
       formData.set('warrantyService', warrantyService ? 'true' : 'false');
 
       if (repair) {
-        await updateRepair(repair.repairNumber, formData);
+        await updateRepair(repair.repairNumber!, formData);
       } else {
         // add hidden form elements for productId and customerId
         formData.set('productId', selectedProduct?._id || initialSelectedProduct?._id || '');
@@ -130,7 +130,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
             name="repairNumber"
             value={repairNumber}
             onChange={(e) => setRepairNumber(e.target.value)}
-            required
+            placeholder={repair ? undefined : "Enter or leave blank to auto-generate"}
           />
         </div>
         <div className="space-y-2">

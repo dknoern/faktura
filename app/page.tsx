@@ -7,7 +7,7 @@ export default async function Page() {
     <main className="relative min-h-screen">
       {/* Background Image */}
       <Image 
-        src="/background-watches.jpg" 
+        src="/rolex-blackbook.png" 
         alt="Background" 
         fill
         className="object-cover"

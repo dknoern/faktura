@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import zodToMongoose from "@zodyac/zod-mongoose";
 extendZod(z);
 
-const lineItemSchema = z.object({
+export const lineItemSchema = z.object({
   itemNumber: z.string().optional(),
   name: z.string().optional(),
   repairNumber: z.string().optional(),
@@ -25,6 +25,8 @@ export const logSchema = z.object({
   vendor: z.string().optional(),
   search: z.string().optional(),
   lineItems: z.array(lineItemSchema).optional(),
+  signature: z.string().optional(),
+  signatureDate: z.date().optional(),
 });
 
 const logMongooseSchema = zodToMongoose(logSchema);

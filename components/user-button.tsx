@@ -6,13 +6,21 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
 import { SignIn, SignOut } from "./auth-components"
+import { enterKioskMode } from "@/lib/kiosk-actions"
+import { Monitor } from "lucide-react"
+import { cookies } from "next/headers"
 
 export default async function UserButton() {
   const session = await auth()
   if (!session?.user) return <SignIn />
+  
+  // Check if already in kiosk mode
+  const cookieStore = await cookies()
+  const isKioskMode = cookieStore.get('kiosk-mode')?.value === 'true'
   return (
     <div className="flex items-center gap-2">
 
@@ -38,6 +46,20 @@ export default async function UserButton() {
               </p>
             </div>
           </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {!isKioskMode && (
+            <>
+              <DropdownMenuItem asChild>
+                <form action={enterKioskMode}>
+                  <button type="submit" className="flex w-full items-center gap-2">
+                    <Monitor className="h-4 w-4" />
+                    Kiosk Mode
+                  </button>
+                </form>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem>
             <SignOut />
           </DropdownMenuItem>
