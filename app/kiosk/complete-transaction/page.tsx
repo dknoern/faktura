@@ -290,7 +290,7 @@ export default function CompleteTransactionPage() {
                 {repairs.length > 0 && (
                   <div>
                     <p className="text-sm text-gray-600 leading-relaxed">A diagnostic fee of $50 will be applied to each repair.</p>
-                    <p mt-2 className="text-sm text-gray-600 leading-relaxed">Repair will take approximately 4-6 weeks.</p>
+                    <p mt-2 className="text-sm text-gray-600 leading-relaxed">Repair will take approximately 4-6 weeks following customer approval.</p>
                   </div>
                 )}
 

@@ -94,7 +94,7 @@ export default function AddRepairPage() {
               <CardDescription>
                 Enter details about the watch you would like to have repaired.
                 <p className="text-xs text-muted-foreground mt-2">A diagnostic fee of $50 will be applied to each repair.</p>
-                <p className="text-xs text-muted-foreground mt-2">Repair will take approximately 4-6 weeks.</p>
+                <p className="text-xs text-muted-foreground mt-2">Repair will take approximately 4-6 weeks following customer approval.</p>
               </CardDescription>
             </div>
           </div>
