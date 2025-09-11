@@ -12,6 +12,7 @@ import { ArrowLeft, Upload, X, Save } from "lucide-react"
 import { KioskCustomer, KioskRepair, KioskOffer, KioskTransaction } from "@/lib/models/kiosk-transaction"
 import { submitKioskTransaction } from "@/lib/kiosk-actions"
 import { SignaturePad } from "@/components/kiosk/signature-pad"
+import { compressImages } from "@/lib/image-utils"
 
 export default function CompleteTransactionPage() {
   const router = useRouter()
@@ -21,6 +22,7 @@ export default function CompleteTransactionPage() {
   const [images, setImages] = useState<File[]>([])
   const [comments, setComments] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCompressing, setIsCompressing] = useState(false)
   const [signature, setSignature] = useState("")
   const [signatureDate, setSignatureDate] = useState<Date | null>(null)
 
@@ -48,13 +50,30 @@ export default function CompleteTransactionPage() {
   }, [router])
 
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (files) {
-      const newImages = Array.from(files).filter(file => 
-        file.type.startsWith('image/') && file.size <= 10 * 1024 * 1024 // 10MB limit
-      )
-      setImages(prev => [...prev, ...newImages])
+      setIsCompressing(true)
+      try {
+        const imageFiles = Array.from(files).filter(file => 
+          file.type.startsWith('image/')
+        )
+        
+        // Compress images to max 500KB each
+        const compressedImages = await compressImages(imageFiles, {
+          maxWidth: 1200,
+          maxHeight: 1200,
+          quality: 0.8,
+          maxSizeKB: 500
+        })
+        
+        setImages(prev => [...prev, ...compressedImages])
+      } catch (error) {
+        console.error('Error compressing images:', error)
+        alert('Error processing images. Please try again.')
+      } finally {
+        setIsCompressing(false)
+      }
     }
   }
 
@@ -76,6 +95,15 @@ export default function CompleteTransactionPage() {
 
   const handleSubmit = async () => {
     if (!customer) return
+
+    // Additional safety check for payload size
+    const totalImageSize = images.reduce((total, img) => total + img.size, 0)
+    const maxPayloadSize = 8 * 1024 * 1024 // 8MB safety margin under 10MB limit
+    
+    if (totalImageSize > maxPayloadSize) {
+      alert(`Images too large (${Math.round(totalImageSize / 1024 / 1024)}MB). Please remove some images or wait for compression to complete.`)
+      return
+    }
 
     setIsSubmitting(true)
 
@@ -118,7 +146,7 @@ export default function CompleteTransactionPage() {
     router.push('/kiosk/transaction')
   }
 
-  const canSubmit = customer && signature
+  const canSubmit = customer && signature && !isCompressing
 
   if (!customer) {
     return (
@@ -181,35 +209,54 @@ export default function CompleteTransactionPage() {
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="flex-1"
+                  disabled={isCompressing}
                 />
-                <Button variant="outline" onClick={() => {
-                  const input = document.querySelector('input[type="file"]') as HTMLInputElement
-                  input?.click()
-                }}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    const input = document.querySelector('input[type="file"]') as HTMLInputElement
+                    input?.click()
+                  }}
+                  disabled={isCompressing}
+                >
                   <Upload className="h-4 w-4 mr-2" />
-                  Add Images
+                  {isCompressing ? 'Processing...' : 'Add Images'}
                 </Button>
               </div>
               
+              {isCompressing && (
+                <div className="text-sm text-muted-foreground">
+                  Compressing images for upload...
+                </div>
+              )}
+              
               {images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {images.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={URL.createObjectURL(image)}
-                        alt={`Upload ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border"
-                      />
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeImage(index)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    {images.length} image(s) ready for upload (compressed to ~500KB each)
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {images.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={URL.createObjectURL(image)}
+                          alt={`Upload ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg border"
+                        />
+                        <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                          {Math.round(image.size / 1024)}KB
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -261,7 +308,7 @@ export default function CompleteTransactionPage() {
             </Button>
             {!canSubmit && (
               <p className="text-xs text-muted-foreground text-center mt-2">
-                Please provide a signature to complete
+                {isCompressing ? 'Processing images...' : 'Please provide a signature to complete'}
               </p>
             )}
           </div>

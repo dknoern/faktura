@@ -15,6 +15,18 @@ export default auth((req) => {
   const session = req.auth
   const { pathname } = req.nextUrl
   
+  // Check payload size for server actions before processing
+  const contentLength = req.headers.get('content-length')
+  if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Request payload too large. Maximum size is 10MB.' 
+    }), { 
+      status: 413,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+  
   // Clone the request headers
   const requestHeaders = new Headers(req.headers)
 
