@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Save } from "lucide-react"
 import { KioskRepair } from "@/lib/models/kiosk-transaction"
-import { getManufacturers, getMaterials } from "@/lib/utils/ref-data"
+import { getDiagnosticFeeText, getManufacturers, getMaterials, getRepairDurationText } from "@/lib/utils/ref-data"
 
 export default function AddRepairPage() {
   const router = useRouter()
@@ -93,8 +93,8 @@ export default function AddRepairPage() {
               </CardTitle>
               <CardDescription>
                 Enter details about the watch you would like to have repaired.
-                <p className="text-xs text-muted-foreground mt-2">A diagnostic fee of $60 will be applied to each repair.</p>
-                <p className="text-xs text-muted-foreground mt-2">Repair will take approximately 4-6 weeks following customer approval.</p>
+                <p className="text-xs text-muted-foreground mt-2">{getDiagnosticFeeText()}</p>
+                <p className="text-xs text-muted-foreground mt-2">{getRepairDurationText()}</p>
               </CardDescription>
             </div>
           </div>

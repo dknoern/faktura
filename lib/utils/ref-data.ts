@@ -95,3 +95,12 @@ export function getMaterials(): SelectOption[] {
     { value: "Other", label: "Other" },
   ];
 }
+
+
+export function getDiagnosticFeeText() {
+  return "A diagnostic fee of $60 will be applied to each repair"
+}
+
+export function getRepairDurationText() {
+  return "Repair will take approximately 4-6 weeks following customer approval."
+}

@@ -1,4 +1,5 @@
 // Log renderer utility functions
+import { getDiagnosticFeeText, getRepairDurationText } from "@/lib/utils/ref-data";
 
 export interface LineItem {
   itemNumber?: string;
@@ -20,6 +21,8 @@ export interface Log {
   vendor?: string;
   search?: string;
   lineItems?: LineItem[];
+  signature?: string;
+  signatureDate?: Date | string;
 }
 
 export interface Tenant {
@@ -145,6 +148,34 @@ export const generateLogHtml = (log: Log, tenant: Tenant, imageBaseUrl: string):
         <div style="margin-bottom: 20px;">
           <h3 style="font-weight: bold; margin-bottom: 5px;">Comments</h3>
           <p style="margin: 5px 0; white-space: pre-wrap;">${log.comments}</p>
+        </div>
+      ` : ''}
+      
+      <!-- Terms (for Kiosk users) -->
+      ${log.user === "Kiosk" ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-weight: bold; margin-bottom: 5px;">Terms</h3>
+          <p style="margin: 5px 0; white-space: pre-wrap;">${getDiagnosticFeeText()}</p>
+          <p style="margin: 5px 0; white-space: pre-wrap;">${getRepairDurationText()}</p>
+        </div>
+      ` : ''}
+      
+      <!-- Signature Information (for Kiosk users with signature) -->
+      ${log.user === "Kiosk" && log.signature ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-weight: bold; margin-bottom: 5px;">Signature Information</h3>
+          ${log.signatureDate ? `
+            <div style="margin-bottom: 10px;">
+              <h4 style="font-weight: bold; margin-bottom: 5px;">Signed On</h4>
+              <p style="margin: 5px 0;">${formatDate(log.signatureDate)}</p>
+            </div>
+          ` : ''}
+          <div style="margin-bottom: 10px;">
+            <h4 style="font-weight: bold; margin-bottom: 5px;">Customer Signature</h4>
+            <div style="margin-top: 10px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #f9f9f9;">
+              <img src="${log.signature}" alt="Customer Signature" style="max-width: 100%; height: auto; max-height: 200px;" />
+            </div>
+          </div>
         </div>
       ` : ''}
       
