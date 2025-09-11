@@ -128,8 +128,8 @@ export default function KioskTransactionPage() {
                         <div>
                           <h4 className="font-medium">{repair.brand} Watch</h4>
                           <p className="text-sm text-muted-foreground">{repair.material}</p>
-                          {repair.referenceNumber && (
-                            <p className="text-xs text-muted-foreground">Ref: {repair.referenceNumber}</p>
+                          {repair.description && (
+                            <p className="text-xs text-muted-foreground">Ref: {repair.description}</p>
                           )}
                         </div>
                         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">

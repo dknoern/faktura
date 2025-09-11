@@ -5,14 +5,15 @@ export const kioskRepairSchema = z.object({
   id: z.string(),
   brand: z.string(),
   material: z.string(),
-  referenceNumber: z.string().optional(),
+  description: z.string().optional(),
+  itemValue: z.string().optional(),
   repairOptions: z.object({
     service: z.boolean(),
     polish: z.boolean(),
     batteryChange: z.boolean(),
     other: z.boolean(),
   }),
-  description: z.string().optional(),
+  additionalDetails: z.string().optional(),
 });
 
 // Offer item for kiosk transaction

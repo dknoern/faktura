@@ -86,6 +86,8 @@ export function getMaterials(): SelectOption[] {
     { value: "Solid Yellow Gold", label: "Solid Yellow Gold" },
     { value: "Solid Rose Gold", label: "Solid Rose Gold" },
     { value: "Stainless Steel", label: "Stainless Steel" },
+    { value: "Steel and Yellow Gold", label: "Steel and Yellow Gold" },
+    { value: "Steel and Rose Gold", label: "Steel and Rose Gold" },
     { value: "Platinum", label: "Platinum" },
     { value: "Titanium", label: "Titanium" },
     { value: "Ceramic", label: "Ceramic" },

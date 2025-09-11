@@ -19,14 +19,15 @@ export default function AddRepairPage() {
   const [formData, setFormData] = useState({
     brand: "",
     material: "",
-    referenceNumber: "",
+    description: "",
+    itemValue: "",
     repairOptions: {
       service: false,
       polish: false,
       batteryChange: false,
       other: false
     },
-    description: ""
+    additionalDetails: ""
   })
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -52,9 +53,10 @@ export default function AddRepairPage() {
       id: `repair-${Date.now()}`,
       brand: formData.brand,
       material: formData.material,
-      referenceNumber: formData.referenceNumber,
+      description: formData.description,
+      itemValue: formData.itemValue,
       repairOptions: formData.repairOptions,
-      description: formData.description
+      additionalDetails: formData.additionalDetails
     }
 
     // Get existing repairs from sessionStorage
@@ -90,7 +92,9 @@ export default function AddRepairPage() {
                 Add Repair Item
               </CardTitle>
               <CardDescription>
-                Enter details about the watch you would like to have repaired
+                Enter details about the watch you would like to have repaired.
+                <p className="text-xs text-muted-foreground mt-2">A diagnostic fee of $50 will be applied to each repair.</p>
+                <p className="text-xs text-muted-foreground mt-2">Repair will take approximately 4-6 weeks.</p>
               </CardDescription>
             </div>
           </div>
@@ -131,14 +135,24 @@ export default function AddRepairPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="referenceNumber">Reference Number</Label>
+                <Label htmlFor="referenceNumber">Description</Label>
                 <Input
-                  id="referenceNumber"
-                  value={formData.referenceNumber}
-                  onChange={(e) => handleInputChange("referenceNumber", e.target.value)}
-                  placeholder="Enter reference number if known"
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  placeholder="Enter description of item"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="itemValue">Value of Item</Label>
+                <Input
+                  id="itemValue"
+                  value={formData.itemValue}
+                  onChange={(e) => handleInputChange("itemValue", e.target.value)}
+                  placeholder="Enter value of item, e.g. $5000"
+                />
+              </div>              
             </div>
 
             <Separator />
@@ -184,11 +198,11 @@ export default function AddRepairPage() {
             <Separator />
 
             <div className="space-y-2">
-              <Label htmlFor="description">Additional Details</Label>
+              <Label htmlFor="additionalDetails">Additional Details</Label>
               <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
+                id="additionalDetails"
+                value={formData.additionalDetails}
+                onChange={(e) => handleInputChange("additionalDetails", e.target.value)}
                 placeholder="Describe any specific issues or additional details..."
                 rows={3}
               />

@@ -31,19 +31,19 @@ export default function CompleteTransactionPage() {
     const selectedCustomer = sessionStorage.getItem('selectedCustomer')
     const kioskRepairs = sessionStorage.getItem('kioskRepairs')
     const kioskOffers = sessionStorage.getItem('kioskOffers')
-    
+
     if (selectedCustomer) {
       setCustomer(JSON.parse(selectedCustomer))
     }
-    
+
     if (kioskRepairs) {
       setRepairs(JSON.parse(kioskRepairs))
     }
-    
+
     if (kioskOffers) {
       setOffers(JSON.parse(kioskOffers))
     }
-    
+
     if (!selectedCustomer) {
       router.push('/kiosk')
     }
@@ -55,10 +55,10 @@ export default function CompleteTransactionPage() {
     if (files) {
       setIsCompressing(true)
       try {
-        const imageFiles = Array.from(files).filter(file => 
+        const imageFiles = Array.from(files).filter(file =>
           file.type.startsWith('image/')
         )
-        
+
         // Compress images to max 500KB each
         const compressedImages = await compressImages(imageFiles, {
           maxWidth: 1200,
@@ -66,7 +66,7 @@ export default function CompleteTransactionPage() {
           quality: 0.8,
           maxSizeKB: 500
         })
-        
+
         setImages(prev => [...prev, ...compressedImages])
       } catch (error) {
         console.error('Error compressing images:', error)
@@ -99,7 +99,7 @@ export default function CompleteTransactionPage() {
     // Additional safety check for payload size
     const totalImageSize = images.reduce((total, img) => total + img.size, 0)
     const maxPayloadSize = 8 * 1024 * 1024 // 8MB safety margin under 10MB limit
-    
+
     if (totalImageSize > maxPayloadSize) {
       alert(`Images too large (${Math.round(totalImageSize / 1024 / 1024)}MB). Please remove some images or wait for compression to complete.`)
       return
@@ -121,7 +121,7 @@ export default function CompleteTransactionPage() {
       }
 
       const result = await submitKioskTransaction(transaction, images)
-      
+
       if (result.success) {
         // Clear sessionStorage
         sessionStorage.removeItem('selectedCustomer')
@@ -168,9 +168,9 @@ export default function CompleteTransactionPage() {
       <Card className="w-full">
         <CardHeader>
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleBack}
               className="p-2"
             >
@@ -211,8 +211,8 @@ export default function CompleteTransactionPage() {
                   className="flex-1"
                   disabled={isCompressing}
                 />
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     const input = document.querySelector('input[type="file"]') as HTMLInputElement
                     input?.click()
@@ -223,13 +223,13 @@ export default function CompleteTransactionPage() {
                   {isCompressing ? 'Processing...' : 'Add Images'}
                 </Button>
               </div>
-              
+
               {isCompressing && (
                 <div className="text-sm text-muted-foreground">
                   Compressing images for upload...
                 </div>
               )}
-              
+
               {images.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
@@ -287,9 +287,16 @@ export default function CompleteTransactionPage() {
                 <p className="text-sm text-gray-600 leading-relaxed">
                   By signing below, I acknowledge that I am leaving my watch with Demesy & Co., LTD. for an estimate, which includes a full evaluation of the timepiece. I understand that any estimate provided is subject to final inspection and that no repairs or services will be performed without my prior authorization.
                 </p>
+                {repairs.length > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-600 leading-relaxed">A diagnostic fee of $50 will be applied to each repair.</p>
+                    <p mt-2 className="text-sm text-gray-600 leading-relaxed">Repair will take approximately 4-6 weeks.</p>
+                  </div>
+                )}
+
               </div>
             </div>
-            <SignaturePad 
+            <SignaturePad
               onSignatureChange={handleSignatureChange}
               value={signature}
             />
@@ -297,7 +304,7 @@ export default function CompleteTransactionPage() {
 
           {/* Submit Button */}
           <div className="pt-4">
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={!canSubmit || isSubmitting}
               className="w-full h-12 text-lg font-semibold"

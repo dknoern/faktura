@@ -95,6 +95,8 @@ export async function searchCustomers(params: SearchCustomersParams) {
 export async function submitKioskTransaction(transaction: KioskTransaction, images?: File[]) {
   try {
 
+    console.log('in submitKioskTransaction')
+
     // Create repair records first if there are repairs
     const createdRepairs: { repairNumber: string; repairId: string }[] = []
     
@@ -103,6 +105,8 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
       let currentRepairNumber = parseInt(await getNextRepairNumber())
       
       for (const repair of transaction.repairs) {
+
+        console.log('in createRepairRecord, itemValue is ' + repair.itemValue)
         const repairResult = await createRepairRecord({
           repairNumber: currentRepairNumber.toString(),
           customerId: transaction.customer._id || '',
@@ -112,9 +116,10 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
           phone: transaction.customer.phone,
           brand: repair.brand,
           material: repair.material,
-          referenceNumber: repair.referenceNumber,
+          description: repair.description,
+          itemValue: repair.itemValue,
           repairOptions: repair.repairOptions,
-          repairNotes: repair.description || ''
+          repairNotes: repair.additionalDetails || ''
         })
         
         if (repairResult.success) {
@@ -143,7 +148,7 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
       
       lineItems.push({
         itemNumber: '',
-        name: `${repair.brand} ${repair.material} repair${repair.referenceNumber ? ` (Ref: ${repair.referenceNumber})` : ''} ${repair.description ? ` - ${repair.description}` : ''}`,
+        name: `${repair.brand} ${repair.material} ${repair.additionalDetails ? `${repair.additionalDetails}` : ''} ${repair.description ? ` - ${repair.description}` : ''}`,
         repairNumber: repairNumber,
       })
     })

@@ -36,14 +36,15 @@ export async function createRepairRecord(repairData: {
   phone?: string
   brand: string
   material: string
-  referenceNumber?: string
+  description?: string
+  itemValue?: string
   repairOptions: {
     service: boolean
     polish: boolean
     batteryChange: boolean
     other: boolean
   }
-  repairNotes: string
+  repairNotes?: string
 }) {
   try {
     await dbConnect()
@@ -55,7 +56,7 @@ export async function createRepairRecord(repairData: {
     if (repairData.repairOptions.batteryChange) selectedOptions.push("Battery Change")
     if (repairData.repairOptions.other) selectedOptions.push("Other")
     
-    const description = `${repairData.brand} watch - ${repairData.material}${repairData.referenceNumber ? ` (Ref: ${repairData.referenceNumber})` : ''}`
+    const description = `${repairData.brand} ${repairData.material}${repairData.description ? ` - ${repairData.description}` : ''} ${repairData.itemValue ? ` - value: ${repairData.itemValue}` : ''}`
 
     const repair = new Repair({
       repairNumber: repairData.repairNumber,
@@ -68,7 +69,7 @@ export async function createRepairRecord(repairData: {
       phone: repairData.phone,
       vendor: null, // Vendor assigned later
       repairIssues: selectedOptions.length > 0 ? `${selectedOptions.join(", ")}` : '',
-      repairNotes: repairData.repairNotes,
+      repairNotes: `${repairData.itemValue ? 'Item Value: ${repairData.itemValue}\n' : ''}${repairData.repairNotes}`,
       warrantyService: false,
       customerId: parseInt(repairData.customerId) || 0,
       itemId: null, // No specific product linked for kiosk repairs
