@@ -11,6 +11,8 @@ import { ArrowLeft, Search } from "lucide-react"
 export default function CustomerSearchPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
     phone: "",
     email: ""
   })
@@ -19,6 +21,8 @@ export default function CustomerSearchPage() {
   // Clear form data and session storage when component mounts to ensure fresh start
   useEffect(() => {
     setFormData({
+      firstName: "",
+      lastName: "",
       phone: "",
       email: ""
     })
@@ -48,8 +52,8 @@ export default function CustomerSearchPage() {
   }
 
   const handleSearch = async () => {
-    if (!formData.phone && !formData.email) {
-      alert("Please enter a phone number or email to search")
+    if (!formData.firstName && !formData.lastName && !formData.phone && !formData.email) {
+      alert("Please enter at least one search field (name, phone, or email)")
       return
     }
 
@@ -73,6 +77,8 @@ export default function CustomerSearchPage() {
       
       // Create search params for the next page
       const searchParams = new URLSearchParams()
+      if (formData.firstName) searchParams.set('firstName', formData.firstName)
+      if (formData.lastName) searchParams.set('lastName', formData.lastName)
       if (formData.phone) searchParams.set('phone', formData.phone)
       if (formData.email) searchParams.set('email', formData.email)
       
@@ -107,13 +113,36 @@ export default function CustomerSearchPage() {
                 Customer Information
               </CardTitle>
               <CardDescription>
-                Enter phone number and/or email to search for existing customers
+                Enter customer name, phone number, and/or email to search for existing customers
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange("firstName", e.target.value)}
+                  placeholder="Enter first name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange("lastName", e.target.value)}
+                  placeholder="Enter last name"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
               <Input
@@ -141,7 +170,7 @@ export default function CustomerSearchPage() {
                 onClick={handleSearch}
                 className="w-full h-12 text-lg font-semibold"
                 size="lg"
-                disabled={isSearching || (!formData.phone && !formData.email)}
+                disabled={isSearching || (!formData.firstName && !formData.lastName && !formData.phone && !formData.email)}
               >
                 <Search className="mr-2 h-5 w-5" />
                 {isSearching ? "Searching..." : "Search Customers"}

@@ -49,6 +49,8 @@ export async function enterKioskMode() {
 }
 
 interface SearchCustomersParams {
+  firstName?: string
+  lastName?: string
   phone?: string
   email?: string
 }
@@ -60,11 +62,21 @@ function normalizePhoneNumber(phone: string): string {
 
 export async function searchCustomers(params: SearchCustomersParams) {
   await dbConnect()
+
+  console.log("SEARCHING FOR CUSTOMER")
   
   const query: any = {}
   
-  // Build search query - match any of the provided fields
-  const orConditions = []
+  // Build search query - all provided fields must match (AND logic)
+  const andConditions = []
+  
+  if (params.firstName) {
+    andConditions.push({ firstName: { $regex: `^${params.firstName}$`, $options: 'i' } })
+  }
+  
+  if (params.lastName) {
+    andConditions.push({ lastName: { $regex: `^${params.lastName}$`, $options: 'i' } })
+  }
   
   if (params.phone) {
     // Normalize the search phone number
@@ -74,20 +86,27 @@ export async function searchCustomers(params: SearchCustomersParams) {
     // This will match phone numbers regardless of formatting
     const phoneRegexPattern = normalizedSearchPhone.split('').join('[\\s\\-\\(\\)\\.]*')
     
-    orConditions.push({ phone: { $regex: phoneRegexPattern, $options: 'i' } })
-    orConditions.push({ cell: { $regex: phoneRegexPattern, $options: 'i' } })
+    // Phone number can match either 'phone' OR 'cell' field
+    andConditions.push({
+      $or: [
+        { phone: { $regex: phoneRegexPattern, $options: 'i' } },
+        { cell: { $regex: phoneRegexPattern, $options: 'i' } }
+      ]
+    })
   }
   
   if (params.email) {
-    orConditions.push({ email: { $regex: params.email, $options: 'i' } })
+    andConditions.push({ email: { $regex: params.email, $options: 'i' } })
   }
   
-  if (orConditions.length > 0) {
-    query.$or = orConditions
+  if (andConditions.length > 0) {
+    query.$and = andConditions
   }
   
   // Only return active customers
   query.status = { $ne: "Deleted" }
+
+  console.log("query", query)
   
   const customers = await customerModel.find(query)
     .select('firstName lastName email company phone cell')

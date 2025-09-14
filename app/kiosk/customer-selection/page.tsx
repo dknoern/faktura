@@ -22,25 +22,31 @@ function CustomerSelectionContent() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchCriteria, setSearchCriteria] = useState({
+    firstName: "",
+    lastName: "",
     phone: "",
     email: ""
   })
 
   useEffect(() => {
+    let firstName = searchParams.get('firstName') || ""
+    let lastName = searchParams.get('lastName') || ""
     let phone = searchParams.get('phone') || ""
     let email = searchParams.get('email') || ""
     
     // If no URL params, try to restore from sessionStorage (for back navigation)
-    if (!phone && !email) {
+    if (!firstName && !lastName && !phone && !email) {
       const storedCriteria = sessionStorage.getItem('kioskSearchCriteria')
       if (storedCriteria) {
         const criteria = JSON.parse(storedCriteria)
+        firstName = criteria.firstName || ""
+        lastName = criteria.lastName || ""
         phone = criteria.phone || ""
         email = criteria.email || ""
       }
     }
     
-    setSearchCriteria({ phone, email })
+    setSearchCriteria({ firstName, lastName, phone, email })
     
     // Clear any existing kiosk transaction data from session storage
     sessionStorage.removeItem('kioskRepairs')
@@ -49,7 +55,7 @@ function CustomerSelectionContent() {
     const performSearch = async () => {
       setIsLoading(true)
       try {
-        const results = await searchCustomers({ phone, email })
+        const results = await searchCustomers({ firstName, lastName, phone, email })
         setCustomers(results)
       } catch (error) {
         console.error("Error searching customers:", error)
@@ -71,6 +77,8 @@ function CustomerSelectionContent() {
   const handleCreateNewCustomer = () => {
     // Pass search criteria and kiosk workflow parameters to new customer form
     const params = new URLSearchParams()
+    if (searchCriteria.firstName) params.set('firstName', searchCriteria.firstName)
+    if (searchCriteria.lastName) params.set('lastName', searchCriteria.lastName)
     if (searchCriteria.phone) params.set('phone', searchCriteria.phone)
     if (searchCriteria.email) params.set('email', searchCriteria.email)
     
@@ -174,7 +182,7 @@ function CustomerSelectionContent() {
                   No customers found matching your search
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Searched for: {[searchCriteria.phone, searchCriteria.email].filter(Boolean).join(", ")}
+                  Searched for: {[searchCriteria.firstName, searchCriteria.lastName, searchCriteria.phone, searchCriteria.email].filter(Boolean).join(", ")}
                 </p>
               </div>
               
