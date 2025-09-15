@@ -166,18 +166,18 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
             vendorValue: 'Smea'
         },
         {
-            id: 'patek-repair',
-            title: 'Patek Repair',
+            id: 'patek',
+            title: 'Patek',
             repairs: patekRepairs,
             color: 'bg-purple-50 border-purple-200',
-            vendorValue: 'Patek Repair'
+            vendorValue: 'Patek'
         },
         {
-            id: 'ralph-repair',
-            title: 'Ralf Repair',
+            id: 'ralph',
+            title: 'Ralf',
             repairs: ralfRepairs,
             color: 'bg-orange-50 border-orange-200',
-            vendorValue: 'Ralf Repair'
+            vendorValue: 'Ralf'
         },
         {
             id: 'kovacs',
