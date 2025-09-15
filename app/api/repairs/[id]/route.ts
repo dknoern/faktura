@@ -1,23 +1,25 @@
 import { NextResponse } from 'next/server';
-import { fetchRepairByNumber, fetchDefaultTenant } from '@/lib/data';
+import dbConnect from '@/lib/dbConnect';
+import { Repair } from '@/lib/models/repair';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ repairNumber: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Await params before using its properties
-    const repairNumber = (await params).repairNumber;
+    const { id } = await params;
     
-    if (!repairNumber) {
+    if (!id) {
       return NextResponse.json(
-        { error: 'Invalid repair number' },
+        { error: 'Invalid repair ID' },
         { status: 400 }
       );
     }
     
-    const repair = await fetchRepairByNumber(repairNumber);
-    const tenant = await fetchDefaultTenant();
+    await dbConnect();
+    
+    // Fetch repair by _id
+    const repair: any = await Repair.findById(id).lean();
     
     if (!repair) {
       return NextResponse.json(
@@ -26,14 +28,20 @@ export async function GET(
       );
     }
     
-    return NextResponse.json({
-      repair,
-      tenant
-    });
+    // Convert MongoDB document to plain object
+    const repairData = {
+      ...repair,
+      _id: repair._id.toString(),
+      dateOut: repair.dateOut ? new Date(repair.dateOut).toISOString() : null,
+      customerApprovedDate: repair.customerApprovedDate ? new Date(repair.customerApprovedDate).toISOString() : null,
+      returnDate: repair.returnDate ? new Date(repair.returnDate).toISOString() : null,
+    };
+    
+    return NextResponse.json(repairData);
   } catch (error) {
-    console.error('Error fetching repair data:', error);
+    console.error('Error fetching repair details:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch repair data' },
+      { error: 'Failed to fetch repair details' },
       { status: 500 }
     );
   }

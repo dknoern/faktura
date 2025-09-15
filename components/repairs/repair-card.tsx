@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Wrench, DollarSign, Clock } from "lucide-react";
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 interface Repair {
@@ -24,10 +23,10 @@ interface Repair {
 interface RepairCardProps {
     repair: Repair;
     imageUrl?: string;
+    onCardClick?: (repairId: string) => void;
 }
 
-export function RepairCard({ repair, imageUrl }: RepairCardProps) {
-    const router = useRouter();
+export function RepairCard({ repair, imageUrl, onCardClick }: RepairCardProps) {
 
     const {
         attributes,
@@ -45,10 +44,10 @@ export function RepairCard({ repair, imageUrl }: RepairCardProps) {
     };
 
     const handleClick = () => {
-        // Only navigate if we're not dragging
-        if (!isDragging) {
-            console.log('Card clicked, navigating to:', `/repairs/${repair._id}/view`);
-            router.push(`/repairs/${repair._id}/view`);
+        // Only trigger click if we're not dragging
+        if (!isDragging && onCardClick) {
+            console.log('Card clicked, opening modal for repair:', repair._id);
+            onCardClick(repair._id);
         }
     };
 

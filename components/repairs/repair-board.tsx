@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RepairCard } from "./repair-card"
+import { RepairDetailsModal } from "./repair-details-modal"
 import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
@@ -34,7 +35,15 @@ interface BoardColumn {
 }
 
 // Droppable Column Component
-function DroppableColumn({ column, repairImages }: { column: BoardColumn; repairImages: Record<string, string> }) {
+function DroppableColumn({ 
+    column, 
+    repairImages, 
+    onCardClick 
+}: { 
+    column: BoardColumn; 
+    repairImages: Record<string, string>;
+    onCardClick: (repairId: string) => void;
+}) {
     const { setNodeRef, isOver } = useDroppable({
         id: column.id,
     });
@@ -64,6 +73,7 @@ function DroppableColumn({ column, repairImages }: { column: BoardColumn; repair
                                     key={repair._id} 
                                     repair={repair} 
                                     imageUrl={repairImages[repair._id]}
+                                    onCardClick={onCardClick}
                                 />
                             ))
                         )}
@@ -78,6 +88,8 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
     const [repairsList, setRepairsList] = useState(repairs);
     const [activeRepair, setActiveRepair] = useState<Repair | null>(null);
     const [repairImages, setRepairImages] = useState<Record<string, string>>({});
+    const [selectedRepairId, setSelectedRepairId] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     
     // Configure sensors with activation constraint
     const sensors = useSensors(
@@ -198,6 +210,16 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
 
     ];
 
+    const handleCardClick = (repairId: string) => {
+        setSelectedRepairId(repairId);
+        setIsModalOpen(true);
+    };
+
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+        setSelectedRepairId(null);
+    };
+
     const handleDragStart = (event: DragStartEvent) => {
         const repair = openRepairs.find(r => r._id === event.active.id);
         setActiveRepair(repair || null);
@@ -255,21 +277,35 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
     };
 
     return (
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-            <div className="h-full">
-                <div className="flex gap-4 h-full overflow-x-auto pb-4">
-                    {columns.map((column) => (
-                        <DroppableColumn key={column.id} column={column} repairImages={repairImages} />
-                    ))}
-                </div>
-            </div>
-            <DragOverlay>
-                {activeRepair ? (
-                    <div className="opacity-90 rotate-3 transform scale-105">
-                        <RepairCard repair={activeRepair} imageUrl={repairImages[activeRepair._id]} />
+        <>
+            <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                <div className="h-full">
+                    <div className="flex gap-4 h-full overflow-x-auto pb-4">
+                        {columns.map((column) => (
+                            <DroppableColumn 
+                                key={column.id} 
+                                column={column} 
+                                repairImages={repairImages} 
+                                onCardClick={handleCardClick}
+                            />
+                        ))}
                     </div>
-                ) : null}
-            </DragOverlay>
-        </DndContext>
+                </div>
+                <DragOverlay>
+                    {activeRepair ? (
+                        <div className="opacity-90 rotate-3 transform scale-105">
+                            <RepairCard repair={activeRepair} imageUrl={repairImages[activeRepair._id]} />
+                        </div>
+                    ) : null}
+                </DragOverlay>
+            </DndContext>
+            
+            {/* Repair Details Modal */}
+            <RepairDetailsModal 
+                repairId={selectedRepairId}
+                isOpen={isModalOpen}
+                onClose={handleModalClose}
+            />
+        </>
     );
 }
