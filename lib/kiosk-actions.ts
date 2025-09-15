@@ -219,6 +219,43 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
         console.log(`Uploaded ${successfulUploads} of ${images.length} images to log ${logId}`);
       }
       
+      // Send email notifications for each repair
+      if (createdRepairs.length > 0 && transaction.customer.email) {
+        const emailPromises = createdRepairs.map(async (repair) => {
+          try {
+            const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+            const response = await fetch(`${baseUrl}/api/email/send-kiosk-repair`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                repairNumber: repair.repairNumber,
+                customerFirstName: transaction.customer.firstName,
+                customerLastName: transaction.customer.lastName,
+                customerEmail: transaction.customer.email,
+              }),
+            });
+            
+            if (response.ok) {
+              console.log(`Email sent for repair #${repair.repairNumber}`);
+              return true;
+            } else {
+              console.error(`Failed to send email for repair #${repair.repairNumber}`);
+              return false;
+            }
+          } catch (error) {
+            console.error(`Error sending email for repair #${repair.repairNumber}:`, error);
+            return false;
+          }
+        });
+        
+        const emailResults = await Promise.all(emailPromises);
+        const successfulEmails = emailResults.filter(result => result).length;
+        
+        console.log(`Sent ${successfulEmails} of ${createdRepairs.length} repair confirmation emails`);
+      }
+      
       return {
         success: true,
         logId: logId,

@@ -291,7 +291,7 @@ export default function CompleteTransactionPage() {
                 {repairs.length > 0 && (
                   <div>
                     <p className="text-sm text-gray-600 leading-relaxed">{getDiagnosticFeeText()}</p>
-                    <p mt-2 className="text-sm text-gray-600 leading-relaxed">{getRepairDurationText()}</p>
+                    <p className="mt-2 text-sm text-gray-600 leading-relaxed">{getRepairDurationText()}</p>
                   </div>
                 )}
 
