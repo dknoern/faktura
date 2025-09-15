@@ -54,15 +54,15 @@ export function RepairCard({ repair, imageUrl }: RepairCardProps) {
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return null;
-        return new Date(dateString).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric' 
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
         });
     };
 
 
     return (
-        <Card 
+        <Card
             ref={setNodeRef}
             style={style}
             className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow duration-200 mb-3 relative"
@@ -82,10 +82,26 @@ export function RepairCard({ repair, imageUrl }: RepairCardProps) {
             </CardHeader>
             <CardContent className="pt-0">
                 <div className="space-y-2">
+
+
+                    {/* Repair Image */}
+                    {imageUrl && (
+                        <div className="mt-2">
+                            <div className="relative aspect-square w-full">
+                                <Image
+                                    src={imageUrl}
+                                    alt="Repair image"
+                                    fill
+                                    className="object-cover rounded-sm"
+                                    unoptimized
+                                />
+                            </div>
+                        </div>
+                    )}
                     <p className="text-sm text-gray-700 line-clamp-2">
                         {repair.description}
                     </p>
-                    
+
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <User className="h-3 w-3" />
                         <span className="truncate">
@@ -114,20 +130,7 @@ export function RepairCard({ repair, imageUrl }: RepairCardProps) {
                         </div>
                     )}
 
-                    {/* Repair Image */}
-                    {imageUrl && (
-                        <div className="mt-2">
-                            <div className="relative aspect-square w-full">
-                                <Image
-                                    src={imageUrl}
-                                    alt="Repair image"
-                                    fill
-                                    className="object-cover rounded-sm"
-                                    unoptimized
-                                />
-                            </div>
-                        </div>
-                    )}
+
                 </div>
             </CardContent>
         </Card>
