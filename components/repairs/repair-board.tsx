@@ -34,7 +34,7 @@ interface BoardColumn {
 }
 
 // Droppable Column Component
-function DroppableColumn({ column }: { column: BoardColumn }) {
+function DroppableColumn({ column, repairImages }: { column: BoardColumn; repairImages: Record<string, string> }) {
     const { setNodeRef, isOver } = useDroppable({
         id: column.id,
     });
@@ -60,7 +60,11 @@ function DroppableColumn({ column }: { column: BoardColumn }) {
                             </div>
                         ) : (
                             column.repairs.map((repair) => (
-                                <RepairCard key={repair._id} repair={repair} />
+                                <RepairCard 
+                                    key={repair._id} 
+                                    repair={repair} 
+                                    imageUrl={repairImages[repair._id]}
+                                />
                             ))
                         )}
                     </div>
@@ -73,11 +77,29 @@ function DroppableColumn({ column }: { column: BoardColumn }) {
 export function RepairBoard({ repairs }: RepairBoardProps) {
     const [repairsList, setRepairsList] = useState(repairs);
     const [activeRepair, setActiveRepair] = useState<Repair | null>(null);
+    const [repairImages, setRepairImages] = useState<Record<string, string>>({});
 
     // Sync state with prop changes
     useEffect(() => {
         setRepairsList(repairs);
     }, [repairs]);
+
+    // Fetch bulk repair images
+    useEffect(() => {
+        const fetchRepairImages = async () => {
+            try {
+                const response = await fetch('/api/repairs/images/bulk');
+                if (response.ok) {
+                    const data = await response.json();
+                    setRepairImages(data.repairImages || {});
+                }
+            } catch (error) {
+                console.error('Error fetching bulk repair images:', error);
+            }
+        };
+
+        fetchRepairImages();
+    }, []);
 
     // Debug logging
     console.log('RepairBoard - Total repairs:', repairs.length);
@@ -228,14 +250,14 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
             <div className="h-full">
                 <div className="flex gap-4 h-full overflow-x-auto pb-4">
                     {columns.map((column) => (
-                        <DroppableColumn key={column.id} column={column} />
+                        <DroppableColumn key={column.id} column={column} repairImages={repairImages} />
                     ))}
                 </div>
             </div>
             <DragOverlay>
                 {activeRepair ? (
                     <div className="opacity-90 rotate-3 transform scale-105">
-                        <RepairCard repair={activeRepair} />
+                        <RepairCard repair={activeRepair} imageUrl={repairImages[activeRepair._id]} />
                     </div>
                 ) : null}
             </DragOverlay>

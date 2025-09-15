@@ -69,7 +69,7 @@ export async function createTrelloRepairCard(repairData: RepairCardData): Promis
     if (repairData.repairOptions.other) selectedOptions.push("Other")
 
     // Create card title
-    const cardTitle = `Repair #${repairData.repairNumber} - ${repairData.customerName}`
+    const cardTitle = `Repair ${repairData.repairNumber} - ${repairData.customerName}`
 
     // Create detailed description
     const description = `
