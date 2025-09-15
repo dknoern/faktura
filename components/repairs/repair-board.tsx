@@ -131,7 +131,7 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
     console.log('RepairBoard - Open repairs (without itemNumber):', openRepairs.length);
 
     // Define vendor columns
-    const vendorColumns = ['Gyula', 'Smea', 'Patek', 'Ralf', 'Kovacs'];
+    const vendorColumns = ['Gyula', 'Smea', 'Patek', 'Ralph', 'Kovacs'];
 
     // Organize repairs into columns
     const incomingRepairs = openRepairs.filter(repair => 
@@ -139,19 +139,19 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
     );
     console.log('RepairBoard - Incoming repairs:', incomingRepairs.length);
 
-    const gyulaRepairs = openRepairs.filter(repair => repair.vendor === 'Gyula');
+    const gyulaRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('gyula'));
     console.log('RepairBoard - Gyula repairs:', gyulaRepairs.length);
 
-    const smeaRepairs = openRepairs.filter(repair => repair.vendor === 'Smea');
+    const smeaRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('smea'));
     console.log('RepairBoard - Smea repairs:', smeaRepairs.length);
 
-    const patekRepairs = openRepairs.filter(repair => repair.vendor === 'Patek');
+    const patekRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('patek'));
     console.log('RepairBoard - Patek repairs:', patekRepairs.length);
 
-    const ralfRepairs = openRepairs.filter(repair => repair.vendor === 'Ralf');
-    console.log('RepairBoard - Ralf repairs:', ralfRepairs.length);
+    const ralphRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('ralph'));
+    console.log('RepairBoard - Ralph repairs:', ralphRepairs.length);
 
-    const kovacsRepairs = openRepairs.filter(repair => repair.vendor === 'Kovacs');
+    const kovacsRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('kovacs'));
     console.log('RepairBoard - Kovacs repairs:', kovacsRepairs.length);
 
     const readyRepairs = openRepairs.filter(repair => 
@@ -195,8 +195,8 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
         },
         {
             id: 'ralph',
-            title: 'Ralf',
-            repairs: ralfRepairs,
+            title: 'Ralph',
+            repairs: ralphRepairs,
             color: 'bg-orange-50 border-orange-200',
             vendorValue: 'Ralf'
         },
