@@ -126,9 +126,9 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
     console.log('RepairBoard - Total repairs:', repairs.length);
     console.log('RepairBoard - Repairs data:', repairs);
 
-    // Filter to only show open repairs (no returnDate)
-    const openRepairs = repairsList.filter(repair => !repair.returnDate);
-    console.log('RepairBoard - Open repairs:', openRepairs.length);
+    // Filter to only show open repairs (no returnDate) and exclude repairs with itemNumber
+    const openRepairs = repairsList.filter(repair => !repair.returnDate && !repair.itemNumber);
+    console.log('RepairBoard - Open repairs (without itemNumber):', openRepairs.length);
 
     // Define vendor columns
     const vendorColumns = ['Gyula', 'Smea', 'Patek', 'Ralf', 'Kovacs'];
