@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createRepair, updateRepair } from "@/lib/actions";
 import { ProductSelectModal } from "@/components/invoices/product-select-modal";
+import { toast } from "react-hot-toast";
 
 interface Product {
   _id: string;
@@ -58,12 +59,27 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
   const [customerApprovedDate, setCustomerApprovedDate] = useState(repair?.customerApprovedDate || '');
   const [warrantyService, setWarrantyService] = useState(repair?.warrantyService || false);
   const [repairNumber, setRepairNumber] = useState(initialSelectedProduct?.itemNumber || repair?.repairNumber || '');
+  
+  // Add state for all form fields to retain values on error
+  const [vendor, setVendor] = useState(repair?.vendor || '');
+  const [description, setDescription] = useState(selectedProduct?.title || repair?.description || '');
+  const [repairIssues, setRepairIssues] = useState(repair?.repairIssues || '');
+  const [repairNotes, setRepairNotes] = useState(repair?.repairNotes || '');
+  const [customerFirstName, setCustomerFirstName] = useState(repair?.customerFirstName || selectedCustomer?.firstName || '');
+  const [customerLastName, setCustomerLastName] = useState(repair?.customerLastName || selectedCustomer?.lastName || '');
+  const [phone, setPhone] = useState(repair?.phone || selectedCustomer?.phone || '');
+  const [email, setEmail] = useState(repair?.email || selectedCustomer?.email || '');
+  const [repairCost, setRepairCost] = useState(repair?.repairCost?.toString() || '');
 
   const handleProductSelect = (product: Product) => {
     setSelectedProduct(product);
     // Update repair number with the selected product's item number
     if (product.itemNumber) {
       setRepairNumber(product.itemNumber);
+    }
+    // Update description when product is selected
+    if (product.title) {
+      setDescription(product.title);
     }
   };
 
@@ -86,6 +102,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
 
       if (repair) {
         await updateRepair(repair.repairNumber!, formData);
+        router.push("/repairs");
+        router.refresh();
       } else {
         // add hidden form elements for productId and customerId
         formData.set('productId', selectedProduct?._id || initialSelectedProduct?._id || '');
@@ -95,12 +113,19 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           formData.set('customerId', customerId.toString());
         }
 
-        await createRepair(formData);
+        const result = await createRepair(formData);
+        
+        if (result.success === false) {
+          toast.error(result.error || "An error occurred while creating the repair.");
+          return; // Don't navigate away if there's an error
+        }
+        
+        router.push("/repairs");
+        router.refresh();
       }
-      router.push("/repairs");
-      router.refresh();
     } catch (error) {
       console.error("Error saving repair:", error);
+      toast.error("An unexpected error occurred while saving the repair.");
     } finally {
       setIsSubmitting(false);
     }
@@ -138,7 +163,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           <Input
             id="vendor"
             name="vendor"
-            defaultValue={repair?.vendor}
+            value={vendor}
+            onChange={(e) => setVendor(e.target.value)}
             required
           />
         </div>
@@ -222,7 +248,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           id="repairIssues"
           name="repairIssues"
           rows={4}
-          defaultValue={repair?.repairIssues || ''}
+          value={repairIssues}
+          onChange={(e) => setRepairIssues(e.target.value)}
         />
       </div>
 
@@ -255,7 +282,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
         <Input
           id="description"
           name="description"
-          defaultValue={selectedProduct?.title || repair?.description || ''}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           required
         />
       </div>
@@ -266,7 +294,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           id="repairNotes"
           name="repairNotes"
           rows={4}
-          defaultValue={repair?.repairNotes || ''}
+          value={repairNotes}
+          onChange={(e) => setRepairNotes(e.target.value)}
         />
       </div>
 
@@ -276,7 +305,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           <Input
             id="customerFirstName"
             name="customerFirstName"
-            defaultValue={repair?.customerFirstName || selectedCustomer?.firstName || ''}
+            value={customerFirstName}
+            onChange={(e) => setCustomerFirstName(e.target.value)}
             required
           />
         </div>
@@ -285,7 +315,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           <Input
             id="customerLastName"
             name="customerLastName"
-            defaultValue={repair?.customerLastName || selectedCustomer?.lastName || ''}
+            value={customerLastName}
+            onChange={(e) => setCustomerLastName(e.target.value)}
             required
           />
         </div>
@@ -297,7 +328,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           <Input
             id="phone"
             name="phone"
-            defaultValue={repair?.phone || selectedCustomer?.phone || ''}
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
           />
         </div>
         <div className="space-y-2">
@@ -305,7 +337,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
           <Input
             id="email"
             name="email"
-            defaultValue={repair?.email || selectedCustomer?.email || ''}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
       </div>
@@ -321,7 +354,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
             name="repairCost"
             type="number"
             step="0.01"
-            defaultValue={repair?.repairCost || ''}
+            value={repairCost}
+            onChange={(e) => setRepairCost(e.target.value)}
             className="rounded-l-none"
           />
         </div>
