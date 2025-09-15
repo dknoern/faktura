@@ -10,7 +10,7 @@ import { createLog } from "@/app/actions/logs"
 import { KioskTransaction } from "@/lib/models/kiosk-transaction"
 import { getNextRepairNumber, createRepairRecord } from "@/lib/repair-utils"
 import { createTrelloRepairCards } from "@/lib/trello-api"
-import { uploadImagesToRepair } from "@/lib/repair-image-utils"
+import { uploadBase64ImagesToRepair } from './repair-image-utils';
 import { z } from "zod"
 import { logSchema, lineItemSchema } from "./models/log"
 type LogData = z.infer<typeof logSchema>;
@@ -226,20 +226,11 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
         for (let i = 0; i < createdRepairs.length; i++) {
           const repair = createdRepairs[i];
           const originalRepair = transaction.repairs![i];
-          
+          // Upload images to the repair if there are any
           if (originalRepair.images && originalRepair.images.length > 0) {
             try {
-              // Convert base64 data URLs back to File objects
-              const filePromises = originalRepair.images.map(async (dataUrl, index) => {
-                const response = await fetch(dataUrl);
-                const blob = await response.blob();
-                return new File([blob], `repair-${repair.repairNumber}-image-${index + 1}.jpg`, {
-                  type: blob.type || 'image/jpeg'
-                });
-              });
-              
-              const files = await Promise.all(filePromises);
-              const uploadResult = await uploadImagesToRepair(repair.repairId, files);
+              // Pass base64 images directly to the server-side compatible function
+              const uploadResult = await uploadBase64ImagesToRepair(repair.repairId, originalRepair.images);
               console.log(`Uploaded ${uploadResult.uploadedCount} of ${uploadResult.totalCount} images to repair #${repair.repairNumber}`);
             } catch (error) {
               console.error(`Error uploading images to repair #${repair.repairNumber}:`, error);
