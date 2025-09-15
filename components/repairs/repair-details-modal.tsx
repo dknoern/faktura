@@ -19,13 +19,11 @@ import {
   Clock,
   CheckCircle,
   Package,
-  Edit,
   Send,
   ChevronDown,
   ChevronUp
 } from "lucide-react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "react-hot-toast"
 
@@ -62,7 +60,6 @@ interface RepairDetailsModalProps {
 }
 
 export function RepairDetailsModal({ repairId, isOpen, onClose }: RepairDetailsModalProps) {
-  const router = useRouter()
   const [repair, setRepair] = useState<RepairDetails | null>(null)
   const [images, setImages] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -182,12 +179,6 @@ export function RepairDetailsModal({ repairId, isOpen, onClose }: RepairDetailsM
     }
   }
 
-  const handleEdit = () => {
-    if (repair) {
-      router.push(`/repairs/${repair._id}/edit`)
-      onClose()
-    }
-  }
 
   const getStatusBadge = () => {
     if (!repair) return null
@@ -214,15 +205,6 @@ export function RepairDetailsModal({ repairId, isOpen, onClose }: RepairDetailsM
               </DialogTitle>
               {getStatusBadge()}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleEdit}
-              className="gap-2"
-            >
-              <Edit className="h-4 w-4" />
-              Edit
-            </Button>
           </div>
         </DialogHeader>
 
