@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RepairCard } from "./repair-card"
 import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable } from '@dnd-kit/core'
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { toast } from "react-hot-toast"
 
 interface Repair {
@@ -78,6 +78,15 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
     const [repairsList, setRepairsList] = useState(repairs);
     const [activeRepair, setActiveRepair] = useState<Repair | null>(null);
     const [repairImages, setRepairImages] = useState<Record<string, string>>({});
+    
+    // Configure sensors with activation constraint
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8, // Minimum drag distance in pixels
+            },
+        })
+    );
 
     // Sync state with prop changes
     useEffect(() => {
@@ -246,7 +255,7 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
     };
 
     return (
-        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div className="h-full">
                 <div className="flex gap-4 h-full overflow-x-auto pb-4">
                     {columns.map((column) => (

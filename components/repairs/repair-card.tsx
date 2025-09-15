@@ -44,10 +44,12 @@ export function RepairCard({ repair, imageUrl }: RepairCardProps) {
         opacity: isDragging ? 0.5 : 1,
     };
 
-    const handleClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        console.log('Card clicked, navigating to:', `/repairs/${repair._id}/view`);
-        router.push(`/repairs/${repair._id}/view`);
+    const handleClick = () => {
+        // Only navigate if we're not dragging
+        if (!isDragging) {
+            console.log('Card clicked, navigating to:', `/repairs/${repair._id}/view`);
+            router.push(`/repairs/${repair._id}/view`);
+        }
     };
 
     const formatDate = (dateString: string | null) => {
@@ -63,21 +65,11 @@ export function RepairCard({ repair, imageUrl }: RepairCardProps) {
         <Card 
             ref={setNodeRef}
             style={style}
-            className="cursor-pointer hover:shadow-md transition-shadow duration-200 mb-3 relative"
+            className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow duration-200 mb-3 relative"
             {...attributes}
+            {...listeners}
             onClick={handleClick}
         >
-            <div 
-                className="absolute top-2 right-2 w-6 h-6 cursor-grab active:cursor-grabbing z-10"
-                {...listeners}
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                    <div className="w-1 h-1 bg-gray-400 rounded-full ml-1"></div>
-                    <div className="w-1 h-1 bg-gray-400 rounded-full ml-1"></div>
-                </div>
-            </div>
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                     <CardTitle className="text-sm font-medium truncate">
