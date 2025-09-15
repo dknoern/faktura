@@ -3,6 +3,7 @@
 import dbConnect from "@/lib/dbConnect"
 import { Repair } from "@/lib/models/repair"
 import { Counter } from "@/lib/models/counter"
+import { fetchDefaultTenant } from "./data"
 
 export async function getNextRepairNumber(): Promise<string> {
   try {
@@ -48,6 +49,9 @@ export async function createRepairRecord(repairData: {
 }) {
   try {
     await dbConnect()
+
+    const tenant = await fetchDefaultTenant();
+    const repairConfirmMessage = tenant.repairConfirmationText || "Thank you for your repair request. We will contact you soon.";
     
     // Build description from repair options
     const selectedOptions = []
@@ -73,6 +77,12 @@ export async function createRepairRecord(repairData: {
       warrantyService: false,
       customerId: parseInt(repairData.customerId) || 0,
       itemId: null, // No specific product linked for kiosk repairs
+      // get repairConfirmMessage from tenant config
+      messages: [{
+        date: new Date(),
+        from: tenant.name,
+        message: repairConfirmMessage
+      }]
     })
 
     // Build search string

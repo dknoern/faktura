@@ -1,11 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { 
   Calendar, 
   User, 
@@ -17,11 +19,21 @@ import {
   Clock,
   CheckCircle,
   Package,
-  Edit
+  Edit,
+  Send,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "react-hot-toast"
+
+interface Message {
+  date: string
+  from: string
+  message: string
+}
 
 interface RepairDetails {
   _id: string
@@ -40,6 +52,7 @@ interface RepairDetails {
   repairIssues?: string
   repairNotes?: string
   customerId?: string
+  messages?: Message[]
 }
 
 interface RepairDetailsModalProps {
@@ -54,15 +67,12 @@ export function RepairDetailsModal({ repairId, isOpen, onClose }: RepairDetailsM
   const [images, setImages] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [showReplyForm, setShowReplyForm] = useState(false)
+  const [replyMessage, setReplyMessage] = useState("")
+  const [sendingMessage, setSendingMessage] = useState(false)
+  const [expandedCorrespondence, setExpandedCorrespondence] = useState(true)
 
-  useEffect(() => {
-    if (repairId && isOpen) {
-      fetchRepairDetails()
-      fetchRepairImages()
-    }
-  }, [repairId, isOpen])
-
-  const fetchRepairDetails = async () => {
+  const fetchRepairDetails = useCallback(async () => {
     if (!repairId) return
     
     setLoading(true)
@@ -77,9 +87,9 @@ export function RepairDetailsModal({ repairId, isOpen, onClose }: RepairDetailsM
     } finally {
       setLoading(false)
     }
-  }
+  }, [repairId])
 
-  const fetchRepairImages = async () => {
+  const fetchRepairImages = useCallback(async () => {
     if (!repairId) return
     
     try {
@@ -94,7 +104,14 @@ export function RepairDetailsModal({ repairId, isOpen, onClose }: RepairDetailsM
     } catch (error) {
       console.error("Error fetching repair images:", error)
     }
-  }
+  }, [repairId])
+
+  useEffect(() => {
+    if (repairId && isOpen) {
+      fetchRepairDetails()
+      fetchRepairImages()
+    }
+  }, [repairId, isOpen, fetchRepairDetails, fetchRepairImages])
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A"
@@ -105,11 +122,64 @@ export function RepairDetailsModal({ repairId, isOpen, onClose }: RepairDetailsM
     })
   }
 
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      day: "numeric",
+      month: "short",
+      year: "2-digit"
+    })
+  }
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD"
     }).format(value)
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  const handleSendMessage = async () => {
+    if (!replyMessage.trim() || !repairId) return
+
+    setSendingMessage(true)
+    try {
+      const response = await fetch(`/api/repairs/${repairId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: replyMessage.trim()
+        })
+      })
+
+      if (response.ok) {
+        toast.success("Message sent successfully")
+        setReplyMessage("")
+        setShowReplyForm(false)
+        // Refresh repair details to show new message
+        await fetchRepairDetails()
+      } else {
+        toast.error("Failed to send message")
+      }
+    } catch (error) {
+      console.error("Error sending message:", error)
+      toast.error("Failed to send message")
+    } finally {
+      setSendingMessage(false)
+    }
   }
 
   const handleEdit = () => {
@@ -241,6 +311,101 @@ export function RepairDetailsModal({ repairId, isOpen, onClose }: RepairDetailsM
                         </div>
                       )}
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Correspondence */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setExpandedCorrespondence(!expandedCorrespondence)}
+                          className="hover:bg-gray-100 rounded p-1"
+                        >
+                          {expandedCorrespondence ? (
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </button>
+                        <h3 className="text-sm font-semibold">Correspondence</h3>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => setShowReplyForm(!showReplyForm)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        Reply
+                      </Button>
+                    </div>
+
+                    {expandedCorrespondence && (
+                      <div className="space-y-4">
+                        {/* Reply Form */}
+                        {showReplyForm && (
+                          <div className="border rounded-lg p-3 bg-gray-50">
+                            <Textarea
+                              value={replyMessage}
+                              onChange={(e) => setReplyMessage(e.target.value)}
+                              placeholder="Type your message..."
+                              className="min-h-[80px] mb-2"
+                            />
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setShowReplyForm(false)
+                                  setReplyMessage("")
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={handleSendMessage}
+                                disabled={!replyMessage.trim() || sendingMessage}
+                                className="gap-2"
+                              >
+                                <Send className="h-4 w-4" />
+                                {sendingMessage ? "Sending..." : "Send"}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Messages List */}
+                        {repair.messages && repair.messages.length > 0 ? (
+                          <div className="space-y-3">
+                            {[...repair.messages].sort((a, b) => 
+                              new Date(b.date).getTime() - new Date(a.date).getTime()
+                            ).map((msg, index) => (
+                              <div key={index} className="flex gap-3">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarFallback className="bg-green-100 text-green-700">
+                                    {getInitials(msg.from)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <span className="font-semibold">{msg.from}</span>
+                                    <span className="text-muted-foreground">
+                                      • {formatDateTime(msg.date)}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm mt-1 whitespace-pre-wrap">{msg.message}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground text-center py-4">
+                            No messages yet
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
