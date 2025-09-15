@@ -10,9 +10,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Save, Upload, X } from "lucide-react"
 import { KioskRepair } from "@/lib/models/kiosk-transaction"
 import { getDiagnosticFeeText, getManufacturers, getMaterials, getRepairDurationText } from "@/lib/utils/ref-data"
+import { compressImages } from "@/lib/image-utils"
 
 export default function AddRepairPage() {
   const router = useRouter()
@@ -29,6 +30,9 @@ export default function AddRepairPage() {
     },
     additionalDetails: ""
   })
+  const [images, setImages] = useState<File[]>([])
+  const [imageDataUrls, setImageDataUrls] = useState<string[]>([])
+  const [isCompressing, setIsCompressing] = useState(false)
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
@@ -47,6 +51,50 @@ export default function AddRepairPage() {
     }))
   }
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files) {
+      setIsCompressing(true)
+      try {
+        const imageFiles = Array.from(files).filter(file =>
+          file.type.startsWith('image/')
+        )
+
+        // Compress images to max 500KB each
+        const compressedImages = await compressImages(imageFiles, {
+          maxWidth: 1200,
+          maxHeight: 1200,
+          quality: 0.8,
+          maxSizeKB: 500
+        })
+
+        // Convert compressed images to base64 data URLs
+        const dataUrls = await Promise.all(
+          compressedImages.map(file => {
+            return new Promise<string>((resolve) => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result as string)
+              reader.readAsDataURL(file)
+            })
+          })
+        )
+
+        setImages(prev => [...prev, ...compressedImages])
+        setImageDataUrls(prev => [...prev, ...dataUrls])
+      } catch (error) {
+        console.error('Error compressing images:', error)
+        alert('Error processing images. Please try again.')
+      } finally {
+        setIsCompressing(false)
+      }
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index))
+    setImageDataUrls(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSave = () => {
     // Create repair item with unique ID
     const repairItem: KioskRepair = {
@@ -56,7 +104,8 @@ export default function AddRepairPage() {
       description: formData.description,
       itemValue: formData.itemValue,
       repairOptions: formData.repairOptions,
-      additionalDetails: formData.additionalDetails
+      additionalDetails: formData.additionalDetails,
+      images: imageDataUrls.length > 0 ? imageDataUrls : undefined
     }
 
     // Get existing repairs from sessionStorage
@@ -206,6 +255,76 @@ export default function AddRepairPage() {
                 placeholder="Describe any specific issues or additional details..."
                 rows={3}
               />
+            </div>
+
+            <Separator />
+
+            {/* Image Upload Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Upload Images</h3>
+              <p className="text-sm text-muted-foreground">
+                Add photos of your watch to help with the repair assessment
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="flex-1"
+                    disabled={isCompressing}
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const input = document.querySelector('input[type="file"]') as HTMLInputElement
+                      input?.click()
+                    }}
+                    disabled={isCompressing}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isCompressing ? 'Processing...' : 'Add Images'}
+                  </Button>
+                </div>
+
+                {isCompressing && (
+                  <div className="text-sm text-muted-foreground">
+                    Compressing images for upload...
+                  </div>
+                )}
+
+                {images.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      {images.length} image(s) ready for upload (compressed to ~500KB each)
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {imageDataUrls.map((dataUrl, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={dataUrl}
+                            alt={`Upload ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg border"
+                          />
+                          <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            {images[index] ? Math.round(images[index].size / 1024) : '~500'}KB
+                          </div>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeImage(index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="pt-4">

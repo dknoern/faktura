@@ -9,6 +9,8 @@ import { customerModel } from "@/lib/models/customer"
 import { createLog } from "@/app/actions/logs"
 import { KioskTransaction } from "@/lib/models/kiosk-transaction"
 import { getNextRepairNumber, createRepairRecord } from "@/lib/repair-utils"
+import { createTrelloRepairCards } from "@/lib/trello-api"
+import { uploadImagesToRepair } from "@/lib/repair-image-utils"
 import { z } from "zod"
 import { logSchema, lineItemSchema } from "./models/log"
 type LogData = z.infer<typeof logSchema>;
@@ -218,6 +220,33 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
         
         console.log(`Uploaded ${successfulUploads} of ${images.length} images to log ${logId}`);
       }
+
+      // Upload repair-specific images
+      if (createdRepairs.length > 0) {
+        for (let i = 0; i < createdRepairs.length; i++) {
+          const repair = createdRepairs[i];
+          const originalRepair = transaction.repairs![i];
+          
+          if (originalRepair.images && originalRepair.images.length > 0) {
+            try {
+              // Convert base64 data URLs back to File objects
+              const filePromises = originalRepair.images.map(async (dataUrl, index) => {
+                const response = await fetch(dataUrl);
+                const blob = await response.blob();
+                return new File([blob], `repair-${repair.repairNumber}-image-${index + 1}.jpg`, {
+                  type: blob.type || 'image/jpeg'
+                });
+              });
+              
+              const files = await Promise.all(filePromises);
+              const uploadResult = await uploadImagesToRepair(repair.repairId, files);
+              console.log(`Uploaded ${uploadResult.uploadedCount} of ${uploadResult.totalCount} images to repair #${repair.repairNumber}`);
+            } catch (error) {
+              console.error(`Error uploading images to repair #${repair.repairNumber}:`, error);
+            }
+          }
+        }
+      }
       
       // Send email notifications for each repair
       if (createdRepairs.length > 0 && transaction.customer.email) {
@@ -254,6 +283,44 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
         const successfulEmails = emailResults.filter(result => result).length;
         
         console.log(`Sent ${successfulEmails} of ${createdRepairs.length} repair confirmation emails`);
+      }
+
+      // Create Trello cards for each repair
+      if (createdRepairs.length > 0) {
+        const trelloCardData = createdRepairs.map((repair, index) => {
+          const originalRepair = transaction.repairs![index]
+          return {
+            repairNumber: repair.repairNumber,
+            repairId: repair.repairId,
+            customerName: `${transaction.customer.firstName} ${transaction.customer.lastName}`,
+            customerEmail: transaction.customer.email,
+            customerPhone: transaction.customer.phone,
+            brand: originalRepair.brand,
+            material: originalRepair.material,
+            description: originalRepair.description,
+            itemValue: originalRepair.itemValue,
+            repairOptions: originalRepair.repairOptions,
+            repairNotes: originalRepair.additionalDetails || '',
+            images: originalRepair.images || []
+          }
+        })
+
+        try {
+          const trelloResult = await createTrelloRepairCards(trelloCardData)
+          console.log(`Created ${trelloResult.totalCreated} of ${createdRepairs.length} Trello cards for repairs`)
+          
+          // Log individual results
+          trelloResult.results.forEach(result => {
+            if (result.success) {
+              console.log(`✓ Trello card created for repair #${result.repairNumber}`)
+            } else {
+              console.error(`✗ Failed to create Trello card for repair #${result.repairNumber}: ${result.error}`)
+            }
+          })
+        } catch (error) {
+          console.error('Error creating Trello cards:', error)
+          // Don't fail the entire transaction if Trello fails
+        }
       }
       
       return {

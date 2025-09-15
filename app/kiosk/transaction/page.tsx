@@ -125,11 +125,33 @@ export default function KioskTransactionPage() {
                   <Card key={repair.id}>
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-medium">{repair.brand} Watch</h4>
                           <p className="text-sm text-muted-foreground">{repair.material}</p>
                           {repair.description && (
                             <p className="text-xs text-muted-foreground">Ref: {repair.description}</p>
+                          )}
+                          {repair.images && repair.images.length > 0 && (
+                            <div className="mt-2">
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {repair.images.length} image(s) attached
+                              </p>
+                              <div className="flex gap-2">
+                                {repair.images.slice(0, 3).map((dataUrl, imgIndex) => (
+                                  <img
+                                    key={imgIndex}
+                                    src={dataUrl}
+                                    alt={`Repair ${index + 1} - Image ${imgIndex + 1}`}
+                                    className="w-12 h-12 object-cover rounded border"
+                                  />
+                                ))}
+                                {repair.images.length > 3 && (
+                                  <div className="w-12 h-12 bg-muted rounded border flex items-center justify-center text-xs text-muted-foreground">
+                                    +{repair.images.length - 3}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           )}
                         </div>
                         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">

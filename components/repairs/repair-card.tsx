@@ -5,6 +5,8 @@ import { User, Wrench, DollarSign, Clock } from "lucide-react";
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface Repair {
     _id: string;
@@ -26,6 +28,8 @@ interface RepairCardProps {
 
 export function RepairCard({ repair }: RepairCardProps) {
     const router = useRouter();
+    const [images, setImages] = useState<string[]>([]);
+    const [loadingImages, setLoadingImages] = useState(true);
 
     const {
         attributes,
@@ -41,6 +45,25 @@ export function RepairCard({ repair }: RepairCardProps) {
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0.5 : 1,
     };
+
+    // Fetch repair images
+    useEffect(() => {
+        const fetchImages = async () => {
+            try {
+                const response = await fetch(`/api/repairs/${repair._id}/images`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setImages(data.images || []);
+                }
+            } catch (error) {
+                console.error('Error fetching repair images:', error);
+            } finally {
+                setLoadingImages(false);
+            }
+        };
+
+        fetchImages();
+    }, [repair._id]);
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -117,6 +140,21 @@ export function RepairCard({ repair }: RepairCardProps) {
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Clock className="h-3 w-3" />
                             <span>Out: {formatDate(repair.dateOut)}</span>
+                        </div>
+                    )}
+
+                    {/* Repair Image */}
+                    {!loadingImages && images.length > 0 && (
+                        <div className="mt-2">
+                            <div className="relative aspect-square w-full">
+                                <Image
+                                    src={images[0]}
+                                    alt="Repair image"
+                                    fill
+                                    className="object-cover rounded-sm"
+                                    unoptimized
+                                />
+                            </div>
                         </div>
                     )}
                 </div>

@@ -14,6 +14,7 @@ export const kioskRepairSchema = z.object({
     other: z.boolean(),
   }),
   additionalDetails: z.string().optional(),
+  images: z.array(z.string()).optional(), // Base64 data URLs for sessionStorage compatibility
 });
 
 // Offer item for kiosk transaction

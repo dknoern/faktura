@@ -148,6 +148,33 @@ export async function getProductImages(productId: string): Promise<string[]> {
     }
 }
 
+export async function getRepairImages(repairId: string): Promise<string[]> {
+    if (IMAGE_BUCKET && s3Client) {
+        // Get from S3
+        const response = await s3Client.send(new ListObjectsV2Command({
+            Bucket: IMAGE_BUCKET,
+            Prefix: repairId
+        }));
+        
+        if (!response.Contents) {
+            return [];
+        }
+        
+        return response.Contents.map(item => item.Key || '');
+    }
+    else {
+        // Get from file system
+        try {
+            const files = await fs.readdir(UPLOADS_DIR);
+            const repairImages = files.filter(file => file.startsWith(repairId));
+            return repairImages.map(file => path.join("/", file));
+        } catch (error) {
+            console.error('Error reading repair images:', error);
+            return [];
+        }
+    }
+}
+
 
 export async function imageAction(action: 'rotateLeft' | 'rotateRight' | 'delete', filename: string) {
 
