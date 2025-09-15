@@ -1,7 +1,7 @@
 "use client"
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -19,6 +19,8 @@ interface ImageGalleryProps {
 export function ImageGallery({ images }: ImageGalleryProps) {
     const [open, setOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
+    
     // Convert absolute paths to API URLs
     const getApiUrl = (absolutePath: string) => {
         const filename = absolutePath.split('/').pop();
@@ -26,7 +28,13 @@ export function ImageGallery({ images }: ImageGalleryProps) {
         return `/api/images/${filename}?v=${encodeURIComponent(absolutePath)}`;
     };
 
-    const [localImages, setLocalImages] = useState<string[]>(images.map(getApiUrl));
+    // Initialize with mapped images to avoid hydration issues
+    const [localImages, setLocalImages] = useState<string[]>(() => images.map(getApiUrl));
+    
+    // Track when component is mounted
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleImageAction = async (action: 'rotateLeft' | 'rotateRight' | 'delete', imagePath: string) => {
         try {
@@ -50,13 +58,14 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                     setSelectedImage(null);
                 }
             } else {
-                // Force a refresh of the image by adding a timestamp query parameter
-                const timestamp = Date.now();
+                // Force a refresh of the image by adding a counter query parameter
+                // Only use random values after mount to avoid hydration issues
+                const counter = mounted ? Math.random().toString(36).substring(7) : 'refresh';
                 const newImages = localImages.map(img => {
                     if (img === imagePath) {
                         // Remove any existing timestamp query
                         const baseUrl = img.split('?')[0];
-                        return `${baseUrl}?t=${timestamp}`;
+                        return `${baseUrl}?t=${counter}`;
                     }
                     return img;
                 });
@@ -65,7 +74,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                 // Update the selected image if it was the one rotated
                 if (selectedImage === imagePath) {
                     const baseUrl = imagePath.split('?')[0];
-                    setSelectedImage(`${baseUrl}?t=${timestamp}`);
+                    setSelectedImage(`${baseUrl}?t=${counter}`);
                 }
             }
         } catch (error) {
@@ -74,6 +83,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
         }
     };
 
+    // Don't render anything if there are no images
     if (images.length === 0) {
         return null;
     }

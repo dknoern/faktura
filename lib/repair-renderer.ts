@@ -30,20 +30,22 @@ export interface Tenant {
   website?: string;
 }
 
-// Format currency values
+// Format currency values - using consistent format to avoid hydration issues
 export const formatCurrency = (value: number = 0) => {
-  return value.toLocaleString('en-US', { 
-    style: 'currency', 
-    currency: 'USD',
-    minimumFractionDigits: 2
-  });
+  const formatted = value.toFixed(2);
+  return `$${formatted}`;
 };
 
-// Format date values
+// Format date values - using consistent format to avoid hydration issues
 export const formatDate = (dateString: string | null) => {
-  return dateString 
-    ? new Date(dateString).toLocaleDateString() 
-    : '';
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${month}/${day}/${year}`;
 };
 
 // Generate repair HTML content
