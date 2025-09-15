@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import "../lib/console-timestamp"; // Add timestamps to all console logs
+import { TestInstanceIndicator } from "@/components/test-instance-indicator";
 
 
 const geistSans = localFont({
@@ -36,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en">
         <body>
+          <TestInstanceIndicator />
           <div className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`} style={{ 
             backgroundImage: `url("/rolex-sky-dweller.jpg"), linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)`,
             backgroundSize: 'cover, cover',
