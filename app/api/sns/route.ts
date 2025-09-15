@@ -189,34 +189,38 @@ async function addMessageToRepair(repairId: string, fromEmail: string, messageCo
 
 // Function to extract new content from email reply (removes quoted history)
 function extractNewEmailContent(emailText: string): string {
-  // Common patterns that indicate start of quoted/forwarded content
-  const quotedContentPatterns = [
-    // Gmail style: "On [date] at [time] [sender] wrote:"
-    /On\s+.+?wrote:\s*$/im,
-    // Outlook style: "From: [sender]" or "-----Original Message-----"
-    /^-+\s*Original Message\s*-+/im,
-    /^From:\s*.+$/im,
-    // Generic patterns
-    /^>\s/m, // Lines starting with >
-    /^On\s+\d+\/\d+\/\d+.+?wrote:?\s*$/im, // Date-based patterns
-    /^\s*[-_=]{3,}\s*$/m, // Lines with multiple dashes/underscores
-    // Apple Mail style
-    /^Begin forwarded message:/im,
-    // Thunderbird style
-    /^-------- Original Message --------/im,
-  ];
-
   let cleanContent = emailText.trim();
   
-  // Try each pattern to find where quoted content starts
-  for (const pattern of quotedContentPatterns) {
-    const match = cleanContent.match(pattern);
-    if (match && match.index !== undefined) {
-      // Take everything before the quoted content
-      cleanContent = cleanContent.substring(0, match.index).trim();
+  // Split into lines for easier processing
+  const lines = cleanContent.split('\n');
+  const newContentLines: string[] = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Check for Gmail pattern: "On [weekday], [month] [day], [year] at [time] [sender] <"
+    if (line.match(/^On\s+\w+,\s+\w+\s+\d+,\s+\d+\s+at\s+\d+:\d+\s+[AP]M\s+/)) {
+      console.log(`Found Gmail quote start at line ${i}: "${line}"`);
       break;
     }
+    
+    // Check for other common patterns
+    if (line.match(/^-+\s*Original Message\s*-+/) ||
+        line.match(/^From:\s*.+$/) ||
+        line.match(/^>\s/) ||
+        line.match(/^Begin forwarded message:/) ||
+        line.match(/^-------- Original Message --------/) ||
+        line.match(/^\s*[-_=]{3,}\s*$/)) {
+      console.log(`Found quote pattern at line ${i}: "${line}"`);
+      break;
+    }
+    
+    // Add line to new content
+    newContentLines.push(lines[i]);
   }
+  
+  // Join the new content lines
+  cleanContent = newContentLines.join('\n').trim();
   
   // Additional cleanup: remove common reply artifacts
   cleanContent = cleanContent
@@ -226,6 +230,7 @@ function extractNewEmailContent(emailText: string): string {
     .replace(/\n\s*\n\s*\n/g, '\n\n')
     .trim();
   
+  console.log(`Extracted new content: "${cleanContent}"`);
   return cleanContent;
 }
 
