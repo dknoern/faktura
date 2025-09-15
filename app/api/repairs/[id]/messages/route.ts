@@ -117,6 +117,7 @@ export async function POST(
           },
           body: JSON.stringify({
             to: customerEmail,
+            repairId: repair._id,
             subject: `Update on Repair #${repair.repairNumber}`,
             html: emailHtml
           })

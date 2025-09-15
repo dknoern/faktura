@@ -250,6 +250,7 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
+                repairId: repair.repairId,
                 repairNumber: repair.repairNumber,
                 customerFirstName: transaction.customer.firstName,
                 customerLastName: transaction.customer.lastName,

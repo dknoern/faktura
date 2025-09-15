@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { simpleParser } from 'mailparser';
+import { fetchRepairById } from '@/lib/data';
+import { Repair } from '@/lib/models/repair';
+import dbConnect from '@/lib/dbConnect';
 
 // AWS S3 client configuration
 const s3Client = new S3Client({
@@ -140,6 +143,92 @@ async function getEmailFromS3(bucketName: string, objectKey: string): Promise<st
   }
 }
 
+// Function to parse repair ID from email address
+function parseRepairIdFromEmail(emailAddress: string): string | null {
+  try {
+    // Look for pattern: repairs+{repairId}@domain.com
+    const match = emailAddress.match(/repairs\+([^@]+)@/);
+    return match ? match[1] : null;
+  } catch (error) {
+    console.error('Error parsing repair ID from email:', error);
+    return null;
+  }
+}
+
+// Function to add message to repair
+async function addMessageToRepair(repairId: string, fromEmail: string, messageContent: string): Promise<boolean> {
+  try {
+    await dbConnect();
+    
+    const result = await Repair.findByIdAndUpdate(
+      repairId,
+      {
+        $push: {
+          messages: {
+            date: new Date(),
+            from: fromEmail,
+            message: messageContent
+          }
+        }
+      },
+      { new: true }
+    );
+    
+    if (result) {
+      console.log(`Message added to repair ${repairId} successfully`);
+      return true;
+    } else {
+      console.log(`Repair ${repairId} not found`);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error adding message to repair:', error);
+    return false;
+  }
+}
+
+// Function to extract new content from email reply (removes quoted history)
+function extractNewEmailContent(emailText: string): string {
+  // Common patterns that indicate start of quoted/forwarded content
+  const quotedContentPatterns = [
+    // Gmail style: "On [date] at [time] [sender] wrote:"
+    /On\s+.+?wrote:\s*$/im,
+    // Outlook style: "From: [sender]" or "-----Original Message-----"
+    /^-+\s*Original Message\s*-+/im,
+    /^From:\s*.+$/im,
+    // Generic patterns
+    /^>\s/m, // Lines starting with >
+    /^On\s+\d+\/\d+\/\d+.+?wrote:?\s*$/im, // Date-based patterns
+    /^\s*[-_=]{3,}\s*$/m, // Lines with multiple dashes/underscores
+    // Apple Mail style
+    /^Begin forwarded message:/im,
+    // Thunderbird style
+    /^-------- Original Message --------/im,
+  ];
+
+  let cleanContent = emailText.trim();
+  
+  // Try each pattern to find where quoted content starts
+  for (const pattern of quotedContentPatterns) {
+    const match = cleanContent.match(pattern);
+    if (match && match.index !== undefined) {
+      // Take everything before the quoted content
+      cleanContent = cleanContent.substring(0, match.index).trim();
+      break;
+    }
+  }
+  
+  // Additional cleanup: remove common reply artifacts
+  cleanContent = cleanContent
+    // Remove lines that are just quotes (>) 
+    .replace(/^>\s*$/gm, '')
+    // Remove excessive whitespace
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim();
+  
+  return cleanContent;
+}
+
 // Function to parse email and extract text body
 async function parseEmailContent(emailContent: string): Promise<string | null> {
   try {
@@ -160,8 +249,13 @@ async function parseEmailContent(emailContent: string): Promise<string | null> {
     }
     
     if (textBody) {
-      console.log('Email text body:', textBody.substring(0, 500) + (textBody.length > 500 ? '...' : ''));
-      return textBody;
+      // Extract just the new content (remove quoted history)
+      const newContent = extractNewEmailContent(textBody);
+      
+      console.log('Full email text body:', textBody.substring(0, 500) + (textBody.length > 500 ? '...' : ''));
+      console.log('New content only:', newContent.substring(0, 500) + (newContent.length > 500 ? '...' : ''));
+      
+      return newContent || textBody; // Fallback to full content if extraction fails
     } else {
       console.log('No text content found in email');
       return null;
@@ -190,6 +284,32 @@ async function processSESNotification(sesNotification: SESNotification): Promise
       
       console.log(`Email stored in S3: ${bucketName}/${objectKey}`);
       
+      // Parse repair ID from To addresses
+      let repairId: string | null = null;
+      const toAddresses = sesNotification.mail.commonHeaders.to || [];
+      
+      for (const toAddress of toAddresses) {
+        repairId = parseRepairIdFromEmail(toAddress);
+        if (repairId) {
+          console.log(`Found repair ID: ${repairId} from address: ${toAddress}`);
+          break;
+        }
+      }
+      
+      if (!repairId) {
+        console.log('No repair ID found in To addresses, ignoring email');
+        return;
+      }
+      
+      // Check if repair exists in database
+      const repair = await fetchRepairById(repairId);
+      if (!repair) {
+        console.log(`Repair ${repairId} not found in database, ignoring email`);
+        return;
+      }
+      
+      console.log(`Repair ${repairId} found, processing email content`);
+      
       // Retrieve email content from S3
       const emailContent = await getEmailFromS3(bucketName, objectKey);
       
@@ -202,8 +322,17 @@ async function processSESNotification(sesNotification: SESNotification): Promise
           console.log(textBody);
           console.log('=== END EMAIL TEXT BODY ===');
           
-          // Here you can add additional processing logic
-          // For example, save to database, trigger workflows, etc.
+          // Get sender email address
+          const fromEmail = sesNotification.mail.commonHeaders.from?.[0] || 'Unknown';
+          
+          // Add message to repair
+          const success = await addMessageToRepair(repairId, fromEmail, textBody);
+          
+          if (success) {
+            console.log(`Successfully added message to repair ${repairId}`);
+          } else {
+            console.log(`Failed to add message to repair ${repairId}`);
+          }
         }
       }
     } else {

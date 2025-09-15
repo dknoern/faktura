@@ -14,19 +14,23 @@ const sesClient = new SESClient({
 
 export async function POST(request: NextRequest) {
   try {
-    const { to, subject, html } = await request.json()
+    const { to, subject, html, repairId } = await request.json()
 
-    if (!to || !subject || !html) {
+    if (!to || !subject || !html || !repairId) {
       return NextResponse.json(
-        { error: "Missing required fields: to, subject, html" },
+        { error: "Missing required fields: to, subject, html, repairId" },
         { status: 400 }
       )
     }
 
     const tenant = await fetchDefaultTenant()
+    const emailDomain = tenant!.repairEmail!.split('@')[1]
+    const sourceEmail = `${tenant!.nameLong} <repairs@${emailDomain}>`
+    const replyToEmail = `repairs+${repairId}@${emailDomain}`
 
     const command = new SendEmailCommand({
-      Source: tenant?.repairEmail || 'noreply@example.com',
+      Source: sourceEmail,
+      ReplyToAddresses: [replyToEmail],
       Destination: {
         ToAddresses: [to],
       },

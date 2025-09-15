@@ -1,0 +1,146 @@
+{
+    "notificationType": "Received",
+    "mail": {
+        "timestamp": "2025-09-15T22:21:30.110Z",
+        "source": "dknoern@seattleweb.com",
+        "messageId": "glgkh8djvfi370q98h2ti38o27o5b596605pj9o1",
+        "destination": [
+            "repairs+some-more-info@demesyinventory.com"
+        ],
+        "headersTruncated": false,
+        "headers": [
+            {
+                "name": "Return-Path",
+                "value": "<dknoern@seattleweb.com>"
+            },
+            {
+                "name": "Received",
+                "value": "from mail-ej1-f41.google.com (mail-ej1-f41.google.com [209.85.218.41]) by inbound-smtp.us-east-1.amazonaws.com with SMTP id glgkh8djvfi370q98h2ti38o27o5b596605pj9o1 for repairs+some-more-info@demesyinventory.com; Mon, 15 Sep 2025 22:21:30 +0000 (UTC)"
+            },
+            {
+                "name": "X-SES-Spam-Verdict",
+                "value": "PASS"
+            },
+            {
+                "name": "X-SES-Virus-Verdict",
+                "value": "PASS"
+            },
+            {
+                "name": "Received-SPF",
+                "value": "none (spfCheck: 209.85.218.41 is neither permitted nor denied by domain of seattleweb.com) client-ip=209.85.218.41; envelope-from=dknoern@seattleweb.com; helo=mail-ej1-f41.google.com;"
+            },
+            {
+                "name": "Authentication-Results",
+                "value": "amazonses.com; spf=none (spfCheck: 209.85.218.41 is neither permitted nor denied by domain of seattleweb.com) client-ip=209.85.218.41; envelope-from=dknoern@seattleweb.com; helo=mail-ej1-f41.google.com; dkim=pass header.i=@seattleweb-com.20230601.gappssmtp.com; dmarc=none header.from=seattleweb.com;"
+            },
+            {
+                "name": "X-SES-RECEIPT",
+                "value": "AEFBQUFBQUFBQUFIcTRGb3Z6V1N0TXY2RnBXYWpHT3dpNTk2YkpmOTRyRnZEV0tseTZ2dFhNZjVsVjAxWWNDL2FYeUJTRnJVUzhhWldudnVCekhaWm1MT2h5d3R0V3lXTkd1QTFxazlTdHAvdjd0dU5rT2NoMjRyRHdjQVlFRGExZG1Uc3FkdWdYMHRSZG5TZ1ZMckFUZkNha1BhZGFqVi9GS2lrakZ2Vyt6WGx4NGtxRUFveU1FSmxUdDdnZGlZa011OWpGUlhnSkdnZDZZdU5DK29JeGFGRTdncUVZaWxCMVNGNStRM3hUenBYSllIVlIzcDlYUi9WREhNaHBxODk4eHAzQXFEbUJIUG5NT3FQRUhWdHhRL0F6WWpoR0Q5SGdPRmtTMCtXQWowN282VWNZZ2pZaEE9PQ=="
+            },
+            {
+                "name": "X-SES-DKIM-SIGNATURE",
+                "value": "a=rsa-sha256; q=dns/txt; b=s8pu9E2E1tvYproW7oxQKMEryiVtjgv20kjp9OydPgya9/QelmFAt7Ymt075VPQBAbRv7blsis1qwrpqsT4f9oyr7jShO+wHWMbNzxVc2YmnQgTJOvHqrrFK5P/LjvkZIvhZlyywzLEhcncCQB/MI1trLVgzavxGhr4zAmSXmsw=; c=relaxed/simple; s=6gbrjpgwjskckoa6a5zn6fwqkn67xbtw; d=amazonses.com; t=1757974890; v=1; bh=M3OvEKUyyBQDSiiefxAe6MOLsrvhuRqTT5RiEVoDEdQ=; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;"
+            },
+            {
+                "name": "Received",
+                "value": "by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-b00a9989633so915396566b.0 for <repairs+some-more-info@demesyinventory.com>; Mon, 15 Sep 2025 15:21:29 -0700 (PDT)"
+            },
+            {
+                "name": "DKIM-Signature",
+                "value": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=seattleweb-com.20230601.gappssmtp.com; s=20230601; t=1757974888; x=1758579688; darn=demesyinventory.com; h=to:subject:message-id:date:from:mime-version:from:to:cc:subject:date:message-id:reply-to; bh=M3OvEKUyyBQDSiiefxAe6MOLsrvhuRqTT5RiEVoDEdQ=; b=sZj+0sNYiToskIm3jbpuGZKYjaPu+nHtZ+p1QqRMeBt5hId/dLLRi1eViRuZ77cyWLq1kpT96jYaAmJPrBkhWaZZmx+UrDBmo/4ZNwQnlqrb4jbvx8/EaODx1i9VZCUiINUcMe2RGAv+uPdJosbPlfad0oyYped5E/92MqHP9UWLu6JPdRDWobbju5da2jAEIFO6r/zoSIkvI0z2r1Pi3F+7OOH8xnbzgMXRv6qF1foF5qfdae4iwSojmNnXTBBXv55dYF6r190/K8841GvdvHmQBDxpORvByncTwTIKfVxMKNipmUxnicwlazKgMbWk4F8Uq2znZARaPbCX6FhFBw=="
+            },
+            {
+                "name": "X-Google-DKIM-Signature",
+                "value": "v=1; a=rsa-sha256; c=relaxed/relaxed; d=1e100.net; s=20230601; t=1757974888; x=1758579688; h=to:subject:message-id:date:from:mime-version:x-gm-message-state :from:to:cc:subject:date:message-id:reply-to; bh=M3OvEKUyyBQDSiiefxAe6MOLsrvhuRqTT5RiEVoDEdQ=; b=en8SguoFx3Zy1QmOTpM9xiayhgdIG3yZeLv1snZU6sV2Y9W8Zxkf8Fl8EVnj4VD4JD o+LQbJH5nI/lG5xiMEPFUUAt1N2lol7ydTE+yL5JV9IRJ9aLMBnFUi2CNp10/ii9Uf2h f+SBdrmkAGAMOHU3dfmJQkaK1xnlWMkcH3DScfE8mzRhw/xXa5Zzki6okYMv+5u32Fhu u1NGOfI5RoCEIlXu8+d7cT4pPRHU/t3bC0NHUQEROrm24EyG8lWFTboNfZIjVV7Q32MX BICnht8d0PcvLSw2m+V/qgsFDoAcrfpa54mAWneKv6xq+WIDz/KYLighCrSBGRPk3P9b UCDQ=="
+            },
+            {
+                "name": "X-Gm-Message-State",
+                "value": "AOJu0Yw+0m0k0yYNO/BiJaIuii6DUg1N77Qka3R1p8ouTxi2rnfxDBWk +u4x6iy3E0VMBCnQC8Tvu32zBsL2FGRJZTzs7j5a+EiHctVs6hY0kvd3BVcXTx25wTTxwmuxKRT 5qeNTt2naYz5kzeOHj02nK6wnxudAtT32tSTTu37fCfMrUSkHQvPR7VA="
+            },
+            {
+                "name": "X-Gm-Gg",
+                "value": "ASbGncurxAlB88ALaqYkOT75n1Z+vxRNMSH4MJNpMLv8NqyTK1gXhYzesxHSUsQSw65 iG3kySGklm1sAn6aRoxb4JU8fE4agUtRKiB3f6o0fQiyuzQosTehBg6iR9Tv40bu6n73eKkQC1Z aFu0Mq9C9pUs6J9mRbOjlXALD38RAzukzQ4oF6TIzZnrpaK9+ZOUM6OR9dD6ZeAvdFkPHFJWpiM P7eYXv7b1JdU095vT3pslS3lDDW5vbgvOxaNDpKdTHGRVYqGL+q"
+            },
+            {
+                "name": "X-Google-Smtp-Source",
+                "value": "AGHT+IGoXimBEC0br2D1maTujxFyaZbDePqF39gvwbIUytBIRO1JCavLmWVqiJNRizgOPPSjyAlg5TfxZ1c5Vnmv2C4="
+            },
+            {
+                "name": "X-Received",
+                "value": "by 2002:a17:907:9492:b0:afe:d4b0:c0bf with SMTP id a640c23a62f3a-b1681cca982mr6918766b.17.1757974888418; Mon, 15 Sep 2025 15:21:28 -0700 (PDT)"
+            },
+            {
+                "name": "MIME-Version",
+                "value": "1.0"
+            },
+            {
+                "name": "From",
+                "value": "David Knoernschild <david@seattleweb.com>"
+            },
+            {
+                "name": "Date",
+                "value": "Mon, 15 Sep 2025 15:21:17 -0700"
+            },
+            {
+                "name": "X-Gm-Features",
+                "value": "AS18NWAvAnRN5dYhOlwT4affG1x7HE_ToF3ym8ZkikgVJSPxYR4htZPaf3hzyKE"
+            },
+            {
+                "name": "Message-ID",
+                "value": "<CAMDiUUZQBbddOCfxmqrojZ_ds8nzc26SB01jrRSDDdNq4qt3cw@mail.gmail.com>"
+            },
+            {
+                "name": "Subject",
+                "value": "hi"
+            },
+            {
+                "name": "To",
+                "value": "repairs+some-more-info@demesyinventory.com"
+            },
+            {
+                "name": "Content-Type",
+                "value": "multipart/alternative; boundary=\"000000000000bfa171063ede6c2c\""
+            }
+        ],
+        "commonHeaders": {
+            "returnPath": "dknoern@seattleweb.com",
+            "from": [
+                "David Knoernschild <david@seattleweb.com>"
+            ],
+            "date": "Mon, 15 Sep 2025 15:21:17 -0700",
+            "to": [
+                "repairs+some-more-info@demesyinventory.com"
+            ],
+            "messageId": "<CAMDiUUZQBbddOCfxmqrojZ_ds8nzc26SB01jrRSDDdNq4qt3cw@mail.gmail.com>",
+            "subject": "hi"
+        }
+    },
+    "receipt": {
+        "timestamp": "2025-09-15T22:21:30.110Z",
+        "processingTimeMillis": 834,
+        "recipients": [
+            "repairs+some-more-info@demesyinventory.com"
+        ],
+        "spamVerdict": {
+            "status": "PASS"
+        },
+        "virusVerdict": {
+            "status": "PASS"
+        },
+        "spfVerdict": {
+            "status": "GRAY"
+        },
+        "dkimVerdict": {
+            "status": "GRAY"
+        },
+        "dmarcVerdict": {
+            "status": "GRAY"
+        },
+        "action": {
+            "type": "S3",
+            "topicArn": "arn:aws:sns:us-east-1:484951121041:demesyCustomerRepairEmails",
+            "bucketName": "demesy-repair-emails",
+            "objectKey": "glgkh8djvfi370q98h2ti38o27o5b596605pj9o1"
+        }
+    }
+}
