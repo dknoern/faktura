@@ -131,11 +131,12 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
     console.log('RepairBoard - Open repairs (without itemNumber):', openRepairs.length);
 
     // Define vendor columns
-    const vendorColumns = ['Gyula', 'Smea', 'Patek', 'Ralph', 'Kovacs'];
+    const vendorColumns = ['Gyula', 'Smea', 'Patek', 'Ralph', 'Kovacs', 'Sheahan', 'Rusty', 'Bill Nobel', 'Vacheron', 'Bedrich'];
 
-    // Organize repairs into columns
+
     const incomingRepairs = openRepairs.filter(repair => 
-        !repair.vendor || !vendorColumns.includes(repair.vendor)
+        // incoming repairs are those with no vendor or vendor name that does not start with one of the vendor columns
+        !repair.vendor || !vendorColumns.some(col => repair.vendor.toLowerCase().startsWith(col.toLowerCase()))
     );
     console.log('RepairBoard - Incoming repairs:', incomingRepairs.length);
 
@@ -153,6 +154,21 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
 
     const kovacsRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('kovacs'));
     console.log('RepairBoard - Kovacs repairs:', kovacsRepairs.length);
+
+    const sheahanRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('sheahan'));
+    console.log('RepairBoard - Sheahan repairs:', sheahanRepairs.length);
+
+    const rustyRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('rusty'));
+    console.log('RepairBoard - Rusty repairs:', rustyRepairs.length);
+
+    const billNobelRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('bill nobel'));
+    console.log('RepairBoard - Bill Nobel repairs:', billNobelRepairs.length);
+
+    const vacheronRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('vacheron'));
+    console.log('RepairBoard - Vacheron repairs:', vacheronRepairs.length);
+
+    const bedrichRepairs = openRepairs.filter(repair => repair.vendor && repair.vendor.toLowerCase().startsWith('bedrich'));
+    console.log('RepairBoard - Bedrich repairs:', bedrichRepairs.length);
 
     const readyRepairs = openRepairs.filter(repair => 
         repair.customerApprovedDate && repair.vendor && vendorColumns.includes(repair.vendor)
@@ -206,6 +222,41 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
             repairs: kovacsRepairs,
             color: 'bg-red-50 border-red-200',
             vendorValue: 'Kovacs'
+        },
+        {
+            id: 'sheahan',
+            title: 'Sheahan',
+            repairs: sheahanRepairs,
+            color: 'bg-green-50 border-green-200',
+            vendorValue: 'Sheahan'
+        },
+        {
+            id: 'rusty',
+            title: 'Rusty',
+            repairs: rustyRepairs,
+            color: 'bg-yellow-50 border-yellow-200',
+            vendorValue: 'Rusty'
+        },
+        {
+            id: 'bill-nobel',
+            title: 'Bill Nobel',
+            repairs: billNobelRepairs,
+            color: 'bg-purple-50 border-purple-200',
+            vendorValue: 'Bill Nobel'
+        },
+        {
+            id: 'vacheron',
+            title: 'Vacheron',
+            repairs: vacheronRepairs,
+            color: 'bg-orange-50 border-orange-200',
+            vendorValue: 'Vacheron'
+        },
+        {
+            id: 'bedrich',
+            title: 'Bedrich',
+            repairs: bedrichRepairs,
+            color: 'bg-red-50 border-red-200',
+            vendorValue: 'Bedrich'
         }
 
     ];
@@ -294,7 +345,11 @@ export function RepairBoard({ repairs }: RepairBoardProps) {
                 <DragOverlay>
                     {activeRepair ? (
                         <div className="opacity-90 rotate-3 transform scale-105">
-                            <RepairCard repair={activeRepair} imageUrl={repairImages[activeRepair._id]} />
+                            <RepairCard 
+                                repair={activeRepair} 
+                                imageUrl={repairImages[activeRepair._id]}
+                                onCardClick={() => {}} 
+                            />
                         </div>
                     ) : null}
                 </DragOverlay>
