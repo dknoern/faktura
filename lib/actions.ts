@@ -8,6 +8,7 @@ import { getShortUser } from "./auth-utils";
 import { format } from "date-fns";
 import { Counter } from "./models/counter";
 import { updateProductHistory } from "./utils/product-history";
+import { createTrelloRepairCard } from "./trello-api";
 
 // Helper function to get next repair number
 async function getNextRepairNumber(): Promise<string> {
@@ -146,6 +147,41 @@ export async function createRepair(formData: FormData) {
       }, {
         upsert: false, useFindAndModify: false
       });
+    }
+
+    // Create Trello card for the repair only if itemNumber is not set
+    if (!repair.itemNumber || repair.itemNumber.trim() === '') {
+      try {
+        const trelloCardData = {
+          repairNumber: repair.repairNumber,
+          repairId: repair._id.toString(),
+          customerName: `${repair.customerFirstName} ${repair.customerLastName}`,
+          customerEmail: repair.email,
+          customerPhone: repair.phone,
+          brand: 'Unknown',
+          material: 'Unknown',
+          description: repair.description,
+          itemValue: undefined,
+          repairOptions: {
+            service: repair.warrantyService || false,
+            polish: false,
+            batteryChange: false,
+            other: true
+          },
+          repairNotes: repair.repairNotes || repair.repairIssues || ''
+        };
+
+        const trelloResult = await createTrelloRepairCard(trelloCardData);
+        
+        if (trelloResult.success) {
+          console.log(`✓ Trello card created for repair #${repair.repairNumber}`);
+        } else {
+          console.error(`✗ Failed to create Trello card for repair #${repair.repairNumber}: ${trelloResult.error}`);
+        }
+      } catch (error) {
+        console.error('Error creating Trello card:', error);
+        // Don't fail the repair creation if Trello fails
+      }
     }
 
     return { success: true };
