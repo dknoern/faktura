@@ -30,7 +30,7 @@ function parseCardDescription(description: string) {
   const patterns = {
     firstName: /\*\*First Name:\*\*\s*([^\n\r]+)/i,
     lastName: /\*\*Last Name:\*\*\s*([^\n\r]+)/i,
-    email: /\*\*E-mail:\*\*\s*\[([^\]]+)\]/i,
+    email: /\*\*E-mail:\*\*\s*\[([^\]]+)\]|\*\*E-mail:\*\*\s*([^\n\r]+)/i,
     phoneNumber: /\*\*Phone Number:\*\*\s*([^\n\r]+)/i,
     brand: /\*\*Brand:\*\*\s*([^\n\r]+)/i,
     model: /\*\*Model:\*\*\s*([^\n\r]+)/i,
@@ -42,8 +42,13 @@ function parseCardDescription(description: string) {
   // Extract each field
   Object.keys(patterns).forEach(key => {
     const match = description.match(patterns[key as keyof typeof patterns]);
-    if (match && match[1]) {
-      fields[key as keyof typeof fields] = match[1].trim();
+    if (match) {
+      // For email, check both capture groups since we have an OR pattern
+      if (key === 'email') {
+        fields[key as keyof typeof fields] = (match[1] || match[2] || '').trim();
+      } else if (match[1]) {
+        fields[key as keyof typeof fields] = match[1].trim();
+      }
     }
   });
 

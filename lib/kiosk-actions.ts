@@ -59,7 +59,7 @@ interface SearchCustomersParams {
 
 // Helper function to normalize phone numbers by removing formatting
 function normalizePhoneNumber(phone: string): string {
-  return phone.replace(/[\s\-\(\)\.]/g, '')
+  return phone.replace(/[^\d]/g, '')
 }
 
 export async function searchCustomers(params: SearchCustomersParams) {
@@ -81,18 +81,15 @@ export async function searchCustomers(params: SearchCustomersParams) {
   }
   
   if (params.phone) {
-    // Normalize the search phone number
+    // Normalize the search phone number to digits only
     const normalizedSearchPhone = normalizePhoneNumber(params.phone)
     
-    // Create regex pattern that matches the normalized digits
-    // This will match phone numbers regardless of formatting
-    const phoneRegexPattern = normalizedSearchPhone.split('').join('[\\s\\-\\(\\)\\.]*')
-    
-    // Phone number can match either 'phone' OR 'cell' field
+    // Use a simpler approach - just search for the normalized digits anywhere in the field
+    // This avoids complex regex patterns that can cause errors
     andConditions.push({
       $or: [
-        { phone: { $regex: phoneRegexPattern, $options: 'i' } },
-        { cell: { $regex: phoneRegexPattern, $options: 'i' } }
+        { phone: { $regex: normalizedSearchPhone, $options: 'i' } },
+        { cell: { $regex: normalizedSearchPhone, $options: 'i' } }
       ]
     })
   }
