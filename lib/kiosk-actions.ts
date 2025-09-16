@@ -118,6 +118,7 @@ export async function searchCustomers(params: SearchCustomersParams) {
   
   const customers = await customerModel.find(query)
     .select('firstName lastName email company phone cell')
+    .sort({ _id: 1 })
     .limit(20)
     .lean()
   

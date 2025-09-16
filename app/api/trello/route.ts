@@ -61,6 +61,62 @@ function parseRepairNumberFromCardName(cardName: string): string | null {
   return match ? match[1] : null;
 }
 
+// Parse repair details from card name for attachment processing
+function parseRepairDetailsFromCardName(cardName: string) {
+  // Pattern: "Repair #45⁠ : David⁠ Knoernschld" or similar
+  const match = cardName.match(/Repair\s*#(\d+)[^:]*:\s*([^⁠\s]+)(?:⁠\s*([^⁠\s]+))?/i);
+  if (match) {
+    return {
+      repairNumber: match[1],
+      customerFirstName: match[2] || '',
+      customerLastName: match[3] || ''
+    };
+  }
+  return null;
+}
+
+// Download and save attachment to repair
+async function processAttachmentForRepair(attachmentUrl: string, repairId: string, fileName: string) {
+  try {
+    console.log('Downloading attachment:', attachmentUrl);
+    
+    // Download the attachment
+    const response = await fetch(attachmentUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download attachment: ${response.statusText}`);
+    }
+    
+    const buffer = await response.arrayBuffer();
+    const base64Data = Buffer.from(buffer).toString('base64');
+    
+    // Upload to repair using the existing repair image upload API
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const uploadResponse = await fetch(`${baseUrl}/api/repairs/${repairId}/images`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        images: [{
+          data: base64Data,
+          name: fileName
+        }]
+      }),
+    });
+    
+    if (uploadResponse.ok) {
+      console.log('Successfully uploaded attachment to repair:', repairId);
+      return true;
+    } else {
+      console.error('Failed to upload attachment to repair:', uploadResponse.statusText);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error processing attachment:', error);
+    return false;
+  }
+}
+
 // Process repair request from Trello card data
 async function processRepairRequest(parsedFields: any, cardName: string) {
   try {
@@ -240,8 +296,10 @@ export async function POST(request: NextRequest) {
     console.log('Headers:', Object.fromEntries(request.headers.entries()));
     console.log('Body (raw):', body);
 
-    // Parse out specific card data if present and fetch full details from Trello API
-    if (parsedBody && parsedBody.action && parsedBody.action.type === 'createCard' && parsedBody.action.data && parsedBody.action.data.card) {
+    // Handle different action types
+    if (parsedBody && parsedBody.action && parsedBody.action.data) {
+      // Handle createCard action
+      if (parsedBody.action.type === 'createCard' && parsedBody.action.data.card) {
       console.log('Body (parsed):', JSON.stringify(parsedBody, null, 2));
      
       const card = parsedBody.action.data.card;
@@ -364,6 +422,62 @@ export async function POST(request: NextRequest) {
         console.log('TRELLO_API_KEY:', trelloApiKey ? 'Set' : 'Not set');
         console.log('TRELLO_TOKEN:', trelloToken ? 'Set' : 'Not set');
         console.log('Card ID:', cardId || 'Not found');
+      }
+      
+      // Handle addAttachmentToCard action
+      } else if (parsedBody.action.type === 'addAttachmentToCard' && parsedBody.action.data.card && parsedBody.action.data.attachment) {
+        console.log('Body (parsed):', JSON.stringify(parsedBody, null, 2));
+        
+        const card = parsedBody.action.data.card;
+        const attachment = parsedBody.action.data.attachment;
+        
+        console.log('--- ATTACHMENT ADDED TO CARD ---');
+        console.log('Card ID:', card.id);
+        console.log('Card Name:', card.name);
+        console.log('Attachment ID:', attachment.id);
+        console.log('Attachment Name:', attachment.name);
+        console.log('Attachment URL:', attachment.url);
+        console.log('--------------------------------');
+        
+        // Parse repair details from card name
+        const repairDetails = parseRepairDetailsFromCardName(card.name);
+        
+        if (repairDetails) {
+          console.log('--- PARSED REPAIR DETAILS ---');
+          console.log('Repair Number:', repairDetails.repairNumber);
+          console.log('Customer First Name:', repairDetails.customerFirstName);
+          console.log('Customer Last Name:', repairDetails.customerLastName);
+          console.log('-----------------------------');
+          
+          try {
+            // Search for matching repair record
+            console.log('Searching for repair record...');
+            const connectToDatabase = (await import('../../../lib/dbConnect')).default;
+            await connectToDatabase();
+            const { Repair } = await import('../../../lib/models/repair');
+            
+            // Search for repair that matches all three fields: repairNumber, customerFirstName, customerLastName
+            const repair = await Repair.findOne({
+              repairNumber: repairDetails.repairNumber,
+              customerFirstName: new RegExp(`^${repairDetails.customerFirstName}$`, 'i'),
+              customerLastName: new RegExp(`^${repairDetails.customerLastName}$`, 'i')
+            }).sort({ _id: -1 });
+            
+            if (repair) {
+              console.log('Found matching repair:', repair._id);
+              
+              // Process the attachment for the repair
+              await processAttachmentForRepair(attachment.url, repair._id.toString(), attachment.name);
+              console.log('Successfully processed attachment for repair');
+            } else {
+              console.log('No matching repair found for:', repairDetails);
+            }
+          } catch (error) {
+            console.error('Error processing attachment for repair:', error);
+          }
+        } else {
+          console.log('Could not parse repair details from card name:', card.name);
+        }
       }
     }
     
