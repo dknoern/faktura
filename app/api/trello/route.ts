@@ -239,10 +239,11 @@ export async function POST(request: NextRequest) {
     console.log('=== TRELLO WEBHOOK RECEIVED ===');
     console.log('Headers:', Object.fromEntries(request.headers.entries()));
     console.log('Body (raw):', body);
-    console.log('Body (parsed):', JSON.stringify(parsedBody, null, 2));
-    
+
     // Parse out specific card data if present and fetch full details from Trello API
     if (parsedBody && parsedBody.action && parsedBody.action.type === 'createCard' && parsedBody.action.data && parsedBody.action.data.card) {
+      console.log('Body (parsed):', JSON.stringify(parsedBody, null, 2));
+     
       const card = parsedBody.action.data.card;
       const cardId = card.id;
       
