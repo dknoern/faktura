@@ -80,10 +80,24 @@ async function processAttachmentForRepair(attachmentUrl: string, repairId: strin
   try {
     console.log('Downloading attachment:', attachmentUrl);
     
-    // Download the attachment
-    const response = await fetch(attachmentUrl);
+    // Add Trello API authentication to the attachment URL
+    const trelloApiKey = process.env.TRELLO_API_KEY;
+    const trelloToken = process.env.TRELLO_TOKEN;
+    
+    if (!trelloApiKey || !trelloToken) {
+      throw new Error('Trello API credentials not configured');
+    }
+    
+    // Construct authenticated URL
+    const separator = attachmentUrl.includes('?') ? '&' : '?';
+    const authenticatedUrl = `${attachmentUrl}${separator}key=${trelloApiKey}&token=${trelloToken}`;
+    
+    console.log('Downloading with authentication...');
+    
+    // Download the attachment with authentication
+    const response = await fetch(authenticatedUrl);
     if (!response.ok) {
-      throw new Error(`Failed to download attachment: ${response.statusText}`);
+      throw new Error(`Failed to download attachment: ${response.status} ${response.statusText}`);
     }
     
     const buffer = await response.arrayBuffer();
