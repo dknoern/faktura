@@ -1,6 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
+// Method to parse markdown-formatted card description
+function parseCardDescription(description: string) {
+  const fields = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    brand: '',
+    model: '',
+    material: '',
+    referenceNumber: '',
+    repairEstimateOptions: ''
+  };
+
+  if (!description) return fields;
+
+  // Parse each field using regex patterns
+  const patterns = {
+    firstName: /\*\*First Name:\*\*\s*([^\n\r]+)/i,
+    lastName: /\*\*Last Name:\*\*\s*([^\n\r]+)/i,
+    email: /\*\*E-mail:\*\*\s*\[([^\]]+)\]/i,
+    phoneNumber: /\*\*Phone Number:\*\*\s*([^\n\r]+)/i,
+    brand: /\*\*Brand:\*\*\s*([^\n\r]+)/i,
+    model: /\*\*Model:\*\*\s*([^\n\r]+)/i,
+    material: /\*\*Material:\*\*\s*([^\n\r]+)/i,
+    referenceNumber: /\*\*Reference number if known:\*\*\s*([^\n\r]+)/i,
+    repairEstimateOptions: /\*\*Repair Estimate Options:\*\*\s*\[([^\]]+)\]/i
+  };
+
+  // Extract each field
+  Object.keys(patterns).forEach(key => {
+    const match = description.match(patterns[key as keyof typeof patterns]);
+    if (match && match[1]) {
+      fields[key as keyof typeof fields] = match[1].trim();
+    }
+  });
+
+  return fields;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Get the raw body
@@ -83,6 +123,22 @@ export async function POST(request: NextRequest) {
             console.log('Closed:', fullCardData.closed);
             console.log('Position:', fullCardData.pos);
             console.log('Date Last Activity:', fullCardData.dateLastActivity);
+            
+            // Parse the card description for structured fields
+            if (fullCardData.desc) {
+              const parsedFields = parseCardDescription(fullCardData.desc);
+              console.log('--- PARSED DESCRIPTION FIELDS ---');
+              console.log('First Name:', parsedFields.firstName || 'Not found');
+              console.log('Last Name:', parsedFields.lastName || 'Not found');
+              console.log('Email:', parsedFields.email || 'Not found');
+              console.log('Phone Number:', parsedFields.phoneNumber || 'Not found');
+              console.log('Brand:', parsedFields.brand || 'Not found');
+              console.log('Model:', parsedFields.model || 'Not found');
+              console.log('Material:', parsedFields.material || 'Not found');
+              console.log('Reference Number:', parsedFields.referenceNumber || 'Not found');
+              console.log('Repair Estimate Options:', parsedFields.repairEstimateOptions || 'Not found');
+              console.log('----------------------------------');
+            }
             
             // Labels
             if (fullCardData.labels && fullCardData.labels.length > 0) {
