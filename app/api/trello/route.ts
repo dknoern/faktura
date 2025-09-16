@@ -106,13 +106,13 @@ async function processAttachmentForRepair(cardId: string, attachmentId: string, 
     
     const buffer = await response.arrayBuffer();
     
-    // Create a File object from the buffer for the upload API
-    const file = new File([buffer], fileName, { type: 'image/jpeg' });
+    // Create a Blob from the buffer (File constructor not available in Node.js)
+    const blob = new Blob([buffer], { type: 'image/jpeg' });
     
     // Upload using the /api/upload endpoint
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', blob, fileName);
     formData.append('id', repairId);
     
     const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
