@@ -105,21 +105,19 @@ async function processAttachmentForRepair(cardId: string, attachmentId: string, 
     }
     
     const buffer = await response.arrayBuffer();
-    const base64Data = Buffer.from(buffer).toString('base64');
     
-    // Upload to repair using the existing repair image upload API
+    // Create a File object from the buffer for the upload API
+    const file = new File([buffer], fileName, { type: 'image/jpeg' });
+    
+    // Upload using the /api/upload endpoint
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const uploadResponse = await fetch(`${baseUrl}/api/repairs/${repairId}/images`, {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('id', repairId);
+    
+    const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        images: [{
-          data: base64Data,
-          name: fileName
-        }]
-      }),
+      body: formData
     });
     
     if (uploadResponse.ok) {
