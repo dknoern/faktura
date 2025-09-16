@@ -46,23 +46,110 @@ export async function POST(request: NextRequest) {
     console.log('Body (raw):', body);
     console.log('Body (parsed):', JSON.stringify(parsedBody, null, 2));
     
-    // Parse out specific card data if present
+    // Parse out specific card data if present and fetch full details from Trello API
     if (parsedBody && parsedBody.action && parsedBody.action.data && parsedBody.action.data.card) {
       const card = parsedBody.action.data.card;
-      console.log('--- CARD DETAILS ---');
-      console.log('Card ID:', card.id);
+      const cardId = card.id;
+      
+      console.log('--- WEBHOOK CARD DATA ---');
+      console.log('Card ID:', cardId);
       console.log('Card Name:', card.name);
       console.log('Card Short Link:', card.shortLink);
       console.log('Card URL:', card.shortUrl);
-      if (card.desc) console.log('Card Description:', card.desc);
-      if (card.due) console.log('Card Due Date:', card.due);
-      if (card.labels && card.labels.length > 0) {
-        console.log('Card Labels:', card.labels.map((label: any) => `${label.name} (${label.color})`).join(', '));
+      console.log('-------------------------');
+
+      // Fetch full card details from Trello REST API
+      const trelloApiKey = process.env.TRELLO_API_KEY;
+      const trelloToken = process.env.TRELLO_TOKEN;
+      
+      if (trelloApiKey && trelloToken && cardId) {
+        try {
+          const trelloApiUrl = `https://api.trello.com/1/cards/${cardId}?key=${trelloApiKey}&token=${trelloToken}&fields=all&members=true&member_fields=all&checklists=all&attachments=true&actions=all&actions_limit=50`;
+          
+          console.log('Fetching card details from Trello API...');
+          const response = await fetch(trelloApiUrl);
+          
+          if (response.ok) {
+            const fullCardData = await response.json();
+            
+            console.log('--- FULL CARD DETAILS FROM API ---');
+            console.log('Card ID:', fullCardData.id);
+            console.log('Card Name:', fullCardData.name);
+            console.log('Card Description:', fullCardData.desc || 'No description');
+            console.log('Card URL:', fullCardData.url);
+            console.log('Card Short URL:', fullCardData.shortUrl);
+            console.log('Due Date:', fullCardData.due || 'No due date');
+            console.log('Due Complete:', fullCardData.dueComplete);
+            console.log('Closed:', fullCardData.closed);
+            console.log('Position:', fullCardData.pos);
+            console.log('Date Last Activity:', fullCardData.dateLastActivity);
+            
+            // Labels
+            if (fullCardData.labels && fullCardData.labels.length > 0) {
+              console.log('Labels:');
+              fullCardData.labels.forEach((label: any) => {
+                console.log(`  - ${label.name || 'Unnamed'} (${label.color})`);
+              });
+            } else {
+              console.log('Labels: None');
+            }
+            
+            // Members
+            if (fullCardData.members && fullCardData.members.length > 0) {
+              console.log('Members:');
+              fullCardData.members.forEach((member: any) => {
+                console.log(`  - ${member.fullName} (@${member.username})`);
+              });
+            } else {
+              console.log('Members: None assigned');
+            }
+            
+            // Checklists
+            if (fullCardData.checklists && fullCardData.checklists.length > 0) {
+              console.log('Checklists:');
+              fullCardData.checklists.forEach((checklist: any) => {
+                console.log(`  - ${checklist.name} (${checklist.checkItems.length} items)`);
+                checklist.checkItems.forEach((item: any) => {
+                  const status = item.state === 'complete' ? '✓' : '○';
+                  console.log(`    ${status} ${item.name}`);
+                });
+              });
+            } else {
+              console.log('Checklists: None');
+            }
+            
+            // Attachments
+            if (fullCardData.attachments && fullCardData.attachments.length > 0) {
+              console.log('Attachments:');
+              fullCardData.attachments.forEach((attachment: any) => {
+                console.log(`  - ${attachment.name} (${attachment.url})`);
+              });
+            } else {
+              console.log('Attachments: None');
+            }
+            
+            // Recent Actions
+            if (fullCardData.actions && fullCardData.actions.length > 0) {
+              console.log('Recent Actions:');
+              fullCardData.actions.slice(0, 5).forEach((action: any) => {
+                console.log(`  - ${action.type} by ${action.memberCreator?.fullName || 'Unknown'} on ${action.date}`);
+              });
+            }
+            
+            console.log('----------------------------------');
+            
+          } else {
+            console.log('Failed to fetch card details from Trello API:', response.status, response.statusText);
+          }
+        } catch (error) {
+          console.error('Error fetching card details from Trello API:', error);
+        }
+      } else {
+        console.log('Trello API credentials not configured or card ID missing');
+        console.log('TRELLO_API_KEY:', trelloApiKey ? 'Set' : 'Not set');
+        console.log('TRELLO_TOKEN:', trelloToken ? 'Set' : 'Not set');
+        console.log('Card ID:', cardId || 'Not found');
       }
-      if (card.members && card.members.length > 0) {
-        console.log('Card Members:', card.members.map((member: any) => member.fullName || member.username).join(', '));
-      }
-      console.log('-------------------');
     }
     
     // Parse out list data if present
