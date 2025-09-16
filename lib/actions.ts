@@ -157,7 +157,8 @@ export async function createRepair(formData: FormData) {
         const trelloCardData = {
           repairNumber: repair.repairNumber,
           repairId: repair._id.toString(),
-          customerName: `${repair.customerFirstName} ${repair.customerLastName}`,
+          customerFirstName: repair.customerFirstName,
+          customerLastName: repair.customerLastName,
           customerEmail: repair.email,
           customerPhone: repair.phone,
           brand: 'Unknown',
@@ -170,6 +171,7 @@ export async function createRepair(formData: FormData) {
             batteryChange: false,
             other: true
           },
+          user: user,
           repairNotes: repair.repairNotes || repair.repairIssues || ''
         };
 

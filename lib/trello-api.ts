@@ -23,7 +23,8 @@ interface TrelloCardResponse {
 interface RepairCardData {
   repairNumber: string
   repairId: string
-  customerName: string
+  customerFirstName: string
+  customerLastName: string
   customerEmail?: string
   customerPhone?: string
   brand: string
@@ -36,7 +37,8 @@ interface RepairCardData {
     batteryChange?: boolean
     other?: boolean
   }
-  repairNotes?: string
+  repairNotes?: string,
+  user?: string,
   images?: string[] // Base64 data URLs
 }
 
@@ -69,27 +71,25 @@ export async function createTrelloRepairCard(repairData: RepairCardData): Promis
     if (repairData.repairOptions.other) selectedOptions.push("Other")
 
     // Create card title
-    const cardTitle = `Repair ${repairData.repairNumber} - ${repairData.customerName}`
+    const cardTitle = `Repair ${repairData.repairNumber} ${repairData.customerFirstName} ${repairData.customerLastName}`
 
     // Create detailed description
     const description = `
-**Customer:** ${repairData.customerName}
-${repairData.customerEmail ? `**Email:** ${repairData.customerEmail}` : ''}
-${repairData.customerPhone ? `**Phone:** ${repairData.customerPhone}` : ''}
+**First Name:** ${repairData.customerFirstName}
 
-**Item Details:**
-- Brand: ${repairData.brand}
-- Material: ${repairData.material}
-${repairData.description ? `- Description: ${repairData.description}` : ''}
-${repairData.itemValue ? `- Value: $${repairData.itemValue}` : ''}
+**Last Name:** ${repairData.customerLastName}
 
-**Repair Services:**
-${selectedOptions.length > 0 ? selectedOptions.map(option => `- ${option}`).join('\n') : '- No specific services selected'}
+**E-mail:** ${repairData.customerEmail}
 
-${repairData.repairNotes ? `**Additional Notes:**\n${repairData.repairNotes}` : ''}
+**Phone Number:** ${repairData.customerPhone}
 
-**Repair ID:** ${repairData.repairId}
-**Created:** ${new Date().toLocaleString()}
+**Brand:** ${repairData.brand}
+
+**Material:** ${repairData.material}
+
+**Repair Estimate Options:** ${selectedOptions.join(', ')}
+
+**Select Box:** ${repairData.user}
     `.trim()
 
     const cardData: TrelloCard = {

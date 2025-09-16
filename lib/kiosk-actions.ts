@@ -291,7 +291,8 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
           return {
             repairNumber: repair.repairNumber,
             repairId: repair.repairId,
-            customerName: `${transaction.customer.firstName} ${transaction.customer.lastName}`,
+            customerFirstName: transaction.customer.firstName,
+            customerLastName: transaction.customer.lastName,
             customerEmail: transaction.customer.email,
             customerPhone: transaction.customer.phone,
             brand: originalRepair.brand,
@@ -300,7 +301,8 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
             itemValue: originalRepair.itemValue,
             repairOptions: originalRepair.repairOptions,
             repairNotes: originalRepair.additionalDetails || '',
-            images: originalRepair.images || []
+            images: originalRepair.images || [],
+            user: "Kiosk"
           }
         })
 
