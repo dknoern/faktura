@@ -110,55 +110,54 @@ async function processAttachmentForRepair(attachmentUrl: string, repairId: strin
     const buffer = await response.arrayBuffer();
     console.log('Downloaded buffer size:', buffer.byteLength);
     
-    // Detect image format from response headers or filename
-    let mimeType = response.headers.get('content-type') || 'image/jpeg';
+    // Process and save image using same logic as upload route
+    const timestamp = Math.floor(Date.now() / 1000);
+    const originalName = fileName;
+    let newFileName = `${repairId}-${timestamp}-${originalName}`;
     
-    // If no content-type, try to detect from filename extension
-    if (!mimeType || mimeType === 'application/octet-stream') {
-      const ext = fileName.toLowerCase().split('.').pop();
-      switch (ext) {
-        case 'webp':
-          mimeType = 'image/webp';
-          break;
-        case 'png':
-          mimeType = 'image/png';
-          break;
-        case 'gif':
-          mimeType = 'image/gif';
-          break;
-        case 'jpg':
-        case 'jpeg':
-        default:
-          mimeType = 'image/jpeg';
-          break;
-      }
-    }
+    // Import required modules
+    const sharp = (await import('sharp')).default;
+    const { saveImage } = await import('../../../lib/utils/storage');
     
-    console.log('Detected image format:', mimeType);
-    console.log('Original filename:', fileName);
-    
-    // Create a Blob from the buffer with correct MIME type
-    const blob = new Blob([buffer], { type: mimeType });
-    console.log('Created blob size:', blob.size, 'type:', blob.type);
-    
-    // Upload using the /api/upload endpoint
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const formData = new FormData();
-    formData.append('file', blob, fileName);
-    formData.append('id', repairId);
-    
-    const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    
-    if (uploadResponse.ok) {
-      console.log('Successfully uploaded attachment to repair:', repairId);
+    // Process image with Sharp - add error handling for metadata
+    let image = sharp(Buffer.from(buffer));
+    let metadata;
+    try {
+      metadata = await image.metadata();
+      console.log('Image metadata:', metadata);
+    } catch (metadataError) {
+      console.error('Failed to read image metadata:', metadataError);
+      // If we can't read metadata, save the raw buffer without processing
+      await saveImage(Buffer.from(buffer), newFileName);
+      console.log('Successfully saved attachment to repair (raw):', repairId);
       return true;
-    } else {
-      console.error('Failed to upload attachment to repair:', uploadResponse.statusText);
-      return false;
     }
+    
+    // Convert WebP to JPEG if needed (Sharp may not support WebP in all environments)
+    if (metadata.format === 'webp') {
+      console.log('Converting WebP to JPEG');
+      image = image.jpeg({ quality: 90 });
+      // Update filename extension to .jpg
+      const nameWithoutExt = newFileName.replace(/\.[^/.]+$/, "");
+      newFileName = `${nameWithoutExt}.jpg`;
+    }
+    
+    // If image is larger than 2000px in any dimension, resize it
+    if (metadata.width && metadata.width > 2000 || metadata.height && metadata.height > 2000) {
+      const resizedImage = await image
+        .resize(2000, 2000, {
+          fit: 'inside', // Maintain aspect ratio
+          withoutEnlargement: true // Don't enlarge if smaller
+        })
+        .toBuffer();
+      await saveImage(resizedImage, newFileName);
+    } else {
+      const processedBuffer = await image.toBuffer();
+      await saveImage(processedBuffer, newFileName);
+    }
+    
+    console.log('Successfully saved attachment to repair:', repairId, 'as', newFileName);
+    return true;
   } catch (error) {
     console.error('Error processing attachment:', error);
     return false;
