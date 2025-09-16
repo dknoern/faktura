@@ -33,7 +33,7 @@ function parseCardDescription(description: string) {
     email: /\*\*E-mail:\*\*\s*\[([^\]]+)\]|\*\*E-mail:\*\*\s*([^\n\r]+)/i,
     phoneNumber: /\*\*Phone Number:\*\*\s*([^\n\r]+)/i,
     brand: /\*\*Brand:\*\*\s*([^\n\r]+)/i,
-    model: /\*\*Model:\*\*\s*([^\n\r]+)/i,
+    model: /\*\*Rolex Model:\*\*\s*([^\n\r]+)/i,
     material: /\*\*Material:\*\*\s*([^\n\r]+)/i,
     referenceNumber: /\*\*Reference number if known:\*\*\s*([^\n\r]+)/i,
     repairEstimateOptions: /\*\*Repair Estimate Options:\*\*\s*\[([^\]]+)\]/i
@@ -53,6 +53,12 @@ function parseCardDescription(description: string) {
   });
 
   return fields;
+}
+
+// Parse repair number from card name (e.g., "Repair #45⁠ : David⁠ Knoernschld" -> "45")
+function parseRepairNumberFromCardName(cardName: string): string | null {
+  const match = cardName.match(/Repair\s*#(\d+)/i);
+  return match ? match[1] : null;
 }
 
 // Process repair request from Trello card data
@@ -130,9 +136,13 @@ async function processRepairRequest(parsedFields: any, cardName: string) {
       repairOptions.other = options.includes('other');
     }
     
-    // Create repair record
+    // Parse repair number from card name or get next available number
+    const parsedRepairNumber = parseRepairNumberFromCardName(cardName);
+    const repairNumber = parsedRepairNumber || await getNextRepairNumber();
+    
     console.log('Creating repair record...');
-    const repairNumber = await getNextRepairNumber();
+    console.log('Repair number:', parsedRepairNumber ? `${repairNumber} (from card name)` : `${repairNumber} (generated)`);
+    
     const repairData = {
       repairNumber,
       customerId: customer._id,
