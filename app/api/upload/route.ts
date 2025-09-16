@@ -17,13 +17,22 @@ export async function POST(request: NextRequest) {
 
         const timestamp = Math.floor(Date.now() / 1000);
         const originalName = path.basename(file.name);
-        const newFileName = `${id}-${timestamp}-${originalName}`;
+        let newFileName = `${id}-${timestamp}-${originalName}`;
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
         // Process image with Sharp
-        const image = sharp(buffer);
+        let image = sharp(buffer);
         const metadata = await image.metadata();
+        
+        // Convert WebP to JPEG if needed (Sharp may not support WebP in all environments)
+        if (metadata.format === 'webp') {
+            console.log('Converting WebP to JPEG');
+            image = image.jpeg({ quality: 90 });
+            // Update filename extension to .jpg
+            const nameWithoutExt = newFileName.replace(/\.[^/.]+$/, "");
+            newFileName = `${nameWithoutExt}.jpg`;
+        }
         
         // If image is larger than 2000px in any dimension, resize it
         if (metadata.width && metadata.width > 2000 || metadata.height && metadata.height > 2000) {
@@ -35,7 +44,8 @@ export async function POST(request: NextRequest) {
                 .toBuffer();
             await saveImage(resizedImage, newFileName);
         } else {
-            await saveImage(buffer, newFileName);
+            const processedBuffer = await image.toBuffer();
+            await saveImage(processedBuffer, newFileName);
         }
 
         return NextResponse.json({ success: true, fileName: newFileName });

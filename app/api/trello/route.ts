@@ -106,8 +106,34 @@ async function processAttachmentForRepair(cardId: string, attachmentId: string, 
     
     const buffer = await response.arrayBuffer();
     
-    // Create a Blob from the buffer (File constructor not available in Node.js)
-    const blob = new Blob([buffer], { type: 'image/jpeg' });
+    // Detect image format from response headers or filename
+    let mimeType = response.headers.get('content-type') || 'image/jpeg';
+    
+    // If no content-type, try to detect from filename extension
+    if (!mimeType || mimeType === 'application/octet-stream') {
+      const ext = fileName.toLowerCase().split('.').pop();
+      switch (ext) {
+        case 'webp':
+          mimeType = 'image/webp';
+          break;
+        case 'png':
+          mimeType = 'image/png';
+          break;
+        case 'gif':
+          mimeType = 'image/gif';
+          break;
+        case 'jpg':
+        case 'jpeg':
+        default:
+          mimeType = 'image/jpeg';
+          break;
+      }
+    }
+    
+    console.log('Detected image format:', mimeType);
+    
+    // Create a Blob from the buffer with correct MIME type
+    const blob = new Blob([buffer], { type: mimeType });
     
     // Upload using the /api/upload endpoint
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
