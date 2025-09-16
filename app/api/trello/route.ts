@@ -104,7 +104,11 @@ async function processAttachmentForRepair(cardId: string, attachmentId: string, 
       throw new Error(`Failed to download attachment: ${response.status} ${response.statusText}`);
     }
     
+    console.log('Download response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('Download response status:', response.status);
+    
     const buffer = await response.arrayBuffer();
+    console.log('Downloaded buffer size:', buffer.byteLength);
     
     // Detect image format from response headers or filename
     let mimeType = response.headers.get('content-type') || 'image/jpeg';
@@ -131,9 +135,11 @@ async function processAttachmentForRepair(cardId: string, attachmentId: string, 
     }
     
     console.log('Detected image format:', mimeType);
+    console.log('Original filename:', fileName);
     
     // Create a Blob from the buffer with correct MIME type
     const blob = new Blob([buffer], { type: mimeType });
+    console.log('Created blob size:', blob.size, 'type:', blob.type);
     
     // Upload using the /api/upload endpoint
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';

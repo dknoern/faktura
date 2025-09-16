@@ -21,9 +21,18 @@ export async function POST(request: NextRequest) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Process image with Sharp
+        // Process image with Sharp - add error handling for metadata
         let image = sharp(buffer);
-        const metadata = await image.metadata();
+        let metadata;
+        try {
+            metadata = await image.metadata();
+            console.log('Image metadata:', metadata);
+        } catch (metadataError) {
+            console.error('Failed to read image metadata:', metadataError);
+            // If we can't read metadata, save the raw buffer without processing
+            await saveImage(buffer, newFileName);
+            return NextResponse.json({ success: true, fileName: newFileName });
+        }
         
         // Convert WebP to JPEG if needed (Sharp may not support WebP in all environments)
         if (metadata.format === 'webp') {
