@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/dbConnect"
 import { Repair } from "@/lib/models/repair"
-import { getShortUser } from "@/lib/auth-utils"
 import { fetchDefaultTenant } from "@/lib/data"
 import { getImageHost } from "@/lib/utils/imageHost"
 
@@ -23,12 +22,13 @@ export async function POST(
     }
 
     // Get the current user
-    const userName = await getShortUser()
+    const tenant = await fetchDefaultTenant()
+    const fromName = tenant?.nameLong || "System"
     
     // Create the new message object
     const newMessage = {
       date: new Date(),
-      from: userName || "System",
+      from: fromName || "System",
       message: message.trim()
     }
 
