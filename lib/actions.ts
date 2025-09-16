@@ -69,6 +69,7 @@ export async function createRepair(formData: FormData) {
       console.log('current counter value', counterValue)
 
       // also check if entered repairNumber is already used
+      if (Number(repairNumber) < 50000) {
       const repairExists = await Repair.findOne({ repairNumber });
       if (repairExists) {
         return { 
@@ -76,6 +77,7 @@ export async function createRepair(formData: FormData) {
           error: `Repair number ${repairNumber} already exists. Please use a different number or leave blank to generate a new one.` 
         };
       }
+    }
 
       // if repairNumber is a number and less than 50000 but more than the counter value, set the counter value to repairNumber
   // check that repaiarNumber can be parsed as a number

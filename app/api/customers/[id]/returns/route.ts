@@ -19,7 +19,8 @@ export async function GET(
 
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    //const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = 10000;
 
     const data = await fetchReturnsByCustomerId(customerId, page, limit);
     

@@ -82,14 +82,23 @@ export async function searchCustomers(params: SearchCustomersParams) {
   
   if (params.phone) {
     // Normalize the search phone number to digits only
-    const normalizedSearchPhone = normalizePhoneNumber(params.phone)
+    let normalizedSearchPhone = normalizePhoneNumber(params.phone)
     
-    // Use a simpler approach - just search for the normalized digits anywhere in the field
-    // This avoids complex regex patterns that can cause errors
+    // if normalizedSearchPhone is 11 digits and first digit is "1", remove the first digit
+    if (normalizedSearchPhone.length === 11 && normalizedSearchPhone.startsWith('1')) {
+      normalizedSearchPhone = normalizedSearchPhone.slice(1)
+    }
+
+    console.log("normalizedSearchPhone", normalizedSearchPhone)
+    
+    // Create a regex pattern that matches the digits in sequence, ignoring non-digits
+    // For example, "2067897428" becomes a pattern that matches "(206) 789-7428" or "206-789-7428"
+    const digitPattern = normalizedSearchPhone.split('').join('[^\\d]*')
+    
     andConditions.push({
       $or: [
-        { phone: { $regex: normalizedSearchPhone, $options: 'i' } },
-        { cell: { $regex: normalizedSearchPhone, $options: 'i' } }
+        { phone: { $regex: digitPattern, $options: 'i' } },
+        { cell: { $regex: digitPattern, $options: 'i' } }
       ]
     })
   }

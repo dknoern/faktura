@@ -3,6 +3,7 @@
 import dbConnect from "@/lib/dbConnect";
 import { customerModel } from "@/lib/models/customer";
 import { Invoice } from "@/lib/models/invoice";
+import { Repair } from "@/lib/models/repair";
 import { Return } from "@/lib/models/return";
 import { revalidatePath } from "next/cache";
 
@@ -58,6 +59,16 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
           console.log(`Moving return ${returnDoc._id} from customer ${returnDoc.customerId} to ${canonicalId}`);
           returnDoc.customerId = canonicalId;
           await returnDoc.save();
+        }
+      }
+
+      // Update repairs to point to the canonical customer
+      const repairs = await Repair.find({ customerId: id });
+      for (const repair of repairs) {
+        if (id !== canonicalId) {
+          console.log(`Moving repair ${repair._id} from customer ${repair.customerId} to ${canonicalId}`);
+          repair.customerId = canonicalId;
+          await repair.save();
         }
       }
     }
