@@ -76,9 +76,9 @@ function parseRepairDetailsFromCardName(cardName: string) {
 }
 
 // Download and save attachment to repair
-async function processAttachmentForRepair(attachmentUrl: string, repairId: string, fileName: string) {
+async function processAttachmentForRepair(cardId: string, attachmentId: string, repairId: string, fileName: string) {
   try {
-    console.log('Downloading attachment:', attachmentUrl);
+    console.log('Downloading attachment:', attachmentId);
     
     // Add Trello API authentication to the attachment URL
     const trelloApiKey = process.env.TRELLO_API_KEY;
@@ -89,9 +89,13 @@ async function processAttachmentForRepair(attachmentUrl: string, repairId: strin
     }
     
     // Construct authenticated URL
-    const separator = attachmentUrl.includes('?') ? '&' : '?';
-    const authenticatedUrl = `${attachmentUrl}${separator}key=${trelloApiKey}&token=${trelloToken}`;
+    //const separator = attachmentUrl.includes('?') ? '&' : '?';
+    //const authenticatedUrl = `${attachmentUrl}${separator}key=${trelloApiKey}&token=${trelloToken}`;
     
+
+    const authenticatedUrl = `https://api.trello.com/1/cards/${cardId}/attachments/${attachmentId}?key=${trelloApiKey}&token=${trelloToken}`
+
+
     console.log('Downloading with authentication...');
     
     // Download the attachment with authentication
@@ -481,7 +485,7 @@ export async function POST(request: NextRequest) {
               console.log('Found matching repair:', repair._id);
               
               // Process the attachment for the repair
-              await processAttachmentForRepair(attachment.url, repair._id.toString(), attachment.name);
+              await processAttachmentForRepair(card.id, attachment.id, repair._id.toString(), attachment.name);
               console.log('Successfully processed attachment for repair');
             } else {
               console.log('No matching repair found for:', repairDetails);
