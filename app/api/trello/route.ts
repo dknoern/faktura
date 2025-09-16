@@ -76,11 +76,11 @@ function parseRepairDetailsFromCardName(cardName: string) {
 }
 
 // Download and save attachment to repair
-async function processAttachmentForRepair(cardId: string, attachmentId: string, repairId: string, fileName: string) {
+async function processAttachmentForRepair(attachmentUrl: string, repairId: string, fileName: string) {
   try {
-    console.log('Downloading attachment:', attachmentId);
+    console.log('Downloading attachment from URL:', attachmentUrl);
     
-    // Add Trello API authentication to the attachment URL
+    // Add Trello OAuth authentication header
     const trelloApiKey = process.env.TRELLO_API_KEY;
     const trelloToken = process.env.TRELLO_TOKEN;
     
@@ -88,18 +88,18 @@ async function processAttachmentForRepair(cardId: string, attachmentId: string, 
       throw new Error('Trello API credentials not configured');
     }
     
-    // Construct authenticated URL
-    //const separator = attachmentUrl.includes('?') ? '&' : '?';
-    //const authenticatedUrl = `${attachmentUrl}${separator}key=${trelloApiKey}&token=${trelloToken}`;
+    // Create OAuth Authorization header
+    const authHeader = `OAuth oauth_consumer_key="${trelloApiKey}", oauth_token="${trelloToken}"`;
     
-
-    const authenticatedUrl = `https://api.trello.com/1/cards/${cardId}/attachments/${attachmentId}?key=${trelloApiKey}&token=${trelloToken}`
-
-
-    console.log('Downloading with authentication...');
+    console.log('Downloading with OAuth authorization...');
     
-    // Download the attachment with authentication
-    const response = await fetch(authenticatedUrl);
+    // Download the attachment with OAuth authorization
+    const response = await fetch(attachmentUrl, {
+      headers: {
+        'Authorization': authHeader
+      }
+    });
+    
     if (!response.ok) {
       throw new Error(`Failed to download attachment: ${response.status} ${response.statusText}`);
     }
@@ -515,7 +515,7 @@ export async function POST(request: NextRequest) {
               console.log('Found matching repair:', repair._id);
               
               // Process the attachment for the repair
-              await processAttachmentForRepair(card.id, attachment.id, repair._id.toString(), attachment.name);
+              await processAttachmentForRepair(attachment.url, repair._id.toString(), attachment.name);
               console.log('Successfully processed attachment for repair');
             } else {
               console.log('No matching repair found for:', repairDetails);

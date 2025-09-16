@@ -17,31 +17,13 @@ export async function POST(request: NextRequest) {
 
         const timestamp = Math.floor(Date.now() / 1000);
         const originalName = path.basename(file.name);
-        let newFileName = `${id}-${timestamp}-${originalName}`;
+        const newFileName = `${id}-${timestamp}-${originalName}`;
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Process image with Sharp - add error handling for metadata
-        let image = sharp(buffer);
-        let metadata;
-        try {
-            metadata = await image.metadata();
-            console.log('Image metadata:', metadata);
-        } catch (metadataError) {
-            console.error('Failed to read image metadata:', metadataError);
-            // If we can't read metadata, save the raw buffer without processing
-            await saveImage(buffer, newFileName);
-            return NextResponse.json({ success: true, fileName: newFileName });
-        }
-        
-        // Convert WebP to JPEG if needed (Sharp may not support WebP in all environments)
-        if (metadata.format === 'webp') {
-            console.log('Converting WebP to JPEG');
-            image = image.jpeg({ quality: 90 });
-            // Update filename extension to .jpg
-            const nameWithoutExt = newFileName.replace(/\.[^/.]+$/, "");
-            newFileName = `${nameWithoutExt}.jpg`;
-        }
+        // Process image with Sharp
+        const image = sharp(buffer);
+        const metadata = await image.metadata();
         
         // If image is larger than 2000px in any dimension, resize it
         if (metadata.width && metadata.width > 2000 || metadata.height && metadata.height > 2000) {
@@ -53,8 +35,7 @@ export async function POST(request: NextRequest) {
                 .toBuffer();
             await saveImage(resizedImage, newFileName);
         } else {
-            const processedBuffer = await image.toBuffer();
-            await saveImage(processedBuffer, newFileName);
+            await saveImage(buffer, newFileName);
         }
 
         return NextResponse.json({ success: true, fileName: newFileName });
