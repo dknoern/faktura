@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { searchCustomers } from '@/lib/kiosk-actions';
+import { createCustomer } from '@/app/actions/customers';
+import { getNextRepairNumber, createRepairRecord } from '@/lib/repair-utils';
+import { createLog } from '@/app/actions/logs';
+import { z } from 'zod';
+import { logSchema, lineItemSchema } from '@/lib/models/log';
+
+type LogData = z.infer<typeof logSchema>;
+type LineItem = z.infer<typeof lineItemSchema>;
 
 // Method to parse markdown-formatted card description
 function parseCardDescription(description: string) {
@@ -39,6 +48,137 @@ function parseCardDescription(description: string) {
   });
 
   return fields;
+}
+
+// Process repair request from Trello card data
+async function processRepairRequest(parsedFields: any, cardName: string) {
+  try {
+    console.log('--- PROCESSING REPAIR REQUEST ---');
+    
+    // Search for existing customer
+    let customer = null;
+    if (parsedFields.firstName && parsedFields.lastName) {
+      const searchParams = {
+        firstName: parsedFields.firstName,
+        lastName: parsedFields.lastName,
+        email: parsedFields.email || undefined,
+        phone: parsedFields.phoneNumber || undefined
+      };
+      
+      console.log('Searching for existing customer with params:', searchParams);
+      const existingCustomers = await searchCustomers(searchParams);
+      
+      if (existingCustomers.length > 0) {
+        customer = existingCustomers[0];
+        console.log('Found existing customer:', customer._id, customer.firstName, customer.lastName);
+      }
+    }
+    
+    // Create new customer if not found
+    if (!customer && parsedFields.firstName && parsedFields.lastName) {
+      console.log('Creating new customer...');
+      const customerData = {
+        firstName: parsedFields.firstName,
+        lastName: parsedFields.lastName,
+        email: parsedFields.email || '',
+        phone: parsedFields.phoneNumber || '',
+        cell: '',
+        company: '',
+        customerType: 'Individual',
+        status: 'Active'
+      };
+      
+      const customerResult = await createCustomer(customerData);
+      if (customerResult.success && customerResult.data) {
+        customer = {
+          _id: customerResult.data._id.toString(),
+          firstName: customerResult.data.firstName,
+          lastName: customerResult.data.lastName,
+          email: customerResult.data.email,
+          phone: customerResult.data.phone
+        };
+        console.log('Created new customer:', customer._id, customer.firstName, customer.lastName);
+      } else {
+        console.error('Failed to create customer:', customerResult.error);
+        return;
+      }
+    }
+    
+    if (!customer) {
+      console.log('No customer found or created - skipping repair creation');
+      return;
+    }
+    
+    // Parse repair estimate options
+    const repairOptions = {
+      service: false,
+      polish: false,
+      batteryChange: false,
+      other: false
+    };
+    
+    if (parsedFields.repairEstimateOptions) {
+      const options = parsedFields.repairEstimateOptions.toLowerCase();
+      repairOptions.service = options.includes('service');
+      repairOptions.polish = options.includes('polish');
+      repairOptions.batteryChange = options.includes('battery');
+      repairOptions.other = options.includes('other');
+    }
+    
+    // Create repair record
+    console.log('Creating repair record...');
+    const repairNumber = await getNextRepairNumber();
+    const repairData = {
+      repairNumber,
+      customerId: customer._id,
+      customerFirstName: customer.firstName,
+      customerLastName: customer.lastName,
+      email: customer.email || '',
+      phone: customer.phone || '',
+      brand: parsedFields.brand || 'Unknown',
+      material: parsedFields.material || 'Unknown',
+      description: parsedFields.model || '',
+      itemValue: '',
+      repairOptions,
+      repairNotes: `Reference: ${parsedFields.referenceNumber || 'N/A'}\nTrello Card: ${cardName}`
+    };
+    
+    const repairResult = await createRepairRecord(repairData);
+    if (repairResult.success) {
+      console.log('Created repair:', repairResult.repairNumber);
+      
+      // Create log entry
+      console.log('Creating log entry...');
+      const lineItems: LineItem[] = [{
+        itemNumber: '',
+        name: `${parsedFields.brand || 'Unknown'} ${parsedFields.material || ''} ${parsedFields.model || ''} - Repair #${repairResult.repairNumber}`.trim(),
+        repairNumber: repairResult.repairNumber || ''
+      }];
+      
+      const logData: LogData = {
+        date: new Date(),
+        receivedFrom: "Trello",
+        comments: `Trello repair request\nCard: ${cardName}\nReference: ${parsedFields.referenceNumber || 'N/A'}`,
+        customerName: `${customer.firstName} ${customer.lastName}`,
+        vendor: '',
+        user: "Trello Webhook",
+        lineItems
+      };
+      
+      const logResult = await createLog(logData);
+      if (logResult.success) {
+        console.log('Created log entry:', logResult.data?._id);
+        console.log('--- REPAIR REQUEST PROCESSED SUCCESSFULLY ---');
+      } else {
+        console.error('Failed to create log entry:', logResult.error);
+      }
+    } else {
+      console.error('Failed to create repair:', repairResult.error);
+    }
+    
+  } catch (error) {
+    console.error('Error processing repair request:', error);
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -87,7 +227,7 @@ export async function POST(request: NextRequest) {
     console.log('Body (parsed):', JSON.stringify(parsedBody, null, 2));
     
     // Parse out specific card data if present and fetch full details from Trello API
-    if (parsedBody && parsedBody.action && parsedBody.action.data && parsedBody.action.data.card) {
+    if (parsedBody && parsedBody.action && parsedBody.action.type === 'createCard' && parsedBody.action.data && parsedBody.action.data.card) {
       const card = parsedBody.action.data.card;
       const cardId = card.id;
       
@@ -138,6 +278,9 @@ export async function POST(request: NextRequest) {
               console.log('Reference Number:', parsedFields.referenceNumber || 'Not found');
               console.log('Repair Estimate Options:', parsedFields.repairEstimateOptions || 'Not found');
               console.log('----------------------------------');
+              
+              // Process the parsed data to create customer and repair
+              await processRepairRequest(parsedFields, fullCardData.name);
             }
             
             // Labels
