@@ -65,14 +65,14 @@ function parseRepairNumberFromCardName(cardName: string): string | null {
 // Parse repair details from card name for attachment processing
 function parseRepairDetailsFromCardName(cardName: string) {
     // Clean the card name by removing invisible characters and normalizing whitespace
-    const cleanedName = cardName.replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ').trim();
+    const cleanedName = cardName.replace(/[\u200B-\u200D\uFEFF\u2060]/g, '').replace(/\s+/g, ' ').trim();
     
     console.log('Parsing card name:', cardName);
     console.log('Cleaned card name:', cleanedName);
     
     // Pattern: "Repair 2725 - Ke Chau", "Repair #61 : David Knoernschild", "Repair 45 John Doe"
-    // First capture the repair number, then skip any non-alphanumeric characters, then capture names
-    const match = cleanedName.match(/Repair\s*#?(\d+)\s*[^\w]*\s*(\w+)(?:\s+(\w+))?/i);
+    // First capture the repair number, then require at least one non-digit separator, then capture names
+    const match = cleanedName.match(/Repair\s*#?(\d+)\s*[^\w\d]*\s*([A-Za-z]+)(?:\s+([A-Za-z]+))?/i);
     
     console.log('Regex match result:', match);
     
