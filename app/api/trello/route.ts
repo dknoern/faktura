@@ -423,7 +423,7 @@ async function handleCreateCard(actionData: any) {
             throw new Error('Trello API credentials not configured');
         }
 
-        const trelloApiUrl = `https://api.trello.com/1/cards/${actionData.cardId}?key=${trelloApiKey}&token=${trelloToken}&fields=all&members=true&member_fields=all&checklists=all&attachments=true&actions=all&actions_limit=50`;
+        const trelloApiUrl = `https://api.trello.com/1/cards/${actionData.card.id}?key=${trelloApiKey}&token=${trelloToken}&fields=all&members=true&member_fields=all&checklists=all&attachments=true&actions=all&actions_limit=50`;
 
         console.log('Fetching card details from Trello API...');
         const response = await fetch(trelloApiUrl);
@@ -462,12 +462,12 @@ async function handleCreateCard(actionData: any) {
                     await createRepair(parsedFields, fullCardData.name);
                 }
             }
-
         } else {
             console.log('Failed to fetch card details from Trello API:', response.status, response.statusText);
         }
     } catch (error) {
         console.error('Error fetching card details from Trello API:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
 
