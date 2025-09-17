@@ -67,16 +67,25 @@ function parseRepairDetailsFromCardName(cardName: string) {
     // Clean the card name by removing invisible characters and normalizing whitespace
     const cleanedName = cardName.replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ').trim();
     
+    console.log('Parsing card name:', cardName);
+    console.log('Cleaned card name:', cleanedName);
+    
     // Pattern: "Repair 2725 - Ke Chau", "Repair #61 : David Knoernschild", "Repair 45 John Doe"
-    // Ignore all special characters between repair number and names
-    const match = cleanedName.match(/Repair\s*#?(\d+)\s*[^\w\s]*\s*([^\s]+)(?:\s+([^\s]+))?/i);
+    // First capture the repair number, then skip any non-alphanumeric characters, then capture names
+    const match = cleanedName.match(/Repair\s*#?(\d+)\s*[^\w]*\s*(\w+)(?:\s+(\w+))?/i);
+    
+    console.log('Regex match result:', match);
+    
     if (match) {
-        return {
+        const result = {
             repairNumber: match[1],
             customerFirstName: match[2] || '',
             customerLastName: match[3] || ''
         };
+        console.log('Parsed result:', result);
+        return result;
     }
+    console.log('No match found');
     return null;
 }
 
