@@ -75,6 +75,8 @@ export async function createTrelloRepairCard(repairData: RepairCardData): Promis
 
     // Create detailed description
     const description = `
+
+
 **First Name:** ${repairData.customerFirstName}
 
 **Last Name:** ${repairData.customerLastName}

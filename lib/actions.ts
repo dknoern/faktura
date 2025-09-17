@@ -161,8 +161,8 @@ export async function createRepair(formData: FormData) {
           customerLastName: repair.customerLastName,
           customerEmail: repair.email,
           customerPhone: repair.phone,
-          brand: 'Unknown',
-          material: 'Unknown',
+          brand: '',
+          material: '',
           description: repair.description,
           itemValue: undefined,
           repairOptions: {
