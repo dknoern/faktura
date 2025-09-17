@@ -78,262 +78,240 @@ function parseRepairDetailsFromCardName(cardName: string) {
 
 // Check if a repair already exists with the given details
 async function findExistingRepair(cardName: string) {
-    try {
-        const repairDetails = parseRepairDetailsFromCardName(cardName);
-        console.log('--- CHECKING FOR DUPLICATE REPAIR ---');
-        console.log('Repair Number:', repairDetails?.repairNumber);
-        console.log('Customer First Name:', repairDetails?.customerFirstName);
-        console.log('Customer Last Name:', repairDetails?.customerLastName);
-        
-        // Search for existing repair
-        const connectToDatabase = (await import('../../../lib/dbConnect')).default;
-        await connectToDatabase();
-        const { Repair } = await import('../../../lib/models/repair');
-        
-        const existingRepair = await Repair.findOne({
-            repairNumber: repairDetails?.repairNumber,
-            customerFirstName: new RegExp(`^${repairDetails?.customerFirstName}$`, 'i'),
-            customerLastName: new RegExp(`^${repairDetails?.customerLastName}$`, 'i')
-        });
-        
-        if (existingRepair) {
-            console.log('--- REPAIR FOUND ---');
-            console.log('Existing repair ID:', existingRepair._id);
-            console.log('------------------------------');
-            return existingRepair;
-        } else {
-            console.log('No duplicate repair found');
-            return null;
-        }
-    } catch (error) {
-        console.error('Error checking for duplicate repair:', error);
-        // Return null on error to allow proceeding with creation
+
+    const repairDetails = parseRepairDetailsFromCardName(cardName);
+    console.log('--- CHECKING FOR DUPLICATE REPAIR ---');
+    console.log('Repair Number:', repairDetails?.repairNumber);
+    console.log('Customer First Name:', repairDetails?.customerFirstName);
+    console.log('Customer Last Name:', repairDetails?.customerLastName);
+    
+    // Search for existing repair
+    const connectToDatabase = (await import('../../../lib/dbConnect')).default;
+    await connectToDatabase();
+    const { Repair } = await import('../../../lib/models/repair');
+    
+    const existingRepair = await Repair.findOne({
+        repairNumber: repairDetails?.repairNumber,
+        customerFirstName: new RegExp(`^${repairDetails?.customerFirstName}$`, 'i'),
+        customerLastName: new RegExp(`^${repairDetails?.customerLastName}$`, 'i')
+    });
+    
+    if (existingRepair) {
+        console.log('--- REPAIR FOUND ---');
+        console.log('Existing repair ID:', existingRepair._id);
+        console.log('------------------------------');
+        return existingRepair;
+    } else {
+        console.log('No duplicate repair found');
         return null;
     }
 }
 
 // Download and save attachment to repair
 async function processAttachmentForRepair(attachmentUrl: string, repairId: string, fileName: string) {
-    try {
-        console.log('Downloading attachment from URL:', attachmentUrl);
 
-        // Add Trello OAuth authentication header
-        const trelloApiKey = process.env.TRELLO_API_KEY;
-        const trelloToken = process.env.TRELLO_TOKEN;
+    console.log('Downloading attachment from URL:', attachmentUrl);
 
-        if (!trelloApiKey || !trelloToken) {
-            throw new Error('Trello API credentials not configured');
-        }
+    // Add Trello OAuth authentication header
+    const trelloApiKey = process.env.TRELLO_API_KEY;
+    const trelloToken = process.env.TRELLO_TOKEN;
 
-        // Create OAuth Authorization header
-        const authHeader = `OAuth oauth_consumer_key="${trelloApiKey}", oauth_token="${trelloToken}"`;
-
-        console.log('Downloading with OAuth authorization...');
-
-        // Download the attachment with OAuth authorization
-        const response = await fetch(attachmentUrl, {
-            headers: {
-                'Authorization': authHeader
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to download attachment: ${response.status} ${response.statusText}`);
-        }
-
-        console.log('Download response headers:', Object.fromEntries(response.headers.entries()));
-        console.log('Download response status:', response.status);
-
-        const buffer = await response.arrayBuffer();
-        console.log('Downloaded buffer size:', buffer.byteLength);
-
-        // Process and save image using same logic as upload route
-        const timestamp = Math.floor(Date.now() / 1000);
-        const originalName = fileName;
-        let newFileName = `${repairId}-${timestamp}-${originalName}`;
-
-        // Import required modules
-        const sharp = (await import('sharp')).default;
-        const { saveImage } = await import('../../../lib/utils/storage');
-
-        // Process image with Sharp - add error handling for metadata
-        let image = sharp(Buffer.from(buffer));
-        let metadata;
-        try {
-            metadata = await image.metadata();
-            console.log('Image metadata:', metadata);
-        } catch (metadataError) {
-            console.error('Failed to read image metadata:', metadataError);
-            // If we can't read metadata, save the raw buffer without processing
-            await saveImage(Buffer.from(buffer), newFileName);
-            console.log('Successfully saved attachment to repair (raw):', repairId);
-            return true;
-        }
-
-        // Convert WebP to JPEG if needed (Sharp may not support WebP in all environments)
-        if (metadata.format === 'webp') {
-            console.log('Converting WebP to JPEG');
-            image = image.jpeg({ quality: 90 });
-            // Update filename extension to .jpg
-            const nameWithoutExt = newFileName.replace(/\.[^/.]+$/, "");
-            newFileName = `${nameWithoutExt}.jpg`;
-        }
-
-        // If image is larger than 2000px in any dimension, resize it
-        if (metadata.width && metadata.width > 2000 || metadata.height && metadata.height > 2000) {
-            const resizedImage = await image
-                .resize(2000, 2000, {
-                    fit: 'inside', // Maintain aspect ratio
-                    withoutEnlargement: true // Don't enlarge if smaller
-                })
-                .toBuffer();
-            await saveImage(resizedImage, newFileName);
-        } else {
-            const processedBuffer = await image.toBuffer();
-            await saveImage(processedBuffer, newFileName);
-        }
-
-        console.log('Successfully saved attachment to repair:', repairId, 'as', newFileName);
-        return true;
-    } catch (error) {
-        console.error('Error processing attachment:', error);
-        return false;
+    if (!trelloApiKey || !trelloToken) {
+        throw new Error('Trello API credentials not configured');
     }
+
+    // Create OAuth Authorization header
+    const authHeader = `OAuth oauth_consumer_key="${trelloApiKey}", oauth_token="${trelloToken}"`;
+
+    console.log('Downloading with OAuth authorization...');
+
+    // Download the attachment with OAuth authorization
+    const response = await fetch(attachmentUrl, {
+        headers: {
+            'Authorization': authHeader
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to download attachment: ${response.status} ${response.statusText}`);
+    }
+
+    console.log('Download response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('Download response status:', response.status);
+
+    const buffer = await response.arrayBuffer();
+    console.log('Downloaded buffer size:', buffer.byteLength);
+
+    // Process and save image using same logic as upload route
+    const timestamp = Math.floor(Date.now() / 1000);
+    const originalName = fileName;
+    const newFileName = `${repairId}-${timestamp}-${originalName}`;
+
+    // Import required modules
+    const sharp = (await import('sharp')).default;
+    const { saveImage } = await import('../../../lib/utils/storage');
+
+    // Process image with Sharp - add error handling for metadata
+    const image = sharp(Buffer.from(buffer));
+    let metadata;
+    try {
+        metadata = await image.metadata();
+        console.log('Image metadata:', metadata);
+    } catch (metadataError) {
+        console.error('Failed to read image metadata:', metadataError);
+        // If we can't read metadata, save the raw buffer without processing
+        await saveImage(Buffer.from(buffer), newFileName);
+        console.log('Successfully saved attachment to repair (raw):', repairId);
+        return true;
+    }
+
+    // If image is larger than 1200px in any dimension, resize it
+    if (metadata.width && metadata.width > 1200 || metadata.height && metadata.height > 1200) {
+        const resizedImage = await image
+            .resize(1200, 1200, {
+                fit: 'inside', // Maintain aspect ratio
+                withoutEnlargement: true // Don't enlarge if smaller
+            })
+            .toBuffer();
+        await saveImage(resizedImage, newFileName);
+    } else {
+        const processedBuffer = await image.toBuffer();
+        await saveImage(processedBuffer, newFileName);
+    }
+
+    console.log('Successfully saved attachment to repair:', repairId, 'as', newFileName);
+    return true;
 }
 
 
 // Process repair request from Trello card data
 async function createRepair(parsedFields: any, cardName: string) {
-    try {
-        console.log('--- PROCESSING REPAIR REQUEST ---');
 
-        // Search for existing customer
-        let customer = null;
-        if (parsedFields.firstName && parsedFields.lastName) {
-            const searchParams = {
-                firstName: parsedFields.firstName,
-                lastName: parsedFields.lastName,
-                email: parsedFields.email || undefined,
-                phone: parsedFields.phoneNumber || undefined
-            };
+    console.log('--- PROCESSING REPAIR REQUEST ---');
 
-            console.log('Searching for existing customer with params:', searchParams);
-            const existingCustomers = await searchCustomers(searchParams);
+    // Search for existing customer
+    let customer = null;
+    if (parsedFields.firstName && parsedFields.lastName) {
+        const searchParams = {
+            firstName: parsedFields.firstName,
+            lastName: parsedFields.lastName,
+            email: parsedFields.email || undefined,
+            phone: parsedFields.phoneNumber || undefined
+        };
 
-            if (existingCustomers.length > 0) {
-                customer = existingCustomers[0];
-                console.log('Found existing customer:', customer._id, customer.firstName, customer.lastName);
-            }
+        console.log('Searching for existing customer with params:', searchParams);
+        const existingCustomers = await searchCustomers(searchParams);
+
+        if (existingCustomers.length > 0) {
+            customer = existingCustomers[0];
+            console.log('Found existing customer:', customer._id, customer.firstName, customer.lastName);
         }
+    }
 
-        // Create new customer if not found
-        if (!customer && parsedFields.firstName && parsedFields.lastName) {
-            console.log('Creating new customer...');
-            const customerData = {
-                firstName: parsedFields.firstName,
-                lastName: parsedFields.lastName,
-                email: parsedFields.email || '',
-                phone: parsedFields.phoneNumber || '',
-                cell: '',
-                company: '',
-                customerType: 'Individual',
-                status: 'Active'
+    // Create new customer if not found
+    if (!customer && parsedFields.firstName && parsedFields.lastName) {
+        console.log('Creating new customer...');
+        const customerData = {
+            firstName: parsedFields.firstName,
+            lastName: parsedFields.lastName,
+            email: parsedFields.email || '',
+            phone: parsedFields.phoneNumber || '',
+            cell: '',
+            company: '',
+            customerType: 'Individual',
+            status: 'Active'
+        };
+
+        const customerResult = await createCustomer(customerData);
+        if (customerResult.success && customerResult.data) {
+            customer = {
+                _id: customerResult.data._id.toString(),
+                firstName: customerResult.data.firstName,
+                lastName: customerResult.data.lastName,
+                email: customerResult.data.email,
+                phone: customerResult.data.phone
             };
-
-            const customerResult = await createCustomer(customerData);
-            if (customerResult.success && customerResult.data) {
-                customer = {
-                    _id: customerResult.data._id.toString(),
-                    firstName: customerResult.data.firstName,
-                    lastName: customerResult.data.lastName,
-                    email: customerResult.data.email,
-                    phone: customerResult.data.phone
-                };
-                console.log('Created new customer:', customer._id, customer.firstName, customer.lastName);
-            } else {
-                console.error('Failed to create customer:', customerResult.error);
-                return;
-            }
-        }
-
-        if (!customer) {
-            console.log('No customer found or created - skipping repair creation');
+            console.log('Created new customer:', customer._id, customer.firstName, customer.lastName);
+        } else {
+            console.error('Failed to create customer:', customerResult.error);
             return;
         }
+    }
 
-        // Parse repair estimate options
-        const repairOptions = {
-            service: false,
-            polish: false,
-            batteryChange: false,
-            other: false
+    if (!customer) {
+        console.log('No customer found or created - skipping repair creation');
+        return;
+    }
+
+    // Parse repair estimate options
+    const repairOptions = {
+        service: false,
+        polish: false,
+        batteryChange: false,
+        other: false
+    };
+
+    if (parsedFields.repairEstimateOptions) {
+        const options = parsedFields.repairEstimateOptions.toLowerCase();
+        repairOptions.service = options.includes('service');
+        repairOptions.polish = options.includes('polish');
+        repairOptions.batteryChange = options.includes('battery');
+        repairOptions.other = options.includes('other');
+    }
+
+    // Parse repair number from card name or get next available number
+    const parsedRepairNumber = parseRepairNumberFromCardName(cardName);
+    const repairNumber = parsedRepairNumber || await getNextRepairNumber();
+
+    console.log('Creating repair record...');
+    console.log('Repair number:', parsedRepairNumber ? `${repairNumber} (from card name)` : `${repairNumber} (generated)`);
+
+    const repairData = {
+        repairNumber,
+        customerId: customer._id,
+        customerFirstName: customer.firstName,
+        customerLastName: customer.lastName,
+        email: customer.email || '',
+        phone: customer.phone || '',
+        brand: parsedFields.brand || 'Unknown',
+        material: parsedFields.material || 'Unknown',
+        description: parsedFields.model || '',
+        itemValue: '',
+        repairOptions,
+        repairNotes: `Reference: ${parsedFields.referenceNumber || 'N/A'}\nTrello Card: ${cardName}`
+    };
+
+    const repairResult = await createRepairRecord(repairData);
+    if (repairResult.success) {
+        console.log('Created repair:', repairResult.repairNumber);
+
+        // Create log entry
+        console.log('Creating log entry...');
+        const lineItems: LineItem[] = [{
+            itemNumber: '',
+            name: `${parsedFields.brand || 'Unknown'} ${parsedFields.material || ''} ${parsedFields.model || ''} - Repair #${repairResult.repairNumber}`.trim(),
+            repairNumber: repairResult.repairNumber || ''
+        }];
+
+        const logData: LogData = {
+            date: new Date(),
+            receivedFrom: "Trello",
+            comments: `Trello repair request\nCard: ${cardName}\nReference: ${parsedFields.referenceNumber || 'N/A'}`,
+            customerName: `${customer.firstName} ${customer.lastName}`,
+            vendor: '',
+            user: "Trello Webhook",
+            lineItems
         };
 
-        if (parsedFields.repairEstimateOptions) {
-            const options = parsedFields.repairEstimateOptions.toLowerCase();
-            repairOptions.service = options.includes('service');
-            repairOptions.polish = options.includes('polish');
-            repairOptions.batteryChange = options.includes('battery');
-            repairOptions.other = options.includes('other');
-        }
-
-        // Parse repair number from card name or get next available number
-        const parsedRepairNumber = parseRepairNumberFromCardName(cardName);
-        const repairNumber = parsedRepairNumber || await getNextRepairNumber();
-
-        console.log('Creating repair record...');
-        console.log('Repair number:', parsedRepairNumber ? `${repairNumber} (from card name)` : `${repairNumber} (generated)`);
-
-        const repairData = {
-            repairNumber,
-            customerId: customer._id,
-            customerFirstName: customer.firstName,
-            customerLastName: customer.lastName,
-            email: customer.email || '',
-            phone: customer.phone || '',
-            brand: parsedFields.brand || 'Unknown',
-            material: parsedFields.material || 'Unknown',
-            description: parsedFields.model || '',
-            itemValue: '',
-            repairOptions,
-            repairNotes: `Reference: ${parsedFields.referenceNumber || 'N/A'}\nTrello Card: ${cardName}`
-        };
-
-        const repairResult = await createRepairRecord(repairData);
-        if (repairResult.success) {
-            console.log('Created repair:', repairResult.repairNumber);
-
-            // Create log entry
-            console.log('Creating log entry...');
-            const lineItems: LineItem[] = [{
-                itemNumber: '',
-                name: `${parsedFields.brand || 'Unknown'} ${parsedFields.material || ''} ${parsedFields.model || ''} - Repair #${repairResult.repairNumber}`.trim(),
-                repairNumber: repairResult.repairNumber || ''
-            }];
-
-            const logData: LogData = {
-                date: new Date(),
-                receivedFrom: "Trello",
-                comments: `Trello repair request\nCard: ${cardName}\nReference: ${parsedFields.referenceNumber || 'N/A'}`,
-                customerName: `${customer.firstName} ${customer.lastName}`,
-                vendor: '',
-                user: "Trello Webhook",
-                lineItems
-            };
-
-            const logResult = await createLog(logData);
-            if (logResult.success) {
-                console.log('Created log entry:', logResult.data?._id);
-                console.log('--- REPAIR REQUEST PROCESSED SUCCESSFULLY ---');
-            } else {
-                console.error('Failed to create log entry:', logResult.error);
-            }
+        const logResult = await createLog(logData);
+        if (logResult.success) {
+            console.log('Created log entry:', logResult.data?._id);
+            console.log('--- REPAIR REQUEST PROCESSED SUCCESSFULLY ---');
         } else {
-            console.error('Failed to create repair:', repairResult.error);
+            console.error('Failed to create log entry:', logResult.error);
         }
-
-    } catch (error) {
-        console.error('Error processing repair request:', error);
+    } else {
+        console.error('Failed to create repair:', repairResult.error);
     }
 }
 
@@ -388,6 +366,8 @@ export async function POST(request: NextRequest) {
             console.log('unsupported actionType, nothing to do');
         }
 
+        return NextResponse.json({ success: true });
+
     } catch (error) {
         console.error('Error processing Trello webhook:', error);
         return NextResponse.json(
@@ -413,61 +393,55 @@ async function handleCreateCard(actionData: any) {
     console.log('Card Name:', actionData.card.name);
     console.log('---------------------');
 
-    try {
+    // Add Trello OAuth authentication header
+    const trelloApiKey = process.env.TRELLO_API_KEY;
+    const trelloToken = process.env.TRELLO_TOKEN;
 
-        // Add Trello OAuth authentication header
-        const trelloApiKey = process.env.TRELLO_API_KEY;
-        const trelloToken = process.env.TRELLO_TOKEN;
+    if (!trelloApiKey || !trelloToken) {
+        throw new Error('Trello API credentials not configured');
+    }
 
-        if (!trelloApiKey || !trelloToken) {
-            throw new Error('Trello API credentials not configured');
-        }
+    const trelloApiUrl = `https://api.trello.com/1/cards/${actionData.card.id}?key=${trelloApiKey}&token=${trelloToken}&fields=all&members=true&member_fields=all&checklists=all&attachments=true&actions=all&actions_limit=50`;
 
-        const trelloApiUrl = `https://api.trello.com/1/cards/${actionData.card.id}?key=${trelloApiKey}&token=${trelloToken}&fields=all&members=true&member_fields=all&checklists=all&attachments=true&actions=all&actions_limit=50`;
+    console.log('Fetching card details from Trello API...');
+    const response = await fetch(trelloApiUrl);
 
-        console.log('Fetching card details from Trello API...');
-        const response = await fetch(trelloApiUrl);
+    if (response.ok) {
+        const fullCardData = await response.json();
 
-        if (response.ok) {
-            const fullCardData = await response.json();
+        console.log('--- CARD DETAILS FROM API ---');
+        console.log('Card ID:', fullCardData.id);
+        console.log('Card Name:', fullCardData.name);
+        console.log('Card Description:', fullCardData.desc || 'No description');
 
-            console.log('--- CARD DETAILS FROM API ---');
-            console.log('Card ID:', fullCardData.id);
-            console.log('Card Name:', fullCardData.name);
-            console.log('Card Description:', fullCardData.desc || 'No description');
+        // Parse the card description for structured fields
+        if (fullCardData.desc) {
+            const parsedFields = parseCardDescription(fullCardData.desc);
+            console.log('--- PARSED DESCRIPTION FIELDS ---');
+            console.log('First Name:', parsedFields.firstName || 'Not found');
+            console.log('Last Name:', parsedFields.lastName || 'Not found');
+            console.log('Email:', parsedFields.email || 'Not found');
+            console.log('Phone Number:', parsedFields.phoneNumber || 'Not found');
+            console.log('Brand:', parsedFields.brand || 'Not found');
+            console.log('Model:', parsedFields.model || 'Not found');
+            console.log('Material:', parsedFields.material || 'Not found');
+            console.log('Reference Number:', parsedFields.referenceNumber || 'Not found');
+            console.log('Repair Estimate Options:', parsedFields.repairEstimateOptions || 'Not found');
+            console.log('----------------------------------');
 
-            // Parse the card description for structured fields
-            if (fullCardData.desc) {
-                const parsedFields = parseCardDescription(fullCardData.desc);
-                console.log('--- PARSED DESCRIPTION FIELDS ---');
-                console.log('First Name:', parsedFields.firstName || 'Not found');
-                console.log('Last Name:', parsedFields.lastName || 'Not found');
-                console.log('Email:', parsedFields.email || 'Not found');
-                console.log('Phone Number:', parsedFields.phoneNumber || 'Not found');
-                console.log('Brand:', parsedFields.brand || 'Not found');
-                console.log('Model:', parsedFields.model || 'Not found');
-                console.log('Material:', parsedFields.material || 'Not found');
-                console.log('Reference Number:', parsedFields.referenceNumber || 'Not found');
-                console.log('Repair Estimate Options:', parsedFields.repairEstimateOptions || 'Not found');
-                console.log('----------------------------------');
+            // Check for duplicate repair before creating
+            const existingRepair = await findExistingRepair(fullCardData.name);
 
-                // Check for duplicate repair before creating
-                const existingRepair = await findExistingRepair(fullCardData.name);
-
-                if (existingRepair) {
-                    console.log('Skipping repair creation to avoid duplicate');
-                } else {
-                    console.log('No duplicate repair found, proceeding with creation');
-                    // Process the parsed data to create customer and repair
-                    await createRepair(parsedFields, fullCardData.name);
-                }
+            if (existingRepair) {
+                console.log('Skipping repair creation to avoid duplicate');
+            } else {
+                console.log('No duplicate repair found, proceeding with creation');
+                // Process the parsed data to create customer and repair
+                await createRepair(parsedFields, fullCardData.name);
             }
-        } else {
-            console.log('Failed to fetch card details from Trello API:', response.status, response.statusText);
         }
-    } catch (error) {
-        console.error('Error fetching card details from Trello API:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    } else {
+        console.log('Failed to fetch card details from Trello API:', response.status, response.statusText);
     }
 }
 
