@@ -21,6 +21,9 @@ export default async function UserButton() {
   // Check if already in kiosk mode
   const cookieStore = await cookies()
   const isKioskMode = cookieStore.get('kiosk-mode')?.value === 'true'
+  
+  // Check if kiosk mode is enabled via environment variable
+  const kioskEnabled = process.env.KIOSK_ENABLED === 'true'
   return (
     <div className="flex items-center gap-2">
 
@@ -47,7 +50,7 @@ export default async function UserButton() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {!isKioskMode && (
+          {!isKioskMode && kioskEnabled && (
             <>
               <DropdownMenuItem asChild>
                 <form action={enterKioskMode}>

@@ -16,33 +16,38 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
   const filter = params.filter || "outstanding";
   const view = params.view || "table";
   const { repairs, pagination } = await fetchRepairs(page, limit, search, filter);
+  
+  // Check if view switching is enabled via environment variable
+  const viewSwitchingEnabled = process.env.KIOSK_ENABLED === 'true';
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Repairs</h1>
-        <div className="flex gap-2">
-          <Button
-            variant={view === 'table' ? 'default' : 'outline'}
-            size="sm"
-            asChild
-          >
-            <a href={`/repairs?${new URLSearchParams({ ...params, view: 'table' }).toString()}`}>
-              <Table className="h-4 w-4 mr-2" />
-              Table
-            </a>
-          </Button>
-          <Button
-            variant={view === 'board' ? 'default' : 'outline'}
-            size="sm"
-            asChild
-          >
-            <a href={`/repairs?${new URLSearchParams({ ...params, view: 'board' }).toString()}`}>
-              <LayoutGrid className="h-4 w-4 mr-2" />
-              Board
-            </a>
-          </Button>
-        </div>
+        {viewSwitchingEnabled && (
+          <div className="flex gap-2">
+            <Button
+              variant={view === 'table' ? 'default' : 'outline'}
+              size="sm"
+              asChild
+            >
+              <a href={`/repairs?${new URLSearchParams({ ...params, view: 'table' }).toString()}`}>
+                <Table className="h-4 w-4 mr-2" />
+                Table
+              </a>
+            </Button>
+            <Button
+              variant={view === 'board' ? 'default' : 'outline'}
+              size="sm"
+              asChild
+            >
+              <a href={`/repairs?${new URLSearchParams({ ...params, view: 'board' }).toString()}`}>
+                <LayoutGrid className="h-4 w-4 mr-2" />
+                Board
+              </a>
+            </Button>
+          </div>
+        )}
       </div>
       
       <div className="flex-1">
