@@ -64,8 +64,12 @@ function parseRepairNumberFromCardName(cardName: string): string | null {
 
 // Parse repair details from card name for attachment processing
 function parseRepairDetailsFromCardName(cardName: string) {
-    // Pattern: "Repair #45 First Last" or "Repair 45 First Last" (# is optional)
-    const match = cardName.match(/Repair\s*#?(\d+)\s+([^\s]+)(?:\s+([^\s]+))?/i);
+    // Clean the card name by removing invisible characters and normalizing whitespace
+    const cleanedName = cardName.replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ').trim();
+    
+    // Pattern: "Repair #45 : First Last" or "Repair 45 First Last" (# and : are optional)
+    // This handles: "Repair #61 : David Knoernschild", "Repair 45 John Doe", etc.
+    const match = cleanedName.match(/Repair\s*#?(\d+)\s*:?\s*([^\s]+)(?:\s+([^\s]+))?/i);
     if (match) {
         return {
             repairNumber: match[1],
