@@ -10,16 +10,11 @@ import { Out } from './models/out';
 import { customerModel } from './models/customer'; import { logModel } from './models/log';
 import { Counter } from './models/counter';
 import { Wanted } from './models/wanted';
-import { getTenantName } from './auth-utils';
-import { getTenantId } from './auth-utils';
 
 export async function fetchCustomers(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
         const skip = (page - 1) * limit;
-
-        console.log('fetchCustomers, tenant name ' + await getTenantName());
-        console.log('fetchCustomers, tenant id ' + await getTenantId());
 
         let query = {}; // Define an empty query object
         if (search) {

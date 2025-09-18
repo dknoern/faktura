@@ -14,6 +14,7 @@ type LineItem = z.infer<typeof lineItemSchema>;
 // Method to parse markdown-formatted card description
 function parseCardDescription(description: string) {
     const fields = {
+        repairNumber: '',
         firstName: '',
         lastName: '',
         email: '',
@@ -22,7 +23,8 @@ function parseCardDescription(description: string) {
         model: '',
         material: '',
         referenceNumber: '',
-        repairEstimateOptions: ''
+        repairEstimateOptions: '',
+        selectBox: ''
     };
 
     if (!description) return fields;
@@ -37,7 +39,8 @@ function parseCardDescription(description: string) {
         model: /\*\*Rolex Model:\*\*\s*([^\n\r]+)/i,
         material: /\*\*Material:\*\*\s*([^\n\r]+)/i,
         referenceNumber: /\*\*Reference number if known:\*\*\s*([^\n\r]+)/i,
-        repairEstimateOptions: /\*\*Repair Estimate Options:\*\*\s*\[([^\]]+)\]/i
+        repairEstimateOptions: /\*\*Repair Estimate Options:\*\*\s*\[([^\]]+)\]/i,
+        selectBox: /\*\*Select Box:\*\*\s*([^\n\r]+)/i
     };
 
     // Extract each field
@@ -62,53 +65,26 @@ function parseRepairNumberFromCardName(cardName: string): string | null {
     return match ? match[1] : null;
 }
 
-// Parse repair details from card name for attachment processing
-function parseRepairDetailsFromCardName(cardName: string) {
-    // Clean the card name by removing invisible characters and normalizing whitespace
-    const cleanedName = cardName.replace(/[\u200B-\u200D\uFEFF\u2060]/g, '').replace(/\s+/g, ' ').trim();
-    
-    console.log('Parsing card name:', cardName);
-    console.log('Cleaned card name:', cleanedName);
-    
-    // Pattern: "Repair 2725 - Ke Chau", "Repair #61 : David Knoernschild", "Repair 45 John Doe"
-    // First capture the repair number, then require at least one non-digit separator, then capture names
-    const match = cleanedName.match(/Repair\s*#?(\d+)\s*[^\w\d]*\s*([A-Za-z]+)(?:\s+([A-Za-z]+))?/i);
-    
-    console.log('Regex match result:', match);
-    
-    if (match) {
-        const result = {
-            repairNumber: match[1],
-            customerFirstName: match[2] || '',
-            customerLastName: match[3] || ''
-        };
-        console.log('Parsed result:', result);
-        return result;
-    }
-    console.log('No match found');
-    return null;
-}
 
 // Check if a repair already exists with the given details
-async function findExistingRepair(cardName: string) {
+async function findExistingRepair(repairNumber: string, customerFirstName: string, customerLastName: string) {
 
-    const repairDetails = parseRepairDetailsFromCardName(cardName);
-    console.log('--- CHECKING FOR DUPLICATE REPAIR ---');
-    console.log('Repair Number:', repairDetails?.repairNumber);
-    console.log('Customer First Name:', repairDetails?.customerFirstName);
-    console.log('Customer Last Name:', repairDetails?.customerLastName);
-    
+    console.log('--- CHECKING FOR EXISTING REPAIR ---');
+    console.log('Repair Number:', repairNumber);
+    console.log('Customer First Name:', customerFirstName);
+    console.log('Customer Last Name:', customerLastName);
+
     // Search for existing repair
     const connectToDatabase = (await import('../../../lib/dbConnect')).default;
     await connectToDatabase();
     const { Repair } = await import('../../../lib/models/repair');
-    
+
     const existingRepair = await Repair.findOne({
-        repairNumber: repairDetails?.repairNumber,
-        customerFirstName: new RegExp(`^${repairDetails?.customerFirstName}$`, 'i'),
-        customerLastName: new RegExp(`^${repairDetails?.customerLastName}$`, 'i')
+        repairNumber: repairNumber,
+        customerFirstName: new RegExp(`^${customerFirstName}$`, 'i'),
+        customerLastName: new RegExp(`^${customerLastName}$`, 'i')
     });
-    
+
     if (existingRepair) {
         console.log('--- REPAIR FOUND ---');
         console.log('Existing repair ID:', existingRepair._id);
@@ -198,7 +174,7 @@ async function processAttachmentForRepair(attachmentUrl: string, repairId: strin
 
 
 // Process repair request from Trello card data
-async function createRepair(parsedFields: any, cardName: string) {
+async function createRepair(parsedFields: any) {
 
     console.log('--- PROCESSING REPAIR REQUEST ---');
 
@@ -273,7 +249,7 @@ async function createRepair(parsedFields: any, cardName: string) {
     }
 
     // Parse repair number from card name or get next available number
-    const parsedRepairNumber = parseRepairNumberFromCardName(cardName);
+    const parsedRepairNumber = parseRepairNumberFromCardName(parsedFields.cardName);
     const repairNumber = parsedRepairNumber || await getNextRepairNumber();
 
     console.log('Creating repair record...');
@@ -291,7 +267,7 @@ async function createRepair(parsedFields: any, cardName: string) {
         description: parsedFields.model || '',
         itemValue: '',
         repairOptions,
-        repairNotes: `Reference: ${parsedFields.referenceNumber || 'N/A'}\nTrello Card: ${cardName}`
+        repairNotes: `Reference: ${parsedFields.referenceNumber || 'N/A'}\nTrello Card: ${parsedFields.cardName}`
     };
 
     const repairResult = await createRepairRecord(repairData);
@@ -309,10 +285,10 @@ async function createRepair(parsedFields: any, cardName: string) {
         const logData: LogData = {
             date: new Date(),
             receivedFrom: "Trello",
-            comments: `Trello repair request\nCard: ${cardName}\nReference: ${parsedFields.referenceNumber || 'N/A'}`,
+            comments: `Trello repair request\nCard: ${parsedFields.cardName}\nReference: ${parsedFields.referenceNumber || 'N/A'}`,
             customerName: `${customer.firstName} ${customer.lastName}`,
             vendor: '',
-            user: "Trello Webhook",
+            user: parsedFields.selectBox,
             lineItems
         };
 
@@ -399,12 +375,7 @@ export async function GET() {
     });
 }
 
-
-async function handleCreateCard(actionData: any) {
-    console.log('--- CREATE CARD ---');
-    console.log('Card ID:', actionData.card.id);
-    console.log('Card Name:', actionData.card.name);
-    console.log('---------------------');
+async function getTrelloCardDetails(cardId: string) {
 
     // Add Trello OAuth authentication header
     const trelloApiKey = process.env.TRELLO_API_KEY;
@@ -414,7 +385,7 @@ async function handleCreateCard(actionData: any) {
         throw new Error('Trello API credentials not configured');
     }
 
-    const trelloApiUrl = `https://api.trello.com/1/cards/${actionData.card.id}?key=${trelloApiKey}&token=${trelloToken}&fields=all&members=true&member_fields=all&checklists=all&attachments=true&actions=all&actions_limit=50`;
+    const trelloApiUrl = `https://api.trello.com/1/cards/${cardId}?key=${trelloApiKey}&token=${trelloToken}&fields=all&members=true&member_fields=all&checklists=all&attachments=true&actions=all&actions_limit=50`;
 
     console.log('Fetching card details from Trello API...');
     const response = await fetch(trelloApiUrl);
@@ -427,10 +398,14 @@ async function handleCreateCard(actionData: any) {
         console.log('Card Name:', fullCardData.name);
         console.log('Card Description:', fullCardData.desc || 'No description');
 
+        const repairNumber = parseRepairNumberFromCardName(fullCardData.name);
+
         // Parse the card description for structured fields
-        if (fullCardData.desc) {
+        if (fullCardData.desc && repairNumber) {
             const parsedFields = parseCardDescription(fullCardData.desc);
+            parsedFields.repairNumber = repairNumber;
             console.log('--- PARSED DESCRIPTION FIELDS ---');
+            console.log('Repair Number:', parsedFields.repairNumber || 'Not found')
             console.log('First Name:', parsedFields.firstName || 'Not found');
             console.log('Last Name:', parsedFields.lastName || 'Not found');
             console.log('Email:', parsedFields.email || 'Not found');
@@ -440,21 +415,38 @@ async function handleCreateCard(actionData: any) {
             console.log('Material:', parsedFields.material || 'Not found');
             console.log('Reference Number:', parsedFields.referenceNumber || 'Not found');
             console.log('Repair Estimate Options:', parsedFields.repairEstimateOptions || 'Not found');
+            console.log('Select Box:', parsedFields.selectBox || 'Not found');
             console.log('----------------------------------');
 
-            // Check for duplicate repair before creating
-            const existingRepair = await findExistingRepair(fullCardData.name);
-
-            if (existingRepair) {
-                console.log('Skipping repair creation to avoid duplicate');
-            } else {
-                console.log('No duplicate repair found, proceeding with creation');
-                // Process the parsed data to create customer and repair
-                await createRepair(parsedFields, fullCardData.name);
-            }
+            return parsedFields;
         }
+
     } else {
         console.log('Failed to fetch card details from Trello API:', response.status, response.statusText);
+    }
+}
+
+
+async function handleCreateCard(actionData: any) {
+    console.log('--- CREATE CARD ---');
+    console.log('Card ID:', actionData.card.id);
+    console.log('Card Name:', actionData.card.name);
+    console.log('---------------------');
+
+    // Parse repair details from card name and description
+    const parsedFields = await getTrelloCardDetails(actionData.card.id);
+
+    if (parsedFields) {
+
+        const existingRepair = await findExistingRepair(parsedFields.repairNumber, parsedFields.firstName, parsedFields.lastName);
+
+        if (existingRepair) {
+            console.log('Skipping repair creation to avoid duplicate');
+        } else {
+            console.log('No duplicate repair found, proceeding with creation');
+            // Process the parsed data to create customer and repair
+            await createRepair(parsedFields);
+        }
     }
 }
 
@@ -462,36 +454,25 @@ async function handleCreateCard(actionData: any) {
 async function handleAddAttachmentToCard(actionData: any) {
     console.log('--- ADD ATTACHMENT TO CARD ---');
     console.log('Card ID:', actionData.card.id);
+    console.log('Card Name:', actionData.card.name);
     console.log('Attachment ID:', actionData.attachment.id);
     console.log('Attachment Name:', actionData.attachment.name);
     console.log('Attachment URL:', actionData.attachment.url);
     console.log('---------------------');
 
-    const attachment = actionData.attachment;
-    const card = actionData.card;
+    const repairDetails = await getTrelloCardDetails(actionData.card.id);
 
-    console.log('--- ATTACHMENT ADDED TO CARD ---');
-    console.log('Card ID:', card.id);
-    console.log('Card Name:', card.name);
-    console.log('Attachment ID:', attachment.id);
-    console.log('Attachment Name:', attachment.name);
-    console.log('Attachment URL:', attachment.url);
-    console.log('--------------------------------');
-
-    // Parse repair details from card name
-    const repairDetails = parseRepairDetailsFromCardName(card.name);
-
-    if(repairDetails){
-        const existingRepair = await findExistingRepair(card.name);
-        
-        if(existingRepair){
+    if (repairDetails) {
+        const existingRepair = await findExistingRepair(repairDetails.repairNumber, repairDetails.firstName, repairDetails.lastName);
+        if (existingRepair) {
             console.log('existing repair found, saving attachment to repair');
-            await processAttachmentForRepair(attachment.url, existingRepair._id.toString(), attachment.name);
+            await processAttachmentForRepair(actionData.attachment.url, existingRepair._id.toString(), actionData.attachment.name);
             console.log('Successfully processed attachment for repair');
-        }else{
+        } else {
             console.log("repair not found, will not save attachment")
         }
     } else {
-        console.log('Could not parse repair details from card name:', card.name);
+        console.log('Could not parse repair details from card name:', actionData.card.name);
     }
 }
+
