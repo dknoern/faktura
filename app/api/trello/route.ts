@@ -366,6 +366,9 @@ export async function POST(request: NextRequest) {
         } else if (actionType === 'addAttachmentToCard') {
             console.log('Action type: addAttachmentToCard');
             handleAddAttachmentToCard(actionData);
+        } else if (actionType === 'updateCard') {
+            console.log('Action type: updateCard');
+            handleUpdateCard(actionData);
         } else {
             console.log('unsupported actionType, nothing to do');
         }
@@ -505,6 +508,68 @@ async function handleCreateCard(actionData: any) {
     }
 }
 
+
+async function handleUpdateCard(actionData: any) {
+    console.log('--- UPDATE CARD ---');
+    console.log('Card ID:', actionData.card.id);
+    console.log('Card Name:', actionData.card.name);
+    console.log('List ID (after):', actionData.listAfter?.id);
+    console.log('---------------------');
+
+    // Get the new list name
+    let newListName = null;
+    if (actionData.listAfter?.id) {
+        newListName = await getTrelloListName(actionData.listAfter.id);
+        console.log('New list name (vendor):', newListName);
+    }
+
+    if (!newListName) {
+        console.log('No new list name found, skipping vendor update');
+        return;
+    }
+
+    // Get card details to extract repair information
+    const repairDetails = await getTrelloCardDetails(actionData.card.id);
+
+    if (repairDetails) {
+        // Find the existing repair record
+        const existingRepair = await findExistingRecord(repairDetails.repairNumber, repairDetails.firstName, repairDetails.lastName);
+        
+        if (existingRepair) {
+            console.log('Found existing repair:', existingRepair._id);
+            console.log('Current vendor:', existingRepair.vendor || 'empty');
+            console.log('New vendor (list name):', newListName);
+            
+            // Check if vendor field needs updating
+            if (existingRepair.vendor !== newListName) {
+                console.log('Vendor field differs, updating repair record...');
+                
+                try {
+                    const connectToDatabase = (await import('../../../lib/dbConnect')).default;
+                    await connectToDatabase();
+                    const { Repair } = await import('../../../lib/models/repair');
+                    
+                    // Update only the vendor field
+                    await Repair.findByIdAndUpdate(
+                        existingRepair._id,
+                        { vendor: newListName },
+                        { new: true }
+                    );
+                    
+                    console.log('Successfully updated repair vendor to:', newListName);
+                } catch (error) {
+                    console.error('Error updating repair vendor:', error);
+                }
+            } else {
+                console.log('Vendor field already matches, no update needed');
+            }
+        } else {
+            console.log('No existing repair found for card:', actionData.card.name);
+        }
+    } else {
+        console.log('Could not parse repair details from card:', actionData.card.name);
+    }
+}
 
 async function handleAddAttachmentToCard(actionData: any) {
     console.log('--- ADD ATTACHMENT TO CARD ---');
