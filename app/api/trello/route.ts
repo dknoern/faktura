@@ -523,6 +523,11 @@ async function handleUpdateCard(actionData: any) {
         console.log('New list name (vendor):', newListName);
     }
 
+    if (newListName === "New Customer Repair" || newListName != "Incoming Repair" || newListName != "Daily Log In") {
+        console.log('Skipping vendor update for card:', actionData.card.name);
+        return;
+    }
+        
     if (!newListName) {
         console.log('No new list name found, skipping vendor update');
         return;

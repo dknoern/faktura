@@ -100,6 +100,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
       // Set warranty service value
       formData.set('warrantyService', warrantyService ? 'true' : 'false');
 
+      console.log('repair formData', formData);
+
       if (repair) {
         await updateRepair(repair.repairNumber!, formData);
         router.push("/repairs");

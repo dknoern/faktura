@@ -77,7 +77,11 @@ export const formatCurrency = (value: number | null | undefined = 0) => {
 
 // Format date values with time
 export const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString(undefined, {
+  // Get timezone from environment variable, default to Central timezone
+  const timeZone = process.env.TIMEZONE || 'America/Chicago';
+  
+  return new Date(dateString).toLocaleString('en-US', {
+    timeZone,
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',

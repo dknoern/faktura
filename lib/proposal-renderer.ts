@@ -28,7 +28,15 @@ export function generateProposalHtml(proposal: Proposal, tenant: Tenant, imageBa
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    // Get timezone from environment variable, default to Central timezone
+    const timeZone = process.env.TIMEZONE || 'America/Chicago';
+    
+    return new Date(dateString).toLocaleDateString('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
+    });
   };
 
   const logoUrl = imageBaseUrl ? `${imageBaseUrl}/api/images/logo-${tenant._id}.png` : '';

@@ -131,6 +131,10 @@ export function ProductHistory({ history, productId, onHistoryUpdate }: ProductH
                       <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/repairs/${historyEvent.refDoc}/view`}>
                         repair
                       </Link></span>
+                      ) : historyEvent.action.startsWith("item memo") && historyEvent.refDoc ? (
+                        <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${historyEvent.refDoc}/view`}>
+                          {historyEvent.refDoc}
+                        </Link></span>
                     ) : null}
                   </div>
                   {isUserNote(historyEvent.action) && (
