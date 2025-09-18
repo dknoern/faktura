@@ -24,7 +24,8 @@ function parseCardDescription(description: string) {
         material: '',
         referenceNumber: '',
         repairEstimateOptions: '',
-        selectBox: ''
+        selectBox: '',
+        cardName: ''
     };
 
     if (!description) return fields;
@@ -234,7 +235,7 @@ async function createRepair(parsedFields: any) {
     }
 
     // Parse repair number from card name or get next available number
-    const parsedRepairNumber = parseRepairNumberFromCardName(parsedFields.cardName);
+    const parsedRepairNumber = parseRepairNumberFromCardName(parsedFields.cardName || '');
     const repairNumber = parsedRepairNumber || await getNextRepairNumber();
 
     console.log('Creating repair record...');
@@ -389,6 +390,7 @@ async function getTrelloCardDetails(cardId: string) {
         if (fullCardData.desc && repairNumber) {
             const parsedFields = parseCardDescription(fullCardData.desc);
             parsedFields.repairNumber = repairNumber;
+            parsedFields.cardName = fullCardData.name; // Add the card name to parsed fields
             console.log('--- PARSED DESCRIPTION FIELDS ---');
             console.log('Repair Number:', parsedFields.repairNumber || 'Not found')
             console.log('First Name:', parsedFields.firstName || 'Not found');
