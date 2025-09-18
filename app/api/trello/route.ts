@@ -25,7 +25,8 @@ function parseCardDescription(description: string) {
         referenceNumber: '',
         repairEstimateOptions: '',
         selectBox: '',
-        cardName: ''
+        cardName: '',
+        vendor: ''
     };
 
     if (!description) return fields;
@@ -69,7 +70,7 @@ function parseRepairNumberFromCardName(cardName: string): string | null {
 
 
 // Check if a repair already exists with the given details
-async function findExistingRepair(repairNumber: string, customerFirstName: string, customerLastName: string) {
+async function findExistingRecord(repairNumber: string, customerFirstName: string, customerLastName: string) {
 
     console.log('--- CHECKING FOR EXISTING REPAIR ---');
     console.log('Repair Number:', repairNumber);
@@ -94,6 +95,34 @@ async function findExistingRepair(repairNumber: string, customerFirstName: strin
         return existingRepair;
     } else {
         console.log('No duplicate repair found');
+        return null;
+    }
+}
+
+// Find log record by repair number and customer name
+async function findLogByRepairAndCustomer(repairNumber: string, customerName: string) {
+    try {
+        console.log('Searching for log with repair number:', repairNumber, 'and customer:', customerName);
+        
+        const connectToDatabase = (await import('../../../lib/dbConnect')).default;
+        await connectToDatabase();
+        const { logModel } = await import('../../../lib/models/log');
+        
+        // Search for log that has a line item with the repair number and matching customer name
+        const log = await logModel.findOne({
+            customerName: new RegExp(`^${customerName}$`, 'i'),
+            'lineItems.repairNumber': repairNumber
+        });
+        
+        if (log) {
+            console.log('Found matching log:', log._id);
+            return log;
+        } else {
+            console.log('No matching log found');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error finding log by repair and customer:', error);
         return null;
     }
 }
@@ -273,7 +302,7 @@ async function createRepair(parsedFields: any) {
             receivedFrom: "Trello",
             comments: `Trello repair request\nCard: ${parsedFields.cardName}\nReference: ${parsedFields.referenceNumber || 'N/A'}`,
             customerName: `${customer.firstName} ${customer.lastName}`,
-            vendor: '',
+            vendor: parsedFields.vendor || '',
             user: parsedFields.selectBox,
             lineItems
         };
@@ -413,19 +442,58 @@ async function getTrelloCardDetails(cardId: string) {
     }
 }
 
+async function getTrelloListName(listId: string) {
+    try {
+        // Add Trello OAuth authentication header
+        const trelloApiKey = process.env.TRELLO_API_KEY;
+        const trelloToken = process.env.TRELLO_TOKEN;
+
+        if (!trelloApiKey || !trelloToken) {
+            throw new Error('Trello API credentials not configured');
+        }
+
+        const trelloApiUrl = `https://api.trello.com/1/lists/${listId}?key=${trelloApiKey}&token=${trelloToken}&fields=name`;
+
+        console.log('Fetching list name from Trello API for list ID:', listId);
+        const response = await fetch(trelloApiUrl);
+
+        if (response.ok) {
+            const listData = await response.json();
+            console.log('List name:', listData.name);
+            return listData.name;
+        } else {
+            console.log('Failed to fetch list details from Trello API:', response.status, response.statusText);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching Trello list name:', error);
+        return null;
+    }
+}
+
 
 async function handleCreateCard(actionData: any) {
     console.log('--- CREATE CARD ---');
     console.log('Card ID:', actionData.card.id);
     console.log('Card Name:', actionData.card.name);
+    console.log('List ID:', actionData.list?.id);
     console.log('---------------------');
+
+    // Get list name to use as vendor
+    let listName = null;
+    if (actionData.list?.id) {
+        listName = await getTrelloListName(actionData.list.id);
+        console.log('List name (vendor):', listName);
+    }
 
     // Parse repair details from card name and description
     const parsedFields = await getTrelloCardDetails(actionData.card.id);
 
     if (parsedFields) {
+        // Add list name as vendor to parsed fields
+        parsedFields.vendor = listName || '';
 
-        const existingRepair = await findExistingRepair(parsedFields.repairNumber, parsedFields.firstName, parsedFields.lastName);
+        const existingRepair = await findExistingRecord(parsedFields.repairNumber, parsedFields.firstName, parsedFields.lastName);
 
         if (existingRepair) {
             console.log('Skipping repair creation to avoid duplicate');
@@ -450,11 +518,27 @@ async function handleAddAttachmentToCard(actionData: any) {
     const repairDetails = await getTrelloCardDetails(actionData.card.id);
 
     if (repairDetails) {
-        const existingRepair = await findExistingRepair(repairDetails.repairNumber, repairDetails.firstName, repairDetails.lastName);
+        const existingRepair = await findExistingRecord(repairDetails.repairNumber, repairDetails.firstName, repairDetails.lastName);
         if (existingRepair) {
             console.log('existing repair found, saving attachment to repair');
             await processAttachmentForRepair(actionData.attachment.url, existingRepair._id.toString(), actionData.attachment.name);
             console.log('Successfully processed attachment for repair');
+            
+            // Also add attachment to corresponding log record
+            const customerName = `${repairDetails.firstName} ${repairDetails.lastName}`;
+            const correspondingLog = await findLogByRepairAndCustomer(repairDetails.repairNumber, customerName);
+            
+            if (correspondingLog) {
+                console.log('Found corresponding log, adding attachment to log as well');
+                const logAttachmentResult = await processAttachmentForRepair(actionData.attachment.url, correspondingLog._id.toString(), actionData.attachment.name);
+                if (logAttachmentResult) {
+                    console.log('Successfully processed attachment for log');
+                } else {
+                    console.log('Failed to process attachment for log');
+                }
+            } else {
+                console.log('No corresponding log found for repair number:', repairDetails.repairNumber, 'and customer:', customerName);
+            }
         } else {
             console.log("repair not found, will not save attachment")
         }
