@@ -60,8 +60,9 @@ function parseCardDescription(description: string) {
 }
 
 // Parse repair number from card name (e.g., "Repair #45⁠ : David⁠ Knoernschld" -> "45")
+// also support case like "Repair 45 David Knoernschld"
 function parseRepairNumberFromCardName(cardName: string): string | null {
-    const match = cardName.match(/Repair\s*#(\d+)/i);
+    const match = cardName.match(/Repair\s*#?(\d+)/i);
     return match ? match[1] : null;
 }
 
@@ -232,22 +233,6 @@ async function createRepair(parsedFields: any) {
         return;
     }
 
-    // Parse repair estimate options
-    const repairOptions = {
-        service: false,
-        polish: false,
-        batteryChange: false,
-        other: false
-    };
-
-    if (parsedFields.repairEstimateOptions) {
-        const options = parsedFields.repairEstimateOptions.toLowerCase();
-        repairOptions.service = options.includes('service');
-        repairOptions.polish = options.includes('polish');
-        repairOptions.batteryChange = options.includes('battery');
-        repairOptions.other = options.includes('other');
-    }
-
     // Parse repair number from card name or get next available number
     const parsedRepairNumber = parseRepairNumberFromCardName(parsedFields.cardName);
     const repairNumber = parsedRepairNumber || await getNextRepairNumber();
@@ -266,7 +251,7 @@ async function createRepair(parsedFields: any) {
         material: parsedFields.material || 'Unknown',
         description: parsedFields.model || '',
         itemValue: '',
-        repairOptions,
+        repairOptions: parsedFields.repairEstimateOptions,
         repairNotes: `Reference: ${parsedFields.referenceNumber || 'N/A'}\nTrello Card: ${parsedFields.cardName}`
     };
 

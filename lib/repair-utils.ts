@@ -39,12 +39,7 @@ export async function createRepairRecord(repairData: {
   material: string
   description?: string
   itemValue?: string
-  repairOptions: {
-    service: boolean
-    polish: boolean
-    batteryChange: boolean
-    other: boolean
-  }
+  repairOptions?: string
   repairNotes?: string
 }) {
   try {
@@ -52,13 +47,6 @@ export async function createRepairRecord(repairData: {
 
     const tenant = await fetchDefaultTenant();
     const repairConfirmMessage = tenant.repairConfirmationText || "Thank you for your repair request. We will contact you soon.";
-    
-    // Build description from repair options
-    const selectedOptions = []
-    if (repairData.repairOptions.service) selectedOptions.push("Service")
-    if (repairData.repairOptions.polish) selectedOptions.push("Polish")
-    if (repairData.repairOptions.batteryChange) selectedOptions.push("Battery Change")
-    if (repairData.repairOptions.other) selectedOptions.push("Other")
     
     const description = `${repairData.brand} ${repairData.material}${repairData.description ? ` - ${repairData.description}` : ''} ${repairData.itemValue ? ` - value: ${repairData.itemValue}` : ''}`
 
@@ -72,7 +60,7 @@ export async function createRepairRecord(repairData: {
       email: repairData.email,
       phone: repairData.phone,
       vendor: null, // Vendor assigned later
-      repairIssues: selectedOptions.length > 0 ? `${selectedOptions.join(", ")}` : '',
+      repairIssues: repairData.repairOptions || '',
       repairNotes: `${repairData.itemValue ? 'Item Value: ${repairData.itemValue}\n' : ''}${repairData.repairNotes}`,
       warrantyService: false,
       customerId: parseInt(repairData.customerId) || 0,

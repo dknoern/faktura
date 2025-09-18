@@ -147,6 +147,12 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
       for (const repair of transaction.repairs) {
 
         console.log('in createRepairRecord, itemValue is ' + repair.itemValue)
+        // concatenate repairOptions that are "true" into a comma-delimited list
+      
+        const repairOptionsString = repair.repairOptions.service ? 'Service' : '' +
+        repair.repairOptions.polish ? ', Polish' : '' +
+        repair.repairOptions.batteryChange ? ', Battery Change' : '' +
+        repair.repairOptions.other ? ', Other' : ''
         const repairResult = await createRepairRecord({
           repairNumber: currentRepairNumber.toString(),
           customerId: transaction.customer._id || '',
@@ -158,7 +164,7 @@ export async function submitKioskTransaction(transaction: KioskTransaction, imag
           material: repair.material,
           description: repair.description,
           itemValue: repair.itemValue,
-          repairOptions: repair.repairOptions,
+          repairOptions: repairOptionsString,
           repairNotes: repair.additionalDetails || ''
         })
         
