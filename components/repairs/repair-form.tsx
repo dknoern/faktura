@@ -59,10 +59,10 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
   const [customerApprovedDate, setCustomerApprovedDate] = useState(repair?.customerApprovedDate || '');
   const [warrantyService, setWarrantyService] = useState(repair?.warrantyService || false);
   const [repairNumber, setRepairNumber] = useState(initialSelectedProduct?.itemNumber || repair?.repairNumber || '');
+  const [description, setDescription] = useState(initialSelectedProduct?.title || repair?.description || '');
   
   // Add state for all form fields to retain values on error
   const [vendor, setVendor] = useState(repair?.vendor || '');
-  const [description, setDescription] = useState(selectedProduct?.title || repair?.description || '');
   const [repairIssues, setRepairIssues] = useState(repair?.repairIssues || '');
   const [repairNotes, setRepairNotes] = useState(repair?.repairNotes || '');
   const [customerFirstName, setCustomerFirstName] = useState(repair?.customerFirstName || selectedCustomer?.firstName || '');

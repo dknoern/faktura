@@ -39,7 +39,7 @@ export type State = {
 function formatDate(date: string | null) {
   if (date == null) return "";
   else {
-      return format(new Date(date), 'yyyy-MM-dd');
+    return format(new Date(date), 'yyyy-MM-dd');
   }
 }
 
@@ -49,7 +49,7 @@ export async function createRepair(formData: FormData) {
 
     // Handle repair cost - convert to number only if it has a value
     const repairCostStr = formData.get("repairCost") as string;
-    const repairCost = repairCostStr && repairCostStr.trim() !== '' ? 
+    const repairCost = repairCostStr && repairCostStr.trim() !== '' ?
       parseFloat(repairCostStr) : undefined;
 
     const productId = formData.get("selectedProductId");
@@ -70,19 +70,19 @@ export async function createRepair(formData: FormData) {
 
       // also check if entered repairNumber is already used
       if (Number(repairNumber) < 50000) {
-      const repairExists = await Repair.findOne({ repairNumber });
-      if (repairExists) {
-        return { 
-          success: false, 
-          error: `Repair number ${repairNumber} already exists. Please use a different number or leave blank to generate a new one.` 
-        };
+        const repairExists = await Repair.findOne({ repairNumber });
+        if (repairExists) {
+          return {
+            success: false,
+            error: `Repair number ${repairNumber} already exists. Please use a different number or leave blank to generate a new one.`
+          };
+        }
       }
-    }
 
       // if repairNumber is a number and less than 50000 but more than the counter value, set the counter value to repairNumber
-  // check that repaiarNumber can be parsed as a number
+      // check that repaiarNumber can be parsed as a number
       console.log('checking if repairNumber is a number and less than 50000 but more than the counter value')
-      if (Number(repairNumber) >= 50000 && Number(repairNumber) > counterValue ) {
+      if (Number(repairNumber) < 50000 && Number(repairNumber) > counterValue) {
         console.log('repairNumber is a number and less than 50000 but more than the counter value, updating counter')
         await Counter.findOneAndUpdate({ _id: 'repairNumber' }, { seq: repairNumber });
       }
@@ -110,15 +110,15 @@ export async function createRepair(formData: FormData) {
 
     console.log('dateOut', repair.dateOut);
     console.log('returnDate', repair.returnDate);
-    
-    repair.search = repair.repairNumber 
-    + " " + repair.itemNumber 
-    + " " + repair.description 
-    + " " + formatDate(repair.dateOut)
-    + " " + formatDate(repair.returnDate)
-    + " " + repair.customerFirstName 
-    + " " + repair.customerLastName 
-    + " " + repair.vendor;
+
+    repair.search = repair.repairNumber
+      + " " + repair.itemNumber
+      + " " + repair.description
+      + " " + formatDate(repair.dateOut)
+      + " " + formatDate(repair.returnDate)
+      + " " + repair.customerFirstName
+      + " " + repair.customerLastName
+      + " " + repair.vendor;
 
 
     console.log("creating this repair", repair);
@@ -176,7 +176,7 @@ export async function createRepair(formData: FormData) {
         };
 
         const trelloResult = await createTrelloRepairCard(trelloCardData);
-        
+
         if (trelloResult.success) {
           console.log(`✓ Trello card created for repair #${repair.repairNumber}`);
         } else {
@@ -198,12 +198,12 @@ export async function createRepair(formData: FormData) {
 export async function updateRepair(repairNumber: string, formData: FormData) {
   try {
     await dbConnect();
-    
+
     // Handle repair cost - convert to number only if it has a value
     const repairCostStr = formData.get("repairCost") as string;
-    const repairCost = repairCostStr && repairCostStr.trim() !== '' ? 
+    const repairCost = repairCostStr && repairCostStr.trim() !== '' ?
       parseFloat(repairCostStr) : undefined;
-    
+
     const updateData = {
       itemNumber: formData.get("itemNumber"),
       description: formData.get("description"),
@@ -255,14 +255,14 @@ type ReturnData = {
 export async function createReturn(data: ReturnData) {
   try {
     await dbConnect();
-  
+
     // Get the next return number from the counter collection
     const newReturnNumber = await Counter.findByIdAndUpdate(
       { _id: 'returnNumber' },
       { $inc: { seq: 1 } },
       { new: true, upsert: true }
     );
-    
+
     // Clean the data to avoid any potential circular references or undefined values
     const cleanData = {
       _id: newReturnNumber.seq,
@@ -287,20 +287,20 @@ export async function createReturn(data: ReturnData) {
       })),
       search: newReturnNumber.seq + " " + data.invoiceId + " " + formatDate(data.returnDate) + " " + data.customerName + " " + data.salesPerson + " " + data.totalReturnAmount,
     };
-    
+
     // Create a new return document with the cleaned data
     const returnDoc = new Return(cleanData);
-    
+
     await returnDoc.save();
-    
+
     // Update product history for returned items
     const user = await getShortUser();
     const refDoc = newReturnNumber.seq.toString();
     const action = 'item returned';
     const status = 'In Stock';
-    
+
     await updateProductHistory(cleanData.lineItems, status, action, user, refDoc);
- 
+
     return { success: true, data: JSON.parse(JSON.stringify(returnDoc)) };
   } catch (error: any) {
     console.error("Error creating return:", error);
@@ -311,7 +311,7 @@ export async function createReturn(data: ReturnData) {
 export async function updateReturn(returnId: number, data: ReturnData) {
   try {
     await dbConnect();
-    
+
     // Create a clean data object without _id to prevent schema conflicts
     const updateData = { ...data };
     const updatedReturn = await Return.findByIdAndUpdate(
@@ -319,19 +319,19 @@ export async function updateReturn(returnId: number, data: ReturnData) {
       updateData,
       { new: true, runValidators: true }
     );
-    
+
     if (!updatedReturn) {
       throw new Error(`Return with ID ${returnId} not found`);
     }
-    
+
     // Update product history for returned items
     const user = await getShortUser();
     const refDoc = returnId.toString();
     const action = 'return';
     const status = 'In Stock';
-    
+
     await updateProductHistory(data.lineItems || [], status, action, user, refDoc);
-    
+
     return { success: true, data: JSON.parse(JSON.stringify(updatedReturn)) };
   } catch (error) {
     console.error("Error updating return:", error);
@@ -347,9 +347,9 @@ export async function updateReturn(returnId: number, data: ReturnData) {
 export async function checkReturnByInvoiceId(invoiceId: string) {
   try {
     await dbConnect();
-    
+
     const returnItem = await Return.findOne({ invoiceId });
-    
+
     if (returnItem) {
       return { returnId: returnItem._id };
     } else {
