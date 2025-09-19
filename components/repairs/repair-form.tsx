@@ -22,6 +22,7 @@ interface Product {
 
 interface RepairFormProps {
   repair?: {
+    _id: string;
     repairNumber: string | null;
     itemNumber: string;
     description: string;
@@ -88,6 +89,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
   }
 
   const handleSubmit = async (formData: FormData) => {
+    console.log('repair form submitted');
     setIsSubmitting(true);
     try {
       // Add checkbox values that might not be in the form if unchecked
@@ -103,6 +105,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
       console.log('repair formData', formData);
 
       if (repair) {
+        console.log('updating repair (client)');
         await updateRepair(repair.repairNumber!, formData);
         router.push("/repairs");
         router.refresh();
@@ -137,6 +140,8 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
 
     <form action={handleSubmit} className="space-y-4">
 
+
+
       {/* Hidden form elements for product and customer IDs */}
       <input 
         type="hidden" 
@@ -148,6 +153,12 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
         name="selectedCustomerId" 
         defaultValue={selectedCustomer?._id.toString() || ''} 
       />
+      <input 
+        type="hidden" 
+        name="repairId" 
+        defaultValue={repair?._id || ''} 
+      />  
+
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

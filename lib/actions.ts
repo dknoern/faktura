@@ -198,6 +198,7 @@ export async function createRepair(formData: FormData) {
 export async function updateRepair(repairNumber: string, formData: FormData) {
   try {
     await dbConnect();
+    console.log('updating repair (server)', repairNumber, formData);
 
     // Handle repair cost - convert to number only if it has a value
     const repairCostStr = formData.get("repairCost") as string;
@@ -221,7 +222,9 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
       phone: formData.get("phone") || ''
     };
 
-    await Repair.findOneAndUpdate({ repairNumber }, updateData);
+    const repairId = formData.get("repairId");
+
+    await Repair.findByIdAndUpdate(repairId, updateData);
     return { success: true };
   } catch (error) {
     console.error("Error updating repair:", error);
