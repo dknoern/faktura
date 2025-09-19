@@ -180,7 +180,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                             <TableCell>{product.modelNumber}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>
                                 <Badge style={{ backgroundColor: product.status === 'In Stock' ? 'green' : product.status === 'Sold' ? 'grey' : product.status === 'Incoming' ? 'teal' : product.status === 'Sale Pending' ? 'red' : 'orange' }}>
-                                    {product.sellerType === 'Partner' && product.status !== 'Sold' ? 'Partnership' : product.status}
+                                    {product.sellerType === 'Partner' && product.status !== 'Sold' ? 'Partnership' : product.sellerType === 'Consignment' && product.status !== 'Sold' ? 'Consignment' :product.status}
                                 </Badge>
                             </TableCell>
 

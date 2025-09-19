@@ -112,7 +112,9 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
                       product.status === 'Incoming' ? 'teal' :
                         product.status === 'Sale Pending' ? 'red' : 'orange'
                 }}>
-                  {product.sellerType === 'Partner' && product.status !== 'Sold' ? 'Partnership' : product.status}
+                  {product.sellerType === 'Partner' && product.status !== 'Sold' ? 'Partnership' : 
+                   product.sellerType === 'Consignment' && product.status !== 'Sold' ? 'Consignment' : 
+                   product.status}
                 </Badge>
                 {product.ebayNoReserve && <Badge style={{ backgroundColor: 'blue' }}>Ebay</Badge>}
                 {product.inventoryItem && <Badge style={{ backgroundColor: 'green' }}>Inventory</Badge>}
