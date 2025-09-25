@@ -84,8 +84,8 @@ async function findExistingRecord(repairNumber: string, customerFirstName: strin
 
     const existingRepair = await Repair.findOne({
         repairNumber: repairNumber,
-        customerFirstName: new RegExp(`^${customerFirstName}$`, 'i'),
-        customerLastName: new RegExp(`^${customerLastName}$`, 'i')
+        customerFirstName: new RegExp(`^\\s*${customerFirstName}\\s*$`, 'i'),
+        customerLastName: new RegExp(`^\\s*${customerLastName}\\s*$`, 'i')
     });
 
     if (existingRepair) {

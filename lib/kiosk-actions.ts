@@ -73,11 +73,11 @@ export async function searchCustomers(params: SearchCustomersParams) {
   const andConditions = []
   
   if (params.firstName) {
-    andConditions.push({ firstName: { $regex: `^${params.firstName}$`, $options: 'i' } })
+    andConditions.push({ firstName: { $regex: `^\\s*${params.firstName}\\s*$`, $options: 'i' } })
   }
   
   if (params.lastName) {
-    andConditions.push({ lastName: { $regex: `^${params.lastName}$`, $options: 'i' } })
+    andConditions.push({ lastName: { $regex: `^\\s*${params.lastName}\\s*$`, $options: 'i' } })
   }
   
   if (params.phone) {
