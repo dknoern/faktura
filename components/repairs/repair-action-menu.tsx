@@ -21,9 +21,11 @@ import {
 import { ChevronDown, Edit, Printer, Mail, ImagePlus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Repair } from "@/lib/repair-renderer";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { EmailDialog } from "./email-dialog";
 import { UploadDialog } from "../upload-dialog";
+import { handleDeviceAwarePrint } from "@/lib/utils/printing";
+import { useDeviceDetection } from "@/hooks/use-device-detection";
 
 interface RepairActionMenuProps {
     repair: Repair;
@@ -33,62 +35,17 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
     const router = useRouter();
     const [emailDialogOpen, setEmailDialogOpen] = useState(false);
     const [showUploadDialog, setShowUploadDialog] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const isMobileOrTablet = useDeviceDetection();
     const mobileFileInputRef = useRef<HTMLInputElement>(null);
-
-    // Detect if device is mobile
-    useEffect(() => {
-        const checkMobile = () => {
-            const userAgent = navigator.userAgent.toLowerCase();
-            const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(userAgent);
-            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            setIsMobile(isMobileDevice || (isTouchDevice && window.innerWidth < 768));
-        };
-        
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        
-        return () => {
-            window.removeEventListener('resize', checkMobile);
-        };
-    }, []);
 
     const handleEdit = () => {
         router.push(`/repairs/${repair._id}/edit`);
     };
 
     const handlePrint = () => {
-        // Create hidden iframe for printing
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'absolute';
-        iframe.style.left = '-9999px';
-        iframe.style.width = '1px';
-        iframe.style.height = '1px';
-        iframe.style.opacity = '0';
-        
-        document.body.appendChild(iframe);
-        
-        iframe.onload = () => {
-            // Wait a moment for content to fully load, then print
-            setTimeout(() => {
-                try {
-                    iframe.contentWindow?.print();
-                } catch (error) {
-                    console.error('Print failed:', error);
-                    // Fallback to opening in new tab if iframe printing fails
-                    window.open(`/repairs/${repair._id}/print`, '_blank');
-                }
-                
-                // Clean up iframe after printing
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                }, 1000);
-            }, 500);
-        };
-        
-        iframe.src = `/repairs/${repair._id}/print`;
+        handleDeviceAwarePrint(`/print/repairs/${repair._id}`);
     };
     
     const handleMobileFileUpload = async (file: File) => {
@@ -116,7 +73,7 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
     };
     
     const handleAddImageClick = () => {
-        if (isMobile) {
+        if (isMobileOrTablet) {
             // On mobile, go straight to camera
             mobileFileInputRef.current?.click();
         } else {

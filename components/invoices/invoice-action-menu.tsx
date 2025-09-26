@@ -12,6 +12,7 @@ import { Edit, ChevronDown, Printer, Mail, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Invoice } from "@/lib/invoice-renderer";
 import { EmailDialog } from "./email-dialog";
+import { handleDeviceAwarePrint } from "@/lib/utils/printing";
 
 interface InvoiceActionMenuProps {
     invoice: Invoice;
@@ -26,35 +27,7 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
     };
 
     const handlePrint = () => {
-        // Create hidden iframe for printing
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'absolute';
-        iframe.style.left = '-9999px';
-        iframe.style.width = '1px';
-        iframe.style.height = '1px';
-        iframe.style.opacity = '0';
-        
-        document.body.appendChild(iframe);
-        
-        iframe.onload = () => {
-            // Wait a moment for content to fully load, then print
-            setTimeout(() => {
-                try {
-                    iframe.contentWindow?.print();
-                } catch (error) {
-                    console.error('Print failed:', error);
-                    // Fallback to opening in new tab if iframe printing fails
-                    window.open(`/invoices/${invoice._id}/print`, '_blank');
-                }
-                
-                // Clean up iframe after printing
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                }, 1000);
-            }, 500);
-        };
-        
-        iframe.src = `/invoices/${invoice._id}/print`;
+        handleDeviceAwarePrint(`/print/invoices/${invoice._id}`);
     };
 
 
