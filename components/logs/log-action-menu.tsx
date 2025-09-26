@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -19,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Printer, Edit, ImagePlus, Trash2 } from "lucide-react";
+import { ChevronDown, Printer, Edit, ImagePlus} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
@@ -176,14 +175,14 @@ export function LogActionMenu({ log }: LogActionMenuProps) {
             Print
           </DropdownMenuItem>
 
-          <DropdownMenuSeparator />
+          {/*<DropdownMenuSeparator />
 
           <DropdownMenuItem 
             onClick={() => setShowDeleteDialog(true)}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
-          </DropdownMenuItem>
+          </DropdownMenuItem>*/}
         </DropdownMenuContent>
       </DropdownMenu>
 
