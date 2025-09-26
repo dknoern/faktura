@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
-import { Repair } from '@/lib/models/repair';
+import { logModel } from '@/lib/models/log';
 import { getShortUser } from '@/lib/auth-utils';
 
 export async function GET(
@@ -12,37 +12,37 @@ export async function GET(
     
     if (!id) {
       return NextResponse.json(
-        { error: 'Invalid repair ID' },
+        { error: 'Invalid log ID' },
         { status: 400 }
       );
     }
     
     await dbConnect();
     
-    // Fetch repair by _id
-    const repair: any = await Repair.findById(id).lean();
+    // Fetch log by _id
+    const log: any = await logModel.findById(id).lean();
     
-    if (!repair) {
+    if (!log) {
       return NextResponse.json(
-        { error: 'Repair not found' },
+        { error: 'Log not found' },
         { status: 404 }
       );
     }
     
     // Convert MongoDB document to plain object
-    const repairData = {
-      ...repair,
-      _id: repair._id.toString(),
-      dateOut: repair.dateOut ? new Date(repair.dateOut).toISOString() : null,
-      customerApprovedDate: repair.customerApprovedDate ? new Date(repair.customerApprovedDate).toISOString() : null,
-      returnDate: repair.returnDate ? new Date(repair.returnDate).toISOString() : null,
+    const logData = {
+      ...log,
+      _id: log._id.toString(),
+      date: log.date ? new Date(log.date).toISOString() : null,
+      signatureDate: log.signatureDate ? new Date(log.signatureDate).toISOString() : null,
+      lastUpdated: log.lastUpdated ? new Date(log.lastUpdated).toISOString() : null,
     };
     
-    return NextResponse.json(repairData);
+    return NextResponse.json(logData);
   } catch (error) {
-    console.error('Error fetching repair details:', error);
+    console.error('Error fetching log details:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch repair details' },
+      { error: 'Failed to fetch log details' },
       { status: 500 }
     );
   }
@@ -57,7 +57,7 @@ export async function DELETE(
     
     if (!id) {
       return NextResponse.json(
-        { error: 'Invalid repair ID' },
+        { error: 'Invalid log ID' },
         { status: 400 }
       );
     }
@@ -68,7 +68,7 @@ export async function DELETE(
     const user = await getShortUser();
     
     // Perform soft delete by updating status to "Deleted" and setting lastUpdated
-    const updatedRepair = await Repair.findByIdAndUpdate(
+    const updatedLog = await logModel.findByIdAndUpdate(
       id,
       { 
         status: 'Deleted',
@@ -77,22 +77,22 @@ export async function DELETE(
       { new: true }
     );
     
-    if (!updatedRepair) {
+    if (!updatedLog) {
       return NextResponse.json(
-        { error: 'Repair not found' },
+        { error: 'Log not found' },
         { status: 404 }
       );
     }
     
     return NextResponse.json({ 
       success: true, 
-      message: 'Repair deleted successfully',
+      message: 'Log deleted successfully',
       deletedBy: user
     });
   } catch (error) {
-    console.error('Error deleting repair:', error);
+    console.error('Error deleting log:', error);
     return NextResponse.json(
-      { error: 'Failed to delete repair' },
+      { error: 'Failed to delete log' },
       { status: 500 }
     );
   }

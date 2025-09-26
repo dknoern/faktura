@@ -292,11 +292,22 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
         twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
 
         let query: any = {
-            // Exclude records with dateOut more than 2 years ago
-            $or: [
-                { dateOut: { $exists: false } },
-                { dateOut: null },
-                { dateOut: { $gte: twoYearsAgo } }
+            $and: [
+                // Exclude records with dateOut more than 2 years ago
+                {
+                    $or: [
+                        { dateOut: { $exists: false } },
+                        { dateOut: null },
+                        { dateOut: { $gte: twoYearsAgo } }
+                    ]
+                },
+                // Exclude deleted repairs
+                {
+                    $or: [
+                        { status: { $exists: false } },
+                        { status: { $ne: 'Deleted' } }
+                    ]
+                }
             ]
         };
         
@@ -309,6 +320,13 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
                             { dateOut: { $exists: false } },
                             { dateOut: null },
                             { dateOut: { $gte: twoYearsAgo } }
+                        ]
+                    },
+                    // Exclude deleted repairs
+                    {
+                        $or: [
+                            { status: { $exists: false } },
+                            { status: { $ne: 'Deleted' } }
                         ]
                     },
                     { returnDate: { $eq: null } }
@@ -341,6 +359,13 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
                                 { dateOut: { $gte: twoYearsAgo } }
                             ]
                         },
+                        // Exclude deleted repairs
+                        {
+                            $or: [
+                                { status: { $exists: false } },
+                                { status: { $ne: 'Deleted' } }
+                            ]
+                        },
                         { returnDate: { $eq: null } },
                         searchConditions
                     ]
@@ -353,6 +378,13 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
                                 { dateOut: { $exists: false } },
                                 { dateOut: null },
                                 { dateOut: { $gte: twoYearsAgo } }
+                            ]
+                        },
+                        // Exclude deleted repairs
+                        {
+                            $or: [
+                                { status: { $exists: false } },
+                                { status: { $ne: 'Deleted' } }
                             ]
                         },
                         searchConditions
@@ -425,7 +457,14 @@ export async function fetchLogs(page = 1, limit = 10, search = '') {
         await dbConnect();
         const skip = (page - 1) * limit;
 
-        let query = {};
+        let query: any = {
+            // Exclude deleted logs
+            $or: [
+                { status: { $exists: false } },
+                { status: { $ne: 'Deleted' } }
+            ]
+        };
+        
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
@@ -435,8 +474,20 @@ export async function fetchLogs(page = 1, limit = 10, search = '') {
                 { search: { $regex: token, $options: 'i' } }
             ));
             
-            // Use $and to ensure ALL tokens must be found (in any order)
-            query = { $and: searchConditions };
+            // Combine status filter with search conditions
+            query = {
+                $and: [
+                    // Exclude deleted logs
+                    {
+                        $or: [
+                            { status: { $exists: false } },
+                            { status: { $ne: 'Deleted' } }
+                        ]
+                    },
+                    // Search conditions
+                    { $and: searchConditions }
+                ]
+            };
         }
 
         const logs = await logModel.find(query)
@@ -465,7 +516,14 @@ export async function fetchOuts(page = 1, limit = 10, search = '') {
         await dbConnect();
         const skip = (page - 1) * limit;
 
-        let query = {};
+        let query: any = {
+            // Exclude deleted outs
+            $or: [
+                { status: { $exists: false } },
+                { status: { $ne: 'Deleted' } }
+            ]
+        };
+        
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
@@ -475,8 +533,20 @@ export async function fetchOuts(page = 1, limit = 10, search = '') {
                 { search: { $regex: token, $options: 'i' } }
             ));
             
-            // Use $and to ensure ALL tokens must be found (in any order)
-            query = { $and: searchConditions };
+            // Combine status filter with search conditions
+            query = {
+                $and: [
+                    // Exclude deleted outs
+                    {
+                        $or: [
+                            { status: { $exists: false } },
+                            { status: { $ne: 'Deleted' } }
+                        ]
+                    },
+                    // Search conditions
+                    { $and: searchConditions }
+                ]
+            };
         }
 
         const outs = await Out.find(query)

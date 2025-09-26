@@ -5,9 +5,20 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Edit, Printer, Mail, ImagePlus } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ChevronDown, Edit, Printer, Mail, ImagePlus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Repair } from "@/lib/repair-renderer";
 import { useState, useRef, useEffect } from "react";
@@ -23,6 +34,8 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
     const [emailDialogOpen, setEmailDialogOpen] = useState(false);
     const [showUploadDialog, setShowUploadDialog] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const mobileFileInputRef = useRef<HTMLInputElement>(null);
 
     // Detect if device is mobile
@@ -117,6 +130,31 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
         setEmailDialogOpen(true);
     };
 
+    // Function to handle delete
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        try {
+            const response = await fetch(`/api/repairs/${repair._id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete repair');
+            }
+
+            // Show success message
+            alert('Repair deleted successfully');
+            
+            window.location.href = '/repairs';
+        } catch (error) {
+            console.error('Error deleting repair:', error);
+            alert('Failed to delete repair. Please try again.');
+        } finally {
+            setIsDeleting(false);
+            setShowDeleteDialog(false);
+        }
+    };
+
     return (
         <>
         <DropdownMenu>
@@ -147,6 +185,15 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
                 <DropdownMenuItem onClick={handleEmail}>
                     <Mail className="mr-2 h-4 w-4" />
                     Email
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem 
+                    onClick={() => setShowDeleteDialog(true)}
+                >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -184,6 +231,39 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
             onOpenChange={setEmailDialogOpen}
             repairId={repair._id}
         />
+
+        {/* Delete confirmation dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Repair</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Are you sure you want to delete repair #{repair.repairNumber}?
+                        {repair.description && (
+                            <>
+                                <br />
+                                <strong>Description:</strong> {repair.description}
+                            </>
+                        )}
+                        <br />
+                        <br />
+                        This action cannot be undone.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeleting}>
+                        Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="bg-red-600 hover:bg-red-700"
+                    >
+                        {isDeleting ? "Deleting..." : "Delete"}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
         </>
     );
 }

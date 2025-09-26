@@ -27,6 +27,8 @@ export const logSchema = z.object({
   lineItems: z.array(lineItemSchema).optional(),
   signature: z.string().optional(),
   signatureDate: z.date().optional(),
+  status: z.string().default('Active').optional(),
+  lastUpdated: z.date().default(() => new Date()).optional(),
 });
 
 const logMongooseSchema = zodToMongoose(logSchema);

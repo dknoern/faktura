@@ -5,10 +5,21 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Printer, Edit, ImagePlus } from "lucide-react";
+import { ChevronDown, Printer, Edit, ImagePlus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
@@ -16,6 +27,8 @@ interface LogActionMenuProps {
   log: {
     id?: string;
     _id?: string;
+    receivedFrom?: string;
+    date?: string | Date;
   };
 }
 
@@ -23,6 +36,8 @@ export function LogActionMenu({ log }: LogActionMenuProps) {
   const router = useRouter();
   const [isEmailSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const handlePrint = () => {
@@ -107,6 +122,37 @@ export function LogActionMenu({ log }: LogActionMenuProps) {
     }
   };
 
+  // Function to handle delete
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const logId = log.id || log._id;
+      if (!logId) {
+        throw new Error('Log ID is required');
+      }
+
+      const response = await fetch(`/api/logs/${logId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete log');
+      }
+
+      // Show success message
+      alert('Log deleted successfully');
+      
+      // Reload to /loginitems page
+      window.location.href = '/loginitems';
+    } catch (error) {
+      console.error('Error deleting log:', error);
+      toast.error('Failed to delete log. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -129,6 +175,15 @@ export function LogActionMenu({ log }: LogActionMenuProps) {
             <Printer className="mr-2 h-4 w-4" />
             Print
           </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem 
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -149,6 +204,45 @@ export function LogActionMenu({ log }: LogActionMenuProps) {
         }}
         disabled={isUploading}
       />
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Log Entry</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this log entry?
+              {log.receivedFrom && (
+                <>
+                  <br />
+                  <strong>Received From:</strong> {log.receivedFrom}
+                </>
+              )}
+              {log.date && (
+                <>
+                  <br />
+                  <strong>Date:</strong> {new Date(log.date).toLocaleDateString()}
+                </>
+              )}
+              <br />
+              <br />
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

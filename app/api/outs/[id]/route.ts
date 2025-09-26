@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { Out } from '@/lib/models/out';
+import { getShortUser } from '@/lib/auth-utils';
 import mongoose from 'mongoose';
 
 export async function GET(
@@ -81,16 +82,31 @@ export async function DELETE(
     const id = (await params).id;
     const _id = new mongoose.Types.ObjectId(id);
     
-    const deletedOut = await Out.findOneAndDelete({ _id });
+    // Get current user for tracking
+    const user = await getShortUser();
     
-    if (!deletedOut) {
+    // Perform soft delete by updating status to "Deleted" and setting lastUpdated
+    const updatedOut = await Out.findOneAndUpdate(
+      { _id },
+      { 
+        status: 'Deleted',
+        lastUpdated: new Date()
+      },
+      { new: true }
+    );
+    
+    if (!updatedOut) {
       return NextResponse.json(
         { error: 'Out item not found' },
         { status: 404 }
       );
     }
     
-    return NextResponse.json({ message: 'Out item deleted successfully' });
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Out item deleted successfully',
+      deletedBy: user
+    });
   } catch (error) {
     console.error('Error deleting out:', error);
     return NextResponse.json(

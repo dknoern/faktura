@@ -51,7 +51,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const twoYearsAgo = new Date();
     twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
     
-    // Total repairs out (repairs without return date and within last 2 years)
+    // Total repairs out (repairs without return date and within last 2 years, excluding deleted)
     const totalRepairsOut = await Repair.countDocuments({ 
       $and: [
         { returnDate: { $eq: null } },
@@ -60,6 +60,13 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             { dateOut: { $exists: false } },
             { dateOut: null },
             { dateOut: { $gte: twoYearsAgo } }
+          ]
+        },
+        // Exclude deleted repairs
+        {
+          $or: [
+            { status: { $exists: false } },
+            { status: { $ne: 'Deleted' } }
           ]
         }
       ]

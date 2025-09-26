@@ -169,7 +169,7 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
 
             <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                    Showing {returnsList.length} of {pagination.total} invoices
+                    Showing {returnsList.length} of {pagination.total} returns
                 </div>
                 <div className="flex space-x-2">
                     <Button

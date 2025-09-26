@@ -5,10 +5,21 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Printer, Edit, ImagePlus, PenLine } from "lucide-react";
+import { ChevronDown, Printer, Edit, ImagePlus, PenLine, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
@@ -16,6 +27,9 @@ interface OutActionMenuProps {
   out: {
     id?: string;
     _id?: string;
+    sentTo?: string;
+    date?: string | Date;
+    description?: string;
   };
   onSignatureClick?: () => void;
 }
@@ -24,6 +38,8 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
   const router = useRouter();
   const [isEmailSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const handlePrint = () => {
@@ -108,6 +124,37 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
     }
   };
 
+  // Function to handle delete
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const outId = out.id || out._id;
+      if (!outId) {
+        throw new Error('Out ID is required');
+      }
+
+      const response = await fetch(`/api/outs/${outId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete out item');
+      }
+
+      // Show success message
+      alert('Out item deleted successfully');
+      
+      // Reload to /logoutitems page
+      window.location.href = '/logoutitems';
+    } catch (error) {
+      console.error('Error deleting out item:', error);
+      alert('Failed to delete out item. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -134,6 +181,15 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
             <PenLine className="mr-2 h-4 w-4" />
             e-Sign
           </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem 
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -154,6 +210,51 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
         }}
         disabled={isUploading}
       />
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Log Out Entry</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this log out entry?
+              {out.sentTo && (
+                <>
+                  <br />
+                  <strong>Sent To:</strong> {out.sentTo}
+                </>
+              )}
+              {out.date && (
+                <>
+                  <br />
+                  <strong>Date:</strong> {new Date(out.date).toLocaleDateString()}
+                </>
+              )}
+              {out.description && (
+                <>
+                  <br />
+                  <strong>Description:</strong> {out.description}
+                </>
+              )}
+              <br />
+              <br />
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
