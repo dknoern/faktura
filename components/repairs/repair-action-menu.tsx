@@ -45,7 +45,7 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
     };
 
     const handlePrint = () => {
-        handleDeviceAwarePrint(`/print/repairs/${repair._id}`);
+        handleDeviceAwarePrint(`/print/repairs/${repair._id}`, undefined, repair);
     };
     
     const handleMobileFileUpload = async (file: File) => {

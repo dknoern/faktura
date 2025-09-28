@@ -27,7 +27,7 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
     };
 
     const handlePrint = () => {
-        handleDeviceAwarePrint(`/print/invoices/${invoice._id}`);
+        handleDeviceAwarePrint(`/print/invoices/${invoice._id}`, undefined, invoice);
     };
 
 

@@ -47,7 +47,7 @@ export function LogActionMenu({ log }: LogActionMenuProps) {
       return;
     }
     
-    handleDeviceAwarePrint(`/print/loginitems/${logId}`);
+    handleDeviceAwarePrint(`/print/loginitems/${logId}`, undefined, log);
   };
 
   const handleEdit = () => {

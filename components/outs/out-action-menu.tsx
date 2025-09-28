@@ -49,7 +49,7 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
       return;
     }
     
-    handleDeviceAwarePrint(`/print/logoutitems/${outId}`);
+    handleDeviceAwarePrint(`/print/logoutitems/${outId}`, undefined, out);
   };
 
   const handleEdit = () => {
