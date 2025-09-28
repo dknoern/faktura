@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { LogActionMenu } from "./log-action-menu";
 import { ImageGallery } from "@/components/image-gallery";
+import { toast } from "react-hot-toast";
 
 import {
   Table,
@@ -46,6 +47,10 @@ interface ViewLogProps {
 }
 
 export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const formatDateTime = (date: Date | string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -66,6 +71,128 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
     }).format(amount);
   };
 
+  // Canvas drawing functions
+  const getCanvasCoordinates = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    // Calculate the scale factor between displayed size and actual canvas size
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    // Get coordinates relative to the canvas and scale them
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+
+    return { x, y };
+  };
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    setIsDrawing(true);
+    const { x, y } = getCanvasCoordinates(e);
+
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.beginPath();
+      context.moveTo(x, y);
+    }
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const { x, y } = getCanvasCoordinates(e);
+
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.lineTo(x, y);
+      context.stroke();
+    }
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  };
+
+  const saveSignature = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    try {
+      setIsSaving(true);
+      const signatureData = canvas.toDataURL('image/png');
+      const logId = log.id || log._id;
+
+      const response = await fetch(`/api/logs/${logId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          signature: signatureData,
+          signatureDate: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save signature');
+      }
+
+      toast.success('Signature saved successfully');
+      setShowSignaturePad(false);
+      // Refresh the page to show updated signature
+      window.location.reload();
+    } catch (error) {
+      console.error('Error saving signature:', error);
+      toast.error('Failed to save signature');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Initialize canvas when dialog opens
+  React.useEffect(() => {
+    if (showSignaturePad && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      if (context) {
+        context.strokeStyle = '#000000';
+        context.lineWidth = 2;
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+
+        // Load existing signature if available
+        if (log.signature) {
+          const img = new Image();
+          img.onload = () => {
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+          };
+          img.src = log.signature;
+        }
+      }
+    }
+  }, [showSignaturePad, log.signature]);
+
   return (
     <div className="container mx-auto px-8">
 
@@ -75,7 +202,10 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
         {/* Log Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Log Entry</h1>
-          <LogActionMenu log={log} />
+          <LogActionMenu
+            log={log}
+            onSignatureClick={() => setShowSignaturePad(true)}
+          />
         </div>
 
         {/* Log Details */}
@@ -228,6 +358,61 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
           <ImageGallery images={initialImages} />
         )}
       </div>
+
+      {/* Custom Signature Canvas */}
+      {showSignaturePad && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-2">Add Signature</h3>
+              <p className="text-sm text-gray-600">Sign using your finger, mouse, or stylus.</p>
+            </div>
+
+            <div className="border-2 border-gray-300 rounded-lg mb-4 bg-white">
+              <canvas
+                ref={canvasRef}
+                width={500}
+                height={200}
+                className="w-full h-48 cursor-crosshair touch-none"
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                onTouchStart={startDrawing}
+                onTouchMove={draw}
+                onTouchEnd={stopDrawing}
+              />
+            </div>
+
+            <div className="flex justify-between gap-3">
+              <button
+                onClick={clearCanvas}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                disabled={isSaving}
+              >
+                Clear
+              </button>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowSignaturePad(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                  disabled={isSaving}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveSignature}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Saving...' : 'Save Signature'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
