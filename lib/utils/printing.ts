@@ -19,82 +19,6 @@ export function isMobileOrTabletDevice(): boolean {
 // Track active print operations to prevent multiple simultaneous prints
 let activePrintOperation = false;
 
-/**
- * Handles inline printing by temporarily replacing page content
- * @param entityData - The entity data to print
- * @param printUrl - The print URL for fetching content
- */
-async function handleInlinePrint(entityData: any, printUrl: string): Promise<void> {
-  activePrintOperation = true;
-  
-  try {
-    // Fetch the print content
-    const response = await fetch(printUrl);
-    if (!response.ok) {
-      throw new Error('Failed to fetch print content');
-    }
-    
-    const printHtml = await response.text();
-    
-    // Extract just the body content from the HTML
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(printHtml, 'text/html');
-    const printContent = doc.body.innerHTML;
-    
-    // Store original page content and styles
-    const originalContent = document.body.innerHTML;
-    const originalStyles = document.head.innerHTML;
-    
-    // Create print-specific styles
-    const printStyles = `
-      <style>
-        body {
-          margin: 0;
-          padding: 20px;
-          font-family: Arial, sans-serif;
-          background: white;
-        }
-        @media print {
-          body {
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          @page {
-            margin: 0.5in;
-            size: auto;
-          }
-        }
-      </style>
-    `;
-    
-    // Replace page content with print content
-    document.head.innerHTML = printStyles;
-    document.body.innerHTML = printContent;
-    
-    // Trigger print
-    window.print();
-    
-    // Restore original content after a delay
-    setTimeout(() => {
-      document.head.innerHTML = originalStyles;
-      document.body.innerHTML = originalContent;
-      activePrintOperation = false;
-    }, 1000);
-    
-  } catch (error) {
-    console.error('Inline print failed:', error);
-    activePrintOperation = false;
-    
-    // Fallback to new tab
-    const printWindow = window.open(printUrl, '_blank');
-    if (printWindow) {
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-      }, 1000);
-    }
-  }
-}
 
 /**
  * Handles printing with device-aware strategy
@@ -105,27 +29,25 @@ async function handleInlinePrint(entityData: any, printUrl: string): Promise<voi
 export function handleDeviceAwarePrint(printUrl: string, fallbackUrl?: string, entityData?: any): void {
   // Prevent multiple simultaneous print operations
   if (activePrintOperation) {
-    console.debug('Print operation already in progress, ignoring request');
+    console.debug('Print operation already in progress, ignoring request', entityData);
     return;
   }
 
-  // For mobile/tablet devices (including iPad), try inline printing first
+  // For mobile/tablet devices (including iPad), ALWAYS open in a new tab.
+  // Inline DOM replacement can leave the original page in a frozen/non-interactive state on iOS Safari.
   if (isMobileOrTabletDevice()) {
-    // If we have entity data, try inline printing
-    if (entityData && typeof window !== 'undefined') {
-      handleInlinePrint(entityData, printUrl);
-      return;
-    }
-    
-    // Fallback to new tab if no entity data
     const printWindow = window.open(printUrl, '_blank');
     if (printWindow) {
       // Focus the new window to ensure user is on the print page
       printWindow.focus();
-      // Add a small delay to ensure content loads before showing print dialog
+      // Add a short delay to ensure content loads before showing print dialog
       setTimeout(() => {
-        printWindow.print();
-      }, 1000);
+        try {
+          printWindow.print();
+        } catch {
+          // noop
+        }
+      }, 700);
     }
     return;
   }
