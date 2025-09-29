@@ -40,14 +40,9 @@ export function handleDeviceAwarePrint(printUrl: string, fallbackUrl?: string, e
     if (printWindow) {
       // Focus the new window to ensure user is on the print page
       printWindow.focus();
-      // Add a short delay to ensure content loads before showing print dialog
-      setTimeout(() => {
-        try {
-          printWindow.print();
-        } catch {
-          // noop
-        }
-      }, 700);
+      // Don't call printWindow.print() here - the print page has auto-print JavaScript
+      // that will handle printing after the page loads. Calling print() from both
+      // places causes the print dialog to appear and disappear quickly on iPad.
     }
     return;
   }
