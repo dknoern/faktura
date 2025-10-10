@@ -22,6 +22,7 @@ function parseCardDescription(description: string) {
         brand: '',
         model: '',
         material: '',
+        dialColor: '',
         referenceNumber: '',
         repairEstimateOptions: '',
         selectBox: '',
@@ -38,8 +39,9 @@ function parseCardDescription(description: string) {
         email: /\*\*E-mail:\*\*\s*\[([^\]]+)\]|\*\*E-mail:\*\*\s*([^\n\r]+)/i,
         phoneNumber: /\*\*Phone Number:\*\*\s*([^\n\r]+)/i,
         brand: /\*\*Brand:\*\*\s*([^\n\r]+)/i,
-        model: /\*\*Rolex Model:\*\*\s*([^\n\r]+)/i,
+        model: /\*\*Rolex Collection:\*\*\s*([^\n\r]+)/i,
         material: /\*\*Material:\*\*\s*([^\n\r]+)/i,
+        dialColor: /\*\*Dial Color:\*\*\s*([^\n\r]+)/i,
         referenceNumber: /\*\*Reference number if known:\*\*\s*([^\n\r]+)/i,
         repairEstimateOptions: /\*\*Repair Estimate Options:\*\*\s*\[([^\]]+)\]/i,
         selectBox: /\*\*Select Box:\*\*\s*([^\n\r]+)/i
@@ -270,6 +272,14 @@ async function createRepair(parsedFields: any) {
     console.log('Creating repair record...');
     console.log('Repair number:', parsedRepairNumber ? `${repairNumber} (from card name)` : `${repairNumber} (generated)`);
 
+    // Build description by concatenating available fields
+    const descriptionParts = [];
+    if (parsedFields.brand) descriptionParts.push(parsedFields.brand);
+    if (parsedFields.model) descriptionParts.push(parsedFields.model);
+    if (parsedFields.material) descriptionParts.push(parsedFields.material);
+    if (parsedFields.dialColor) descriptionParts.push(parsedFields.dialColor);
+    const description = descriptionParts.join(' ') || 'Unknown';
+
     const repairData = {
         repairNumber,
         customerId: customer._id,
@@ -279,7 +289,7 @@ async function createRepair(parsedFields: any) {
         phone: customer.phone || '',
         brand: parsedFields.brand || 'Unknown',
         material: parsedFields.material || 'Unknown',
-        description: parsedFields.model || '',
+        description: description,
         itemValue: '',
         repairOptions: parsedFields.repairEstimateOptions,
         repairNotes: `Reference: ${parsedFields.referenceNumber || 'N/A'}\nTrello Card: ${parsedFields.cardName}`
@@ -432,6 +442,7 @@ async function getTrelloCardDetails(cardId: string) {
             console.log('Brand:', parsedFields.brand || 'Not found');
             console.log('Model:', parsedFields.model || 'Not found');
             console.log('Material:', parsedFields.material || 'Not found');
+            console.log('Dial Color:', parsedFields.dialColor || 'Not found');
             console.log('Reference Number:', parsedFields.referenceNumber || 'Not found');
             console.log('Repair Estimate Options:', parsedFields.repairEstimateOptions || 'Not found');
             console.log('Select Box:', parsedFields.selectBox || 'Not found');

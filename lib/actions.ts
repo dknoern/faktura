@@ -25,6 +25,39 @@ async function getNextRepairNumber(): Promise<string> {
   }
 }
 
+// Helper function to build search field for repairs
+function buildRepairSearchField(repairData: {
+  repairNumber?: string;
+  itemNumber?: string;
+  description?: string;
+  dateOut?: Date | string | null;
+  returnDate?: Date | string | null;
+  customerFirstName?: string;
+  customerLastName?: string;
+  vendor?: string;
+}): string {
+  const formatDate = (date: Date | string | null | undefined): string => {
+    if (!date) return '';
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return format(dateObj, "MM/dd/yyyy");
+    } catch {
+      return '';
+    }
+  };
+
+  return [
+    repairData.repairNumber || '',
+    repairData.itemNumber || '',
+    repairData.description || '',
+    formatDate(repairData.dateOut),
+    formatDate(repairData.returnDate),
+    repairData.customerFirstName || '',
+    repairData.customerLastName || '',
+    repairData.vendor || ''
+  ].join(' ').trim();
+}
+
 export type State = {
   errors?: {
     id?: string[];
@@ -111,14 +144,7 @@ export async function createRepair(formData: FormData) {
     console.log('dateOut', repair.dateOut);
     console.log('returnDate', repair.returnDate);
 
-    repair.search = repair.repairNumber
-      + " " + repair.itemNumber
-      + " " + repair.description
-      + " " + formatDate(repair.dateOut)
-      + " " + formatDate(repair.returnDate)
-      + " " + repair.customerFirstName
-      + " " + repair.customerLastName
-      + " " + repair.vendor;
+    repair.search = buildRepairSearchField(repair);
 
 
     console.log("creating this repair", repair);
@@ -205,15 +231,19 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
     const repairCost = repairCostStr && repairCostStr.trim() !== '' ?
       parseFloat(repairCostStr) : undefined;
 
-    const updateData = {
-      itemNumber: formData.get("itemNumber"),
-      description: formData.get("description"),
+    // Get the current repair to access repairNumber for search field
+    const repairId = formData.get("repairId");
+    const currentRepair = await Repair.findById(repairId);
+
+    const updateData: any = {
+      itemNumber: formData.get("itemNumber") as string,
+      description: formData.get("description") as string,
       dateOut: formData.get("dateOut") || null,
       customerApprovedDate: formData.get("customerApprovedDate") || null,
       returnDate: formData.get("returnDate") || null,
-      customerFirstName: formData.get("customerFirstName"),
-      customerLastName: formData.get("customerLastName"),
-      vendor: formData.get("vendor"),
+      customerFirstName: formData.get("customerFirstName") as string,
+      customerLastName: formData.get("customerLastName") as string,
+      vendor: formData.get("vendor") as string,
       repairCost: repairCost,
       repairIssues: formData.get("repairIssues") || '',
       repairNotes: formData.get("repairNotes") || '',
@@ -221,8 +251,20 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
       email: formData.get("email") || '',
       phone: formData.get("phone") || ''
     };
-
-    const repairId = formData.get("repairId");
+    
+    if (currentRepair) {
+      // Build updated search field
+      updateData.search = buildRepairSearchField({
+        repairNumber: currentRepair.repairNumber,
+        itemNumber: updateData.itemNumber,
+        description: updateData.description,
+        dateOut: updateData.dateOut,
+        returnDate: updateData.returnDate,
+        customerFirstName: updateData.customerFirstName,
+        customerLastName: updateData.customerLastName,
+        vendor: updateData.vendor
+      });
+    }
 
     await Repair.findByIdAndUpdate(repairId, updateData);
     return { success: true };
