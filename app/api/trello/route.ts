@@ -277,8 +277,8 @@ async function createRepair(parsedFields: any) {
     if (parsedFields.brand) descriptionParts.push(parsedFields.brand);
     if (parsedFields.model) descriptionParts.push(parsedFields.model);
     if (parsedFields.material) descriptionParts.push(parsedFields.material);
-    if (parsedFields.dialColor) descriptionParts.push(parsedFields.dialColor);
-    const description = descriptionParts.join(' ') || 'Unknown';
+    if (parsedFields.dialColor) descriptionParts.push(parsedFields.dialColor + ' Dial');
+    const description = descriptionParts.join(' ') || '';
 
     const repairData = {
         repairNumber,
@@ -292,7 +292,8 @@ async function createRepair(parsedFields: any) {
         description: description,
         itemValue: '',
         repairOptions: parsedFields.repairEstimateOptions,
-        repairNotes: `Reference: ${parsedFields.referenceNumber || 'N/A'}\nTrello Card: ${parsedFields.cardName}`
+        //repairNotes: `Reference: ${parsedFields.referenceNumber || 'N/A'}\nTrello Card: ${parsedFields.cardName}`
+        repairNotes: ''
     };
 
     const repairResult = await createRepairRecord(repairData);

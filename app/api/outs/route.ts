@@ -56,9 +56,12 @@ export async function POST(request: NextRequest) {
     
     const data = await request.json();
     
-    // Set the date to current date if not provided
+    // Set the date to current date/time if not provided
     if (!data.date) {
-      data.date = new Date();
+      data.date = new Date(); // This creates a full timestamp with current date and time
+    } else {
+      // Ensure the provided date is a proper Date object
+      data.date = new Date(data.date);
     }
     
     // Generate search field for easier searching

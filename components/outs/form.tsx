@@ -27,7 +27,7 @@ export function OutForm({ out }: { out?: OutItem }) {
     const [formData, setFormData] = useState<OutItem>(() => {
         const defaultData = {
             name: "",
-            date: new Date().toISOString().split("T")[0],
+            date: new Date().toISOString(), // Keep full date/time instead of just date
             sentTo: "",
             description: "",
             user: "",
@@ -107,7 +107,7 @@ export function OutForm({ out }: { out?: OutItem }) {
                         <label className="block text-sm font-medium mb-1">Date</label>
                         <Input
                             type="text"
-                            value={formData.date ? format(new Date(formData.date), "yyyy-MM-dd") : ""}
+                            value={formData.date ? format(new Date(formData.date), "yyyy-MM-dd HH:mm:ss") : ""}
                             readOnly
                             className="bg-gray-50 cursor-not-allowed"
                         />
