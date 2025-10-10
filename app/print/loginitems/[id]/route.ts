@@ -3,6 +3,7 @@ import { fetchLogItemById, fetchDefaultTenant } from "@/lib/data";
 import { generateEmailHtml } from "@/lib/log-renderer";
 import { getImageHost } from "@/lib/utils/imageHost";
 import { generateAutoPrintScript } from "@/lib/utils/printing";
+import { getLogImages } from "@/lib/utils/storage";
 
 export async function GET(
   request: NextRequest,
@@ -17,9 +18,10 @@ export async function GET(
 
   try {
     const imageHost = await getImageHost();
-    const [logitem, tenant] = await Promise.all([
+    const [logitem, tenant, images] = await Promise.all([
       fetchLogItemById(logId),
-      fetchDefaultTenant()
+      fetchDefaultTenant(),
+      getLogImages(logId)
     ]);
 
     if (!logitem) {
@@ -28,7 +30,7 @@ export async function GET(
 
     // Serialize the MongoDB document to handle Date objects and ObjectIds
     const log = JSON.parse(JSON.stringify(logitem));
-    const emailHtml = generateEmailHtml(log, tenant, imageHost);
+    const emailHtml = generateEmailHtml(log, tenant, imageHost, images);
 
     const html = `
 <!DOCTYPE html>

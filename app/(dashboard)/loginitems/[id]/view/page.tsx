@@ -1,7 +1,7 @@
 import { fetchLogItemById } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { ViewLog } from "@/components/logs/view";
-import { getProductImages } from "@/lib/utils/storage";
+import { getLogImages } from "@/lib/utils/storage";
 
 export default async function ViewLogPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -9,7 +9,7 @@ export default async function ViewLogPage(props: { params: Promise<{ id: string 
 
     const [logitem, images] = await Promise.all([
         fetchLogItemById(id),
-        getProductImages(id)
+        getLogImages(id)
     ]);
 
     if (!logitem) {

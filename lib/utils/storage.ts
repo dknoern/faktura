@@ -175,6 +175,60 @@ export async function getRepairImages(repairId: string): Promise<string[]> {
     }
 }
 
+export async function getOutImages(outId: string): Promise<string[]> {
+    if (IMAGE_BUCKET && s3Client) {
+        // Get from S3
+        const response = await s3Client.send(new ListObjectsV2Command({
+            Bucket: IMAGE_BUCKET,
+            Prefix: outId
+        }));
+        
+        if (!response.Contents) {
+            return [];
+        }
+        
+        return response.Contents.map(item => item.Key || '');
+    }
+    else {
+        // Get from file system
+        try {
+            const files = await fs.readdir(UPLOADS_DIR);
+            const outImages = files.filter(file => file.startsWith(outId));
+            return outImages.map(file => path.join("/", file));
+        } catch (error) {
+            console.error('Error reading out images:', error);
+            return [];
+        }
+    }
+}
+
+export async function getLogImages(logId: string): Promise<string[]> {
+    if (IMAGE_BUCKET && s3Client) {
+        // Get from S3
+        const response = await s3Client.send(new ListObjectsV2Command({
+            Bucket: IMAGE_BUCKET,
+            Prefix: logId
+        }));
+        
+        if (!response.Contents) {
+            return [];
+        }
+        
+        return response.Contents.map(item => item.Key || '');
+    }
+    else {
+        // Get from file system
+        try {
+            const files = await fs.readdir(UPLOADS_DIR);
+            const logImages = files.filter(file => file.startsWith(logId));
+            return logImages.map(file => path.join("/", file));
+        } catch (error) {
+            console.error('Error reading log images:', error);
+            return [];
+        }
+    }
+}
+
 
 export async function imageAction(action: 'rotateLeft' | 'rotateRight' | 'delete', filename: string) {
 

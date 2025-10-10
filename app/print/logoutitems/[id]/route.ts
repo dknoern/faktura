@@ -3,6 +3,7 @@ import { fetchOutById, fetchDefaultTenant } from "@/lib/data";
 import { generateEmailHtml } from "@/lib/out-renderer";
 import { getImageHost } from "@/lib/utils/imageHost";
 import { generateAutoPrintScript } from "@/lib/utils/printing";
+import { getOutImages } from "@/lib/utils/storage";
 
 export async function GET(
   request: NextRequest,
@@ -17,9 +18,10 @@ export async function GET(
 
   try {
     const imageHost = await getImageHost();
-    const [outitem, tenant] = await Promise.all([
+    const [outitem, tenant, images] = await Promise.all([
       fetchOutById(outId),
-      fetchDefaultTenant()
+      fetchDefaultTenant(),
+      getOutImages(outId)
     ]);
 
     if (!outitem) {
@@ -28,7 +30,7 @@ export async function GET(
 
     // Serialize the MongoDB document to handle Date objects and ObjectIds
     const out = JSON.parse(JSON.stringify(outitem));
-    const emailHtml = generateEmailHtml(out, tenant, imageHost);
+    const emailHtml = generateEmailHtml(out, tenant, imageHost, images);
 
     const html = `
 <!DOCTYPE html>

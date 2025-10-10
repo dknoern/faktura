@@ -89,7 +89,7 @@ const generateLineItemsHtml = (lineItems?: LineItem[]): string => {
 };
 
 // Generate log HTML content
-export const generateLogHtml = (log: Log, tenant: Tenant, imageBaseUrl: string): string => {
+export const generateLogHtml = (log: Log, tenant: Tenant, imageBaseUrl: string, images: string[] = []): string => {
   const formattedDate = formatDate(log.date);
   const lineItemsHtml = generateLineItemsHtml(log.lineItems);
   
@@ -160,21 +160,19 @@ export const generateLogHtml = (log: Log, tenant: Tenant, imageBaseUrl: string):
         </div>
       ` : ''}
       
-      <!-- Signature Information (for Kiosk users with signature) -->
-      ${log.user === "Kiosk" && log.signature ? `
+      <!-- Signature Information -->
+      ${log.signature ? `
         <div style="margin-bottom: 20px;">
-          <h3 style="font-weight: bold; margin-bottom: 5px;">Signature Information</h3>
-          ${log.signatureDate ? `
-            <div style="margin-bottom: 10px;">
-              <h4 style="font-weight: bold; margin-bottom: 5px;">Signed On</h4>
-              <p style="margin: 5px 0;">${formatDate(log.signatureDate)}</p>
+          <h3 style="font-weight: bold; margin-bottom: 10px;">Signature</h3>
+          <div style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; background-color: #f9f9f9;">
+            <div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 8px; display: inline-block;">
+              <img src="${log.signature}" alt="Signature" style="height: 64px; object-fit: contain;" />
             </div>
-          ` : ''}
-          <div style="margin-bottom: 10px;">
-            <h4 style="font-weight: bold; margin-bottom: 5px;">Customer Signature</h4>
-            <div style="margin-top: 10px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #f9f9f9;">
-              <img src="${log.signature}" alt="Customer Signature" style="max-width: 100%; height: auto; max-height: 200px;" />
-            </div>
+            ${log.signatureDate ? `
+              <p style="font-size: 10px; color: #666; margin-top: 8px;">
+                Signed on ${new Date(log.signatureDate).toLocaleDateString()}
+              </p>
+            ` : ''}
           </div>
         </div>
       ` : ''}
@@ -196,13 +194,30 @@ export const generateLogHtml = (log: Log, tenant: Tenant, imageBaseUrl: string):
           </tbody>
         </table>
       </div>
+      
+      <!-- Images -->
+      ${images && images.length > 0 ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-weight: bold; margin-bottom: 10px;">Images</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            ${images.map(image => {
+              const imageUrl = image.startsWith('/') ? `${imageBaseUrl}/api/images${image}` : `${imageBaseUrl}/api/images/${image}`;
+              return `
+                <div style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; background-color: #f9f9f9;">
+                  <img src="${imageUrl}" alt="Log Item Image" style="width: 100%; height: 150px; object-fit: contain; border-radius: 4px;" />
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
     </div>
   `;
 };
 
 // Generate complete email HTML with proper doctype and head
-export const generateEmailHtml = (log: Log, tenant: Tenant, imageBaseUrl: string): string => {
-  const logHtml = generateLogHtml(log, tenant, imageBaseUrl);
+export const generateEmailHtml = (log: Log, tenant: Tenant, imageBaseUrl: string, images: string[] = []): string => {
+  const logHtml = generateLogHtml(log, tenant, imageBaseUrl, images);
   
   return `
     <!DOCTYPE html>

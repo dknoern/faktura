@@ -40,7 +40,7 @@ const formatDate = (date: Date | string): string => {
 };
 
 // Generate out HTML content
-export const generateOutHtml = (out: Out, tenant: Tenant, imageBaseUrl: string): string => {
+export const generateOutHtml = (out: Out, tenant: Tenant, imageBaseUrl: string, images: string[] = []): string => {
   const formattedDate = formatDate(out.date);
   
   const logoUrl = `${imageBaseUrl}/api/images/logo-${tenant._id}.png`;
@@ -114,13 +114,30 @@ export const generateOutHtml = (out: Out, tenant: Tenant, imageBaseUrl: string):
           </div>
         </div>
       ` : ''}
+      
+      <!-- Images -->
+      ${images && images.length > 0 ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-weight: bold; margin-bottom: 10px;">Images</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            ${images.map(image => {
+              const imageUrl = image.startsWith('/') ? `${imageBaseUrl}/api/images${image}` : `${imageBaseUrl}/api/images/${image}`;
+              return `
+                <div style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; background-color: #f9f9f9;">
+                  <img src="${imageUrl}" alt="Out Item Image" style="width: 100%; height: 150px; object-fit: contain; border-radius: 4px;" />
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
     </div>
   `;
 };
 
 // Generate complete email HTML with proper doctype and head
-export const generateEmailHtml = (out: Out, tenant: Tenant, imageBaseUrl: string): string => {
-  const outHtml = generateOutHtml(out, tenant, imageBaseUrl);
+export const generateEmailHtml = (out: Out, tenant: Tenant, imageBaseUrl: string, images: string[] = []): string => {
+  const outHtml = generateOutHtml(out, tenant, imageBaseUrl, images);
   
   return `
     <!DOCTYPE html>

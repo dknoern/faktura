@@ -56,7 +56,7 @@ export const formatDate = (dateString: string | null) => {
 };
 
 // Generate repair HTML content
-export const generateRepairHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string, showCustomerName: boolean = true): string => {
+export const generateRepairHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string, showCustomerName: boolean = true, images: string[] = []): string => {
   const formattedDate = formatDate(repair.dateOut);
   const formattedReturnDate = formatDate(repair.returnDate);
   const formattedCustomerApprovedDate = formatDate(repair.customerApprovedDate);
@@ -145,12 +145,30 @@ export const generateRepairHtml = (repair: Repair, tenant: Tenant, imageBaseUrl:
       <div style="margin-bottom: 20px;">
       ${repair.repairNotes || 'None specified'}
     </div>
+      
+      <!-- Images -->
+      ${images && images.length > 0 ? `
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-weight: bold; margin-bottom: 10px;">Images</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            ${images.map(image => {
+              const imageUrl = image.startsWith('/') ? `${imageBaseUrl}/api/images${image}` : `${imageBaseUrl}/api/images/${image}`;
+              return `
+                <div style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; background-color: #f9f9f9;">
+                  <img src="${imageUrl}" alt="Repair Item Image" style="width: 100%; height: 150px; object-fit: contain; border-radius: 4px;" />
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
   `;
 };
 
 // Generate complete email HTML with proper doctype and head
-export const generateEmailHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string, showCustomerName: boolean = false): string => {
-  const repairHtml = generateRepairHtml(repair, tenant, imageBaseUrl, showCustomerName);
+export const generateEmailHtml = (repair: Repair, tenant: Tenant, imageBaseUrl: string, showCustomerName: boolean = false, images: string[] = []): string => {
+  const repairHtml = generateRepairHtml(repair, tenant, imageBaseUrl, showCustomerName, images);
   
   return `
     <!DOCTYPE html>

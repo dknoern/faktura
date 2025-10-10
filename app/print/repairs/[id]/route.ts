@@ -3,6 +3,7 @@ import { fetchRepairById, fetchDefaultTenant } from "@/lib/data";
 import { generateEmailHtml } from "@/lib/repair-renderer";
 import { getImageHost } from "@/lib/utils/imageHost";
 import { generateAutoPrintScript } from "@/lib/utils/printing";
+import { getRepairImages } from "@/lib/utils/storage";
 
 export async function GET(
   request: NextRequest,
@@ -17,16 +18,17 @@ export async function GET(
 
   try {
     const imageHost = await getImageHost();
-    const [repair, tenant] = await Promise.all([
+    const [repair, tenant, images] = await Promise.all([
       fetchRepairById(repairId),
-      fetchDefaultTenant()
+      fetchDefaultTenant(),
+      getRepairImages(repairId)
     ]);
 
     if (!repair) {
       return new NextResponse('Repair not found', { status: 404 });
     }
 
-    const emailHtml = generateEmailHtml(repair, tenant, imageHost);
+    const emailHtml = generateEmailHtml(repair, tenant, imageHost, false, images);
 
     const html = `
 <!DOCTYPE html>

@@ -1,6 +1,6 @@
 import { ViewOut } from "@/components/outs/view";
 import { fetchOutById } from "@/lib/data";
-import { getProductImages } from "@/lib/utils/storage";
+import { getOutImages } from "@/lib/utils/storage";
 import { notFound } from "next/navigation";
 
 
@@ -12,7 +12,7 @@ export default async function ViewOutPage(props: { params: Promise<{ id: string 
 
     const [outitem, images] = await Promise.all([
         fetchOutById(id),
-        getProductImages(id)
+        getOutImages(id)
     ]);
 
     if (!outitem) {
