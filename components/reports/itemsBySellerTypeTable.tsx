@@ -31,8 +31,8 @@ export async function ItemsBySellerTypeTable(props: { sellerType: string; }) {
                         <TableCell style={{ whiteSpace: 'nowrap' }}>{product.lastUpdated ? new Date(product.lastUpdated).toISOString().split('T')[0] : ''}</TableCell>
                         <TableCell>{product.itemNumber}</TableCell>
                         <TableCell>{product.title}</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.sellingPrice).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.cost ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.sellingPrice ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
                         
                     </TableRow>
                 ))}

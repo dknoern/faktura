@@ -264,9 +264,9 @@ export function ShowReportTable() {
                     <TableRow key={product._id}>
                         <TableCell>{product.itemNumber}</TableCell>
                         <TableCell>{product.title}</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.cost).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.listPrice).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
-                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.sellingPrice).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.cost ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.listPrice ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
+                        <TableCell style={{ textAlign: 'right' }}>{Math.ceil(product.sellingPrice ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }).replace('.00','')}</TableCell>
                         <TableCell>{product.serialNo || product.serialNumber || ''}</TableCell>
                      </TableRow>
                 ))}

@@ -36,7 +36,7 @@ interface Invoice {
     date: string;
     lineItems: LineItem[];
     trackingNumber: string;
-    total: number;
+    total: number | null;
     invoiceType: string;
 }
 
@@ -222,7 +222,7 @@ export function InvoicesTable({
                                     ))}
                                 </TableCell>
                                 <TableCell> {invoice.trackingNumber}</TableCell>
-                                <TableCell style={{ textAlign: 'right' }}>{invoice.total.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
+                                <TableCell style={{ textAlign: 'right' }}>{(invoice.total ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                                 <TableCell>
                                     <span className={`px-2 py-1 rounded-full text-xs ${
                                         invoice.invoiceType === 'Memo' 
