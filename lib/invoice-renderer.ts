@@ -148,6 +148,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.customerFirstName} ${invoice.customerLastName}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.shipAddress1 || ''}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.shipAddress2 || ''}</p>
+          <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.shipAddress3 || ''}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.shipCity || ''}${invoice.shipState ? ', ' + invoice.shipState : ''} ${invoice.shipZip || ''}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.customerPhone || ''}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.customerEmail || ''}</p>
@@ -158,6 +159,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold; margin-bottom: 0;">${invoice.billingAddress1 ? 'BILLING ADDRESS' : ''}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.billingAddress1 || ''}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.billingAddress2 || ''}</p>
+          <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.billingAddress3 || ''}</p>
           <p style="margin: 0 0; text-transform: uppercase; font-weight: bold;">${invoice.billingCity || ''}${invoice.billingState ? ', ' + invoice.billingState : ''} ${invoice.billingZip || ''}</p>
         </div>
         ` : ''}
