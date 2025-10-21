@@ -3,10 +3,10 @@ import { fetchInvoiceById } from "@/lib/data";
 
 
 
-export default async function EditInvoicePage(props: { params: Promise<{ id: number }> }) {
+export default async function EditInvoicePage(props: { params: Promise<{ id: string }> }) {
 
     const params = await props.params;
-    const id = params.id;
+    const id = Number(params.id);
 
 
     const invoice = await fetchInvoiceById(id);

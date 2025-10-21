@@ -13,11 +13,11 @@ export async function GET(
         const filename = pathSegments.join('/');
         
         const imageBuffer = await getImage(filename);
-        const contentType = path.extname(filename).toLowerCase() === '.png' 
-            ? 'image/png' 
+        const contentType = path.extname(filename).toLowerCase() === '.png'
+            ? 'image/png'
             : 'image/jpeg';
-        
-        return new NextResponse(imageBuffer, {
+
+        return new NextResponse(new Uint8Array(imageBuffer), {
             headers: {
                 'Content-Type': contentType,
                 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',

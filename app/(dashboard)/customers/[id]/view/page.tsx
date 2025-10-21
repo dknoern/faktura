@@ -3,9 +3,9 @@ import { CustomerRecordsTabs } from "@/components/customers/customer-records-tab
 import { fetchCustomerById } from "@/lib/data";
 import { notFound } from 'next/navigation';
 
-export default async function ViewCustomerPage(props: { params: Promise<{ id: number }> }) {
+export default async function ViewCustomerPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
-    const id = params.id;
+    const id = Number(params.id);
     const customer = await fetchCustomerById(id);
 
     if (!customer) {
