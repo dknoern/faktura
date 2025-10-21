@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Wrench, DollarSign, CheckCircle } from "lucide-react"
 
+export const dynamic = 'force-dynamic';
+
 function KioskContent() {
   const router = useRouter()
   const searchParams = useSearchParams()

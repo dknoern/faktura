@@ -12,6 +12,9 @@ import {
 import UserButton from "@/components/user-button";
 import { fetchTenantById } from "@/lib/data";
 
+// Force dynamic rendering since we fetch tenant data
+export const dynamic = 'force-dynamic';
+
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
   variable: "--font-geist-sans",

@@ -4,6 +4,8 @@ import { fetchTenantById } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 
+// Force dynamic rendering since we fetch tenant data
+export const dynamic = 'force-dynamic';
 
 const geistSans = localFont({
   src: "../app/fonts/GeistVF.woff",
