@@ -86,5 +86,9 @@
     "tailwindcss": "^3.4.14",
     "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"
+  },
+  "overrides": {
+    "glob": "^10.0.0",
+    "inflight": "npm:@file-size/inflight@^1.0.4"
   }
 }
