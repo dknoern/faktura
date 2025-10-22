@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { searchCustomers } from '@/lib/kiosk-actions';
+import { searchCustomers } from '@/lib/customer-utils';
 import { createCustomer } from '@/app/actions/customers';
 import { getNextRepairNumber, createRepairRecord } from '@/lib/repair-utils';
 import { createLog } from '@/app/actions/logs';

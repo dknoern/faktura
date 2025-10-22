@@ -50,20 +50,6 @@ export default auth((req) => {
     }
   }
 
-  // Check for kiosk mode from cookie
-  const isKioskMode = req.cookies.get('kiosk-mode')?.value === 'true'
-  
-  // If in kiosk mode, restrict access to dashboard pages
-  if (isKioskMode && pathname.startsWith('/') && !pathname.startsWith('/kiosk') && !pathname.startsWith('/api') && pathname !== '/') {
-    // Redirect to kiosk home if trying to access dashboard pages
-    return NextResponse.redirect(new URL('/kiosk', req.url))
-  }
-  
-  // If not in kiosk mode but trying to access kiosk pages, redirect to dashboard
-  if (!isKioskMode && pathname.startsWith('/kiosk')) {
-    return NextResponse.redirect(new URL('/home', req.url))
-  }
-  
   return NextResponse.next({
     request: {
       headers: requestHeaders,

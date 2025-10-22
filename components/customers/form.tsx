@@ -119,8 +119,8 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
         return;
       }
 
-      // Check if we need to redirect back to invoice, repair, or kiosk creation
-      if ((returnTo === 'invoice' || returnTo === 'repair' || returnTo === 'kiosk') && selectCustomer && result.data?._id) {
+      // Check if we need to redirect back to invoice or repair
+      if ((returnTo === 'invoice' || returnTo === 'repair') && selectCustomer && result.data?._id) {
         const productId = searchParams.get('productId');
         
         if (returnTo === 'invoice') {
@@ -133,17 +133,6 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
             ? `/repairs/new?customerId=${result.data._id}&productId=${productId}`
             : `/repairs/new?customerId=${result.data._id}`;
           router.push(repairUrl);
-        } else if (returnTo === 'kiosk') {
-          // Store the new customer and navigate to kiosk repair form
-          sessionStorage.setItem('selectedCustomer', JSON.stringify({
-            _id: result.data._id,
-            firstName: result.data.firstName,
-            lastName: result.data.lastName,
-            email: result.data.email,
-            company: result.data.company,
-            phone: result.data.phone
-          }));
-          router.push('/kiosk/transaction');
         }
       } else {
         // Default redirect to customers list

@@ -1,6 +1,5 @@
 import { signIn, signOut } from "@/auth"
 import { Button } from "./ui/button"
-import { cookies } from "next/headers"
 
 export function SignIn({
   ...props
@@ -22,9 +21,6 @@ export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
     <form
       action={async () => {
         "use server"
-        // Clear kiosk mode cookie when signing out
-        const cookieStore = await cookies()
-        cookieStore.delete('kiosk-mode')
         await signOut({redirectTo: "/", redirect: true})
       }}
       className="w-full"

@@ -1,6 +1,3 @@
-// Log renderer utility functions
-import { getDiagnosticFeeText, getRepairDurationText } from "@/lib/utils/ref-data";
-
 export interface LineItem {
   itemNumber?: string;
   name?: string;
@@ -150,16 +147,7 @@ export const generateLogHtml = (log: Log, tenant: Tenant, imageBaseUrl: string, 
           <p style="margin: 5px 0; white-space: pre-wrap;">${log.comments}</p>
         </div>
       ` : ''}
-      
-      <!-- Terms (for Kiosk users) -->
-      ${log.user === "Kiosk" ? `
-        <div style="margin-bottom: 20px;">
-          <h3 style="font-weight: bold; margin-bottom: 5px;">Terms</h3>
-          <p style="margin: 5px 0; white-space: pre-wrap;">${getDiagnosticFeeText()}</p>
-          <p style="margin: 5px 0; white-space: pre-wrap;">${getRepairDurationText()}</p>
-        </div>
-      ` : ''}
-      
+         
       <!-- Signature Information -->
       ${log.signature ? `
         <div style="margin-bottom: 20px;">

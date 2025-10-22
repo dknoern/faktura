@@ -52,7 +52,7 @@ export async function createRepairRecord(repairData: {
 
     const repair = new Repair({
       repairNumber: repairData.repairNumber,
-      itemNumber: null, // No item number for kiosk repairs
+      itemNumber: null, // No item number for trello repairs
       description: description,
       dateOut: new Date(),
       customerFirstName: repairData.customerFirstName,
@@ -64,7 +64,7 @@ export async function createRepairRecord(repairData: {
       repairNotes: `${repairData.itemValue ? 'Item Value: ${repairData.itemValue}\n' : ''}${repairData.repairNotes}`,
       warrantyService: false,
       customerId: parseInt(repairData.customerId) || 0,
-      itemId: null, // No specific product linked for kiosk repairs
+      itemId: null, // No specific product linked for trello repairs
       // get repairConfirmMessage from tenant config
       messages: [{
         date: new Date(),

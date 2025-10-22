@@ -15,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getDiagnosticFeeText, getRepairDurationText } from "@/lib/utils/ref-data";
 
 interface LineItem {
   itemNumber?: string;
@@ -258,18 +257,6 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm whitespace-pre-wrap">{log.comments}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {log.user == "Kiosk" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Terms</CardTitle>
-                </CardHeader>
-                <CardContent>
-                <p className="text-sm whitespace-pre-wrap">{getDiagnosticFeeText()}</p>
-                <p className="text-sm whitespace-pre-wrap">{getRepairDurationText()}</p>
                 </CardContent>
               </Card>
             )}
