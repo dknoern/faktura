@@ -103,20 +103,27 @@ async function receiveProduct(log: any, lineItem: any) {
     let repair = false;
     let memo = false;
 
-    product.history?.forEach((element: { action: string }) => {
-      if (element.action === 'sold item') {
+    // reduce history to list of action strings
+    const actions = product.history?.map((element: { action: string }) => element.action) || [];
+    actions.push('received');
+
+    actions.forEach((action: string) => {
+      if (action === 'sold item') {
         sold = true;
-      } else if (element.action === 'item returned') {
+        memo = false
+      } else if (action === 'item returned') {
         sold = false;
-      } else if (element.action?.startsWith('in repair')) {
+        memo = false;
+      } else if (action?.startsWith('in repair')) {
         repair = true;
-      } else if (element.action === 'item memo') {
+      } else if (action === 'item memo') {
         memo = true;
-      } else if (element.action === 'received') {
+        sold = false;
+      } else if (action === 'received') {
         if (repair) {
           repair = false;
         } else {
-          sold = false; // cant be both sold and memoed
+          sold = false;
           memo = false;
         }
       }
