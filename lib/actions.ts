@@ -238,7 +238,7 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
     const updateData: any = {
       itemNumber: formData.get("itemNumber") as string,
       description: formData.get("description") as string,
-      dateOut: formData.get("dateOut") || null,
+      // dateOut should not be updated - it's set once when the repair is created
       customerApprovedDate: formData.get("customerApprovedDate") || null,
       returnDate: formData.get("returnDate") || null,
       customerFirstName: formData.get("customerFirstName") as string,
