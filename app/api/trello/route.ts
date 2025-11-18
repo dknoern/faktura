@@ -60,6 +60,10 @@ function parseCardDescription(description: string) {
         }
     });
 
+    if(fields.phoneNumber === '+1') {   
+        fields.phoneNumber = '';
+    }
+
     return fields;
 }
 
