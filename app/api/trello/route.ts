@@ -233,12 +233,19 @@ async function createRepair(parsedFields: any) {
     // Create new customer if not found
     if (!customer && parsedFields.firstName && parsedFields.lastName) {
         console.log('Creating new customer...');
-        const customerData = {
+        console.log('Customer data for create:', {
             firstName: parsedFields.firstName,
             lastName: parsedFields.lastName,
             email: parsedFields.email || '',
-            phone: parsedFields.phoneNumber || '',
-            cell: '',
+            phone: parsedFields.phoneNumber || ''
+        });
+        const customerData = {
+            firstName: parsedFields.firstName,
+            lastName: parsedFields.lastName,
+            emails: parsedFields.email ? [{ email: parsedFields.email, type: undefined }] : [],
+            phones: parsedFields.phoneNumber ? [{ phone: parsedFields.phoneNumber, type: undefined }] : [],
+            lastUpdated: new Date(),
+            search: `${parsedFields.firstName} ${parsedFields.lastName} ${parsedFields.email || ''} ${parsedFields.phoneNumber || ''}`.toLowerCase(),
             company: '',
             customerType: 'Individual',
             status: 'Active'
@@ -246,14 +253,7 @@ async function createRepair(parsedFields: any) {
 
         const customerResult = await createCustomer(customerData);
         if (customerResult.success && customerResult.data) {
-            customer = {
-                _id: customerResult.data._id.toString(),
-                firstName: customerResult.data.firstName,
-                lastName: customerResult.data.lastName,
-                email: customerResult.data.emails?.[0]?.email || '',
-                phone: customerResult.data.phones?.[0]?.phone || ''
-            };
-            console.log('Created new customer:', customer._id, customer.firstName, customer.lastName);
+            console.log('Created new customer:', customerResult.data._id.toString(), customerResult.data.firstName, customerResult.data.lastName);
         } else {
             console.error('Failed to create customer:', customerResult.error);
             return;
