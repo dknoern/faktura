@@ -253,6 +253,13 @@ async function createRepair(parsedFields: any) {
 
         const customerResult = await createCustomer(customerData);
         if (customerResult.success && customerResult.data) {
+            customer = {
+                _id: customerResult.data._id.toString(),
+                firstName: customerResult.data.firstName,
+                lastName: customerResult.data.lastName,
+                emails: customerResult.data.emails,
+                phones: customerResult.data.phones
+            };
             console.log('Created new customer:', customerResult.data._id.toString(), customerResult.data.firstName, customerResult.data.lastName);
         } else {
             console.error('Failed to create customer:', customerResult.error);
