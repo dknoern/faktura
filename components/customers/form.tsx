@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { X, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -31,9 +32,6 @@ const customerFormSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
   company: z.string().optional(),
-  email: z.string().email("Invalid email address").optional().or(z.literal('')),
-  phone: z.string().optional(),
-  cell: z.string().optional(),
   address1: z.string().optional(),
   address2: z.string().optional(),
   address3: z.string().optional(),
@@ -62,6 +60,25 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Initialize email fields from customer data
+  const getInitialEmailFields = () => {
+    if (customer?.emails && customer.emails.length > 0) {
+      return customer.emails;
+    }
+    return [{email: '', type: undefined}];
+  };
+
+  // Initialize phone fields from customer data
+  const getInitialPhoneFields = () => {
+    if (customer?.phones && customer.phones.length > 0) {
+      return customer.phones;
+    }
+    return [{phone: '', type: undefined}];
+  };
+
+  const [emailFields, setEmailFields] = useState<Array<{email: string, type?: 'home' | 'work' | 'other'}>>(getInitialEmailFields());
+  const [phoneFields, setPhoneFields] = useState<Array<{phone: string, type?: 'home' | 'work' | 'mobile' | 'other'}>>(getInitialPhoneFields());
   
   // Check if we're in a return flow (e.g., from invoice creation)
   const returnTo = searchParams.get('returnTo');
@@ -73,9 +90,6 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
       firstName: "",
       lastName: "",
       company: "",
-      email: "",
-      phone: "",
-      cell: "",
       address1: "",
       address2: "",
       address3: "",
@@ -110,9 +124,19 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
       setError(null);
       setIsSubmitting(true);
 
+      // Combine email fields with types into emails array
+      const allEmails = emailFields.filter(item => item.email && item.email.trim() !== '');
+      // Combine phone fields with types into phones array
+      const allPhones = phoneFields.filter(item => item.phone && item.phone.trim() !== '');
+      const submitData = {
+        ...data,
+        emails: allEmails.length > 0 ? allEmails : undefined,
+        phones: allPhones.length > 0 ? allPhones : undefined,
+      };
+
       const result = customer?._id
-        ? await updateCustomer(customer._id, data)
-        : await createCustomer(data);
+        ? await updateCustomer(customer._id, submitData)
+        : await createCustomer(submitData);
 
       if (!result.success) {
         setError(result.error || `Failed to ${customer?._id ? 'update' : 'create'} customer. Please try again.`);
@@ -157,9 +181,6 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
           firstName: customer.firstName || "",
           lastName: customer.lastName || "",
           company: customer.company || "",
-          email: customer.email || "",
-          phone: customer.phone || "",
-          cell: customer.cell || "",
           address1: customer.address1 || "",
           address2: customer.address2 || "",
           address3: customer.address3 || "",
@@ -186,7 +207,9 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+        console.error('Form validation errors:', errors);
+      })} className="space-y-8">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -237,47 +260,148 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <FormLabel>Email(s)</FormLabel>
+            <div className="space-y-2">
+              {emailFields.map((emailItem, index) => (
+                <div key={index} className="flex gap-2">
+                  <div className="flex-1">
+                    {index === 0 && (
+                      <label className="text-xs text-muted-foreground mb-1 block">Email</label>
+                    )}
+                    <Input
+                      type="email"
+                      value={emailItem.email || ''}
+                      onChange={(e) => {
+                        const newEmails = [...emailFields];
+                        newEmails[index] = {...newEmails[index], email: e.target.value};
+                        setEmailFields(newEmails);
+                      }}
+                      placeholder="email@example.com"
+                    />
+                  </div>
+                  <div className="w-[120px]">
+                    {index === 0 && (
+                      <label className="text-xs text-muted-foreground mb-1 block">Type</label>
+                    )}
+                    <Select
+                      value={emailItem.type || 'none'}
+                      onValueChange={(value) => {
+                        const newEmails = [...emailFields];
+                        newEmails[index] = {...newEmails[index], type: value === 'none' ? undefined : value as 'home' | 'work' | 'other'};
+                        setEmailFields(newEmails);
+                      }}
+                    >
+                      <SelectTrigger className="w-[120px]">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none"></SelectItem>
+                        <SelectItem value="home">Home</SelectItem>
+                        <SelectItem value="work">Work</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {index > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const newEmails = emailFields.filter((_, i) => i !== index);
+                        setEmailFields(newEmails);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setEmailFields([...emailFields, {email: '', type: undefined}])}
+                className="mt-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Email
+              </Button>
+            </div>
+          </div>
 
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="cell"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cell</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <FormLabel>Phone Number(s)</FormLabel>
+            <div className="space-y-2">
+              {phoneFields.map((phoneItem, index) => (
+                <div key={index} className="flex gap-2">
+                  <div className="flex-1">
+                    {index === 0 && (
+                      <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
+                    )}
+                    <Input
+                      type="tel"
+                      value={phoneItem.phone || ''}
+                      onChange={(e) => {
+                        const newPhones = [...phoneFields];
+                        newPhones[index] = {...newPhones[index], phone: e.target.value};
+                        setPhoneFields(newPhones);
+                      }}
+                      placeholder="(555) 123-4567"
+                    />
+                  </div>
+                  <div className="w-[120px]">
+                    {index === 0 && (
+                      <label className="text-xs text-muted-foreground mb-1 block">Type</label>
+                    )}
+                    <Select
+                      value={phoneItem.type || 'none'}
+                      onValueChange={(value) => {
+                        const newPhones = [...phoneFields];
+                        newPhones[index] = {...newPhones[index], type: value === 'none' ? undefined : value as 'home' | 'work' | 'mobile' | 'other'};
+                        setPhoneFields(newPhones);
+                      }}
+                    >
+                      <SelectTrigger className="w-[120px]">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none"></SelectItem>
+                        <SelectItem value="home">Home</SelectItem>
+                        <SelectItem value="work">Work</SelectItem>
+                        <SelectItem value="mobile">Mobile</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {index > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const newPhones = phoneFields.filter((_, i) => i !== index);
+                        setPhoneFields(newPhones);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setPhoneFields([...phoneFields, {phone: '', type: undefined}])}
+                className="mt-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Phone
+              </Button>
+            </div>
+          </div>
 
           <FormField
             control={form.control}

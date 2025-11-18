@@ -30,8 +30,8 @@ export async function CustomersTable() {
                         <TableCell>{customer._id}</TableCell>
                         <TableCell>{customer.firstName + ' ' + customer.lastName}</TableCell>
                         <TableCell>{customer.city}</TableCell>
-                        <TableCell>{customer.email}</TableCell>
-                        <TableCell>{customer.phone}</TableCell>
+                        <TableCell>{customer.emails?.[0]?.email || ''}</TableCell>
+                        <TableCell>{customer.phones?.[0]?.phone || ''}</TableCell>
                         <TableCell>{customer.company}</TableCell>
                      </TableRow>
                 ))}

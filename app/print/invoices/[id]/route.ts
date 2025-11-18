@@ -32,14 +32,14 @@ export async function GET(
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Invoice #${invoice.invoiceNumber}</title>
+    <title>Invoice #${invoice._id}</title>
     <style>
       body {
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
       }
-      
+
       @media print {
         body {
           margin: 0 !important;
@@ -47,13 +47,13 @@ export async function GET(
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
-        
+
         @page {
           margin: 0.5in;
           size: auto;
         }
       }
-      
+
       @media screen {
         body {
           padding: 20px;

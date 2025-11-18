@@ -28,14 +28,17 @@ export interface Tenant {
 
 // Helper functions
 const formatDate = (date: Date | string): string => {
-  return new Date(date).toLocaleDateString('en-US', {
+  const dateObj = new Date(date);
+  return dateObj.toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
-    year: 'numeric'
-  }) + ' ' + new Date(date).toLocaleTimeString('en-US', {
+    year: 'numeric',
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  }) + ' ' + dateObj.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false
+    hour12: false,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
   });
 };
 
@@ -108,7 +111,9 @@ export const generateOutHtml = (out: Out, tenant: Tenant, imageBaseUrl: string, 
             </div>
             ${out.signatureDate ? `
               <p style="font-size: 10px; color: #666; margin-top: 8px;">
-                Signed on ${new Date(out.signatureDate).toLocaleDateString()}
+                Signed on ${new Date(out.signatureDate).toLocaleDateString('en-US', {
+                  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                })}
               </p>
             ` : ''}
           </div>

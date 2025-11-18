@@ -48,12 +48,10 @@ export async function createRepairRecord(repairData: {
     const tenant = await fetchDefaultTenant();
     const repairConfirmMessage = tenant.repairConfirmationText || "Thank you for your repair request. We will contact you soon.";
     
-    const description = `${repairData.brand} ${repairData.material}${repairData.description ? ` - ${repairData.description}` : ''} ${repairData.itemValue ? ` - value: ${repairData.itemValue}` : ''}`
-
     const repair = new Repair({
       repairNumber: repairData.repairNumber,
       itemNumber: null, // No item number for trello repairs
-      description: description,
+      description: repairData.description || '',
       dateOut: new Date(),
       customerFirstName: repairData.customerFirstName,
       customerLastName: repairData.customerLastName,

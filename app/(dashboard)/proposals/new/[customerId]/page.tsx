@@ -20,8 +20,8 @@ export default async function Page({ params }: PageProps) {
     _id: customer._id.toString(),
     firstName: customer.firstName,
     lastName: customer.lastName,
-    email: customer.email,
-    phone: customer.phone
+    email: customer.emails?.[0]?.email || '',
+    phone: customer.phones?.[0]?.phone || ''
   };
 
   return (

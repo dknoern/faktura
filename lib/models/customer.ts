@@ -10,9 +10,14 @@ export const customerSchema = z.object({
   firstName: z.string().min(2).max(255),
   lastName: z.string().min(2).max(255),
   company: z.string().optional(),
-  email: z.string().email("Invalid email address").optional().or(z.literal('')),
-  phone: z.string().optional(),
-  cell: z.string().optional(),
+  emails: z.array(z.object({
+    email: z.string().email("Invalid email address"),
+    type: z.enum(["home", "work", "other"]).optional(),
+  })).optional(),
+  phones: z.array(z.object({
+    phone: z.string(),
+    type: z.enum(["home", "work", "mobile", "other"]).optional(),
+  })).optional(),
   address1: z.string().optional(),
   address2: z.string().optional(),
   address3: z.string().optional(),
@@ -43,4 +48,15 @@ export const customerSchema = z.object({
 
 
 const customerZodSchema = zodSchema(customerSchema);
+
+// Disable _id on email and phone subdocuments
+const emailsPath = customerZodSchema.path('emails');
+if (emailsPath?.schema) {
+  emailsPath.schema.set('_id', false);
+}
+const phonesPath = customerZodSchema.path('phones');
+if (phonesPath?.schema) {
+  phonesPath.schema.set('_id', false);
+}
+
 export const customerModel = mongoose.models.customer || model("customer", customerZodSchema);

@@ -49,15 +49,14 @@ export async function searchCustomers(params: SearchCustomersParams) {
     const digitPattern = normalizedSearchPhone.split('').join('[^\\d]*')
 
     andConditions.push({
-      $or: [
-        { phone: { $regex: digitPattern, $options: 'i' } },
-        { cell: { $regex: digitPattern, $options: 'i' } }
-      ]
+      'phones.phone': { $regex: digitPattern, $options: 'i' }
     })
   }
 
   if (params.email) {
-    andConditions.push({ email: { $regex: params.email, $options: 'i' } })
+    andConditions.push({
+      'emails.email': { $regex: params.email, $options: 'i' }
+    })
   }
 
   if (andConditions.length > 0) {
@@ -70,7 +69,7 @@ export async function searchCustomers(params: SearchCustomersParams) {
   console.log("query", query)
 
   const customers = await customerModel.find(query)
-    .select('firstName lastName email company phone cell')
+    .select('firstName lastName emails company phones')
     .sort({ _id: 1 })
     .limit(20)
     .lean()
@@ -79,8 +78,8 @@ export async function searchCustomers(params: SearchCustomersParams) {
     _id: customer._id.toString(),
     firstName: customer.firstName,
     lastName: customer.lastName,
-    email: customer.email,
+    emails: customer.emails,
     company: customer.company,
-    phone: customer.phone || customer.cell
+    phones: customer.phones
   }))
 }

@@ -95,22 +95,38 @@ export function CustomerViewDetails({ customer: initialCustomer }: CustomerViewD
                         <CardTitle>Contact Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {customer.email && (
+                        {(customer.emails && customer.emails.length > 0) && (
                             <div>
-                                <label className="text-sm font-medium text-muted-foreground">Email</label>
-                                <p className="text-sm">{customer.email}</p>
+                                <label className="text-sm font-medium text-muted-foreground">
+                                    {customer.emails.length > 1 ? 'Emails' : 'Email'}
+                                </label>
+                                <div className="space-y-1">
+                                    {customer.emails.map((emailItem, index) => (
+                                        <p key={index} className="text-sm">
+                                            {typeof emailItem === 'string' ? emailItem : emailItem.email}
+                                            {typeof emailItem === 'object' && emailItem.type && (
+                                                <span className="text-muted-foreground ml-2">({emailItem.type})</span>
+                                            )}
+                                        </p>
+                                    ))}
+                                </div>
                             </div>
                         )}
-                        {customer.phone && (
+                        {(customer.phones && customer.phones.length > 0) && (
                             <div>
-                                <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                                <p className="text-sm">{customer.phone}</p>
-                            </div>
-                        )}
-                        {customer.cell && (
-                            <div>
-                                <label className="text-sm font-medium text-muted-foreground">Cell</label>
-                                <p className="text-sm">{customer.cell}</p>
+                                <label className="text-sm font-medium text-muted-foreground">
+                                    {customer.phones.length > 1 ? 'Phone Numbers' : 'Phone'}
+                                </label>
+                                <div className="space-y-1">
+                                    {customer.phones.map((phoneItem, index) => (
+                                        <p key={index} className="text-sm">
+                                            {typeof phoneItem === 'string' ? phoneItem : phoneItem.phone}
+                                            {typeof phoneItem === 'object' && phoneItem.type && (
+                                                <span className="text-muted-foreground ml-2">({phoneItem.type})</span>
+                                            )}
+                                        </p>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </CardContent>

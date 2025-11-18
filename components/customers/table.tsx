@@ -284,8 +284,34 @@ export function CustomersTable({
                             <TableCell>{customer._id}</TableCell>
                             <TableCell>{customer.firstName + ' ' + customer.lastName}</TableCell>
                             <TableCell>{customer.city}</TableCell>
-                            <TableCell>{customer.email}</TableCell>
-                            <TableCell>{customer.phone}</TableCell>
+                            <TableCell>
+                                {customer.emails && customer.emails.length > 0 && (
+                                    <div className="space-y-0.5">
+                                        {customer.emails.map((emailItem: any, idx: number) => (
+                                            <div key={idx} className="text-sm">
+                                                {typeof emailItem === 'string' ? emailItem : emailItem.email}
+                                                {typeof emailItem === 'object' && emailItem.type && (
+                                                    <span className="text-xs text-muted-foreground ml-1">({emailItem.type})</span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </TableCell>
+                            <TableCell>
+                                {customer.phones && customer.phones.length > 0 && (
+                                    <div className="space-y-0.5">
+                                        {customer.phones.map((phoneItem: any, idx: number) => (
+                                            <div key={idx} className="text-sm">
+                                                {typeof phoneItem === 'string' ? phoneItem : phoneItem.phone}
+                                                {typeof phoneItem === 'object' && phoneItem.type && (
+                                                    <span className="text-xs text-muted-foreground ml-1">({phoneItem.type})</span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </TableCell>
                             <TableCell>{customer.company}</TableCell>
                             {!isModal && (
                                 <TableCell className="text-center">

@@ -250,8 +250,8 @@ async function createRepair(parsedFields: any) {
                 _id: customerResult.data._id.toString(),
                 firstName: customerResult.data.firstName,
                 lastName: customerResult.data.lastName,
-                email: customerResult.data.email,
-                phone: customerResult.data.phone
+                email: customerResult.data.emails?.[0]?.email || '',
+                phone: customerResult.data.phones?.[0]?.phone || ''
             };
             console.log('Created new customer:', customer._id, customer.firstName, customer.lastName);
         } else {
@@ -285,8 +285,8 @@ async function createRepair(parsedFields: any) {
         customerId: customer._id,
         customerFirstName: customer.firstName,
         customerLastName: customer.lastName,
-        email: customer.email || '',
-        phone: customer.phone || '',
+        email: customer.emails?.[0]?.email || '',
+        phone: customer.phones?.[0]?.phone || '',
         brand: parsedFields.brand || 'Unknown',
         material: parsedFields.material || 'Unknown',
         description: description,

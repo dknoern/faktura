@@ -73,21 +73,96 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
       }
     }
     
-    // Merge customer data and delete secondary customers
+    // Collect all customers for merging
+    const allCustomers = [canonicalCustomer];
     for (let i = 1; i < customerIds.length; i++) {
       const customer = await customerModel.findById(customerIds[i]);
       if (customer) {
-        // Merge data from this customer into the canonical customer
-        overlayCustomer(canonicalCustomer, customer);
-        
-        // Delete the merged customer
-        console.log(`Deleting merged customer ${customerIds[i]}`);
-        await customerModel.deleteOne({ _id: customerIds[i] });
+        allCustomers.push(customer);
       }
     }
-    
-    // Update the search field
-    canonicalCustomer.search = `${canonicalCustomer.firstName} ${canonicalCustomer.lastName} ${canonicalCustomer.company} ${canonicalCustomer.email} ${canonicalCustomer.phone}`.toLowerCase();
+
+    // Merge customer data and delete secondary customers
+    for (let i = 1; i < allCustomers.length; i++) {
+      const customer = allCustomers[i];
+      if (customer) {
+        // Merge data from this customer into the canonical customer
+        overlayCustomer(canonicalCustomer, customer);
+
+        // Delete the merged customer
+        console.log(`Deleting merged customer ${customer._id}`);
+        await customerModel.deleteOne({ _id: customer._id });
+      }
+    }
+
+    // Combine all unique emails with types from all customers
+    const emailMap = new Map<string, string | undefined>();
+    for (const customer of allCustomers) {
+      // Add emails from the new emails array (with types)
+      if (customer.emails && Array.isArray(customer.emails)) {
+        customer.emails.forEach((emailItem: any) => {
+          const email = typeof emailItem === 'string' ? emailItem : emailItem.email;
+          const type = typeof emailItem === 'object' ? emailItem.type : undefined;
+          if (email && email.trim()) {
+            // Keep existing type if email already exists, otherwise set new type
+            if (!emailMap.has(email.trim())) {
+              emailMap.set(email.trim(), type);
+            }
+          }
+        });
+      }
+      // Also add the legacy email field if it exists
+      if (customer.email && customer.email.trim()) {
+        if (!emailMap.has(customer.email.trim())) {
+          emailMap.set(customer.email.trim(), undefined);
+        }
+      }
+    }
+
+    // Combine all unique phone numbers with types from all customers
+    const phoneMap = new Map<string, string | undefined>();
+    for (const customer of allCustomers) {
+      // Add phones from the new phones array (with types)
+      if (customer.phones && Array.isArray(customer.phones)) {
+        customer.phones.forEach((phoneItem: any) => {
+          const phone = typeof phoneItem === 'string' ? phoneItem : phoneItem.phone;
+          const type = typeof phoneItem === 'object' ? phoneItem.type : undefined;
+          if (phone && phone.trim()) {
+            // Keep existing type if phone already exists, otherwise set new type
+            if (!phoneMap.has(phone.trim())) {
+              phoneMap.set(phone.trim(), type);
+            }
+          }
+        });
+      }
+      // Also add the legacy phone field if it exists
+      if (customer.phone && customer.phone.trim()) {
+        if (!phoneMap.has(customer.phone.trim())) {
+          phoneMap.set(customer.phone.trim(), undefined);
+        }
+      }
+      // Also add cell phone if it exists
+      if (customer.cell && customer.cell.trim()) {
+        if (!phoneMap.has(customer.cell.trim())) {
+          phoneMap.set(customer.cell.trim(), 'mobile');
+        }
+      }
+    }
+
+    // Convert maps to arrays of objects
+    canonicalCustomer.emails = Array.from(emailMap.entries()).map(([email, type]) => ({
+      email,
+      type: type as 'home' | 'work' | 'other' | undefined
+    }));
+    canonicalCustomer.phones = Array.from(phoneMap.entries()).map(([phone, type]) => ({
+      phone,
+      type: type as 'home' | 'work' | 'mobile' | 'other' | undefined
+    }));
+
+    // Update the search field with all emails and phones
+    const emailsString = canonicalCustomer.emails.map((item: any) => item.email).join(' ');
+    const phonesString = canonicalCustomer.phones.map((item: any) => item.phone).join(' ');
+    canonicalCustomer.search = `${canonicalCustomer.firstName} ${canonicalCustomer.lastName} ${canonicalCustomer.company} ${emailsString} ${phonesString}`.toLowerCase();
     
     // Save the updated canonical customer
     await canonicalCustomer.save();
@@ -121,8 +196,6 @@ function overlayCustomer(canonicalCustomer: any, customer: any) {
   canonicalCustomer.firstName = overlayField(canonicalCustomer.firstName, customer.firstName);
   canonicalCustomer.lastName = overlayField(canonicalCustomer.lastName, customer.lastName);
   canonicalCustomer.company = overlayField(canonicalCustomer.company, customer.company);
-  canonicalCustomer.phone = overlayField(canonicalCustomer.phone, customer.phone);
-  canonicalCustomer.email = overlayField(canonicalCustomer.email, customer.email);
   canonicalCustomer.address1 = overlayField(canonicalCustomer.address1, customer.address1);
   canonicalCustomer.address2 = overlayField(canonicalCustomer.address2, customer.address2);
   canonicalCustomer.city = overlayField(canonicalCustomer.city, customer.city);
