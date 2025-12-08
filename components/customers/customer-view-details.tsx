@@ -8,7 +8,7 @@ import { CustomerActionMenu } from "./customer-action-menu";
 import { CustomerAttachments } from "./customer-attachments";
 import { useState } from "react";
 
-type Customer = z.infer<typeof customerSchema>;
+type Customer = z.infer<typeof customerSchema> & { _id: string };
 
 interface CustomerViewDetailsProps {
     customer: Customer;
@@ -56,7 +56,7 @@ export function CustomerViewDetails({ customer: initialCustomer }: CustomerViewD
                     <CardContent className="space-y-3">
                         <div>
                             <label className="text-sm font-medium text-muted-foreground">Customer ID</label>
-                            <p className="text-sm">{customer._id}</p>
+                            <p className="text-sm">{customer.customerNumber}</p>
                         </div>
                         <div>
                             <label className="text-sm font-medium text-muted-foreground">Name</label>

@@ -31,6 +31,7 @@ interface LineItem {
 
 interface Return {
     _id: string;
+    returnNumber: number;
     invoiceId: string;
     lineItems: LineItem[];
     returnDate: string | null;
@@ -58,12 +59,12 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
-        
+
         // Clear any existing timeout
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
-        
+
         // Set a new timeout
         searchTimeoutRef.current = setTimeout(() => {
             const params = new URLSearchParams(searchParams.toString());
@@ -76,7 +77,7 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
             router.push(`${pathname}?${params.toString()}`);
         }, 300); // 300ms debounce delay
     };
-    
+
     // Cleanup timeout on unmount
     useEffect(() => {
         return () => {
@@ -93,7 +94,7 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
             // User is selecting text, don't navigate
             return;
         }
-        
+
         // Check if the click started and ended on the same element (not a drag)
         const target = e.target as HTMLElement;
         if (target.tagName === 'TD' || target.closest('td')) {
@@ -128,9 +129,9 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
                 <TableBody>
                     {returns.map((ret: Return) => {
                         return (
-                            <TableRow 
-                                key={ret._id} 
-                                onClick={(e) => handleRowClick(ret._id, e)} 
+                            <TableRow
+                                key={ret._id}
+                                onClick={(e) => handleRowClick(ret._id, e)}
                                 className="cursor-pointer hover:bg-gray-50"
                                 onMouseDown={(e) => {
                                     // Prevent text selection from interfering with click detection
@@ -141,7 +142,7 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
 
                                 style={{ userSelect: 'text' }}
                             >
-                                <TableCell>{ret._id}</TableCell>
+                                <TableCell>{ret.returnNumber}</TableCell>
                                 <TableCell>{ret.invoiceId}</TableCell>
                                 <TableCell>
                                     {ret.lineItems

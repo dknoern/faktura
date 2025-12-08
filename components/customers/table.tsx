@@ -48,8 +48,8 @@ interface CustomersTableProps {
     flowType?: 'invoice' | 'repair'
 }
 
-export function CustomersTable({ 
-    customers, 
+export function CustomersTable({
+    customers,
     pagination,
     isModal = false,
     onSelectCustomer,
@@ -64,18 +64,18 @@ export function CustomersTable({
     const defaultRouter = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    
+
     // Use the modal router if provided (for modal mode), otherwise use the real router
     const router = modalRouter || defaultRouter;
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    
+
     // State for selected customers
-    const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
-    
+    const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
+
     // State for confirmation dialog
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-    
+
     // Check if we're in customer selection mode for invoices
     const selectForInvoice = !isModal && searchParams.get('selectForInvoice') === 'true';
 
@@ -92,7 +92,7 @@ export function CustomersTable({
             router.push(`${pathname}?${params.toString()}`);
         }
     };
-    
+
     const handleCustomerClick = useCallback((customer: Customer) => {
         if (isModal && onSelectCustomer) {
             // If in modal mode, call the onSelectCustomer callback
@@ -113,7 +113,7 @@ export function CustomersTable({
             // User is selecting text, don't navigate
             return;
         }
-        
+
         // Check if the click started and ended on the same element (not a drag)
         const target = e.target as HTMLElement;
         if (target.tagName === 'TD' || target.closest('td')) {
@@ -124,12 +124,12 @@ export function CustomersTable({
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
-        
+
         // Clear any existing timeout
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
-        
+
         // Set a new timeout
         searchTimeoutRef.current = setTimeout(() => {
             if (isModal && onSearch) {
@@ -148,7 +148,7 @@ export function CustomersTable({
             }
         }, 300); // 300ms debounce delay
     };
-    
+
     // Cleanup timeout on unmount
     useEffect(() => {
         return () => {
@@ -157,31 +157,31 @@ export function CustomersTable({
             }
         };
     }, []);
-    
+
     // Handle checkbox click without triggering row click
     const handleCheckboxChange = (e: React.MouseEvent) => {
         e.stopPropagation();
     };
-    
+
     // Show confirmation dialog for merging customers
     const handleShowMergeConfirmation = () => {
         if (selectedCustomers.length < 2) {
             toast.error("Please select at least two customers to merge");
             return;
         }
-        
+
         // Open the confirmation dialog
         setConfirmDialogOpen(true);
     };
-    
+
     // Handle merging customers after confirmation
     const handleMergeCustomers = async () => {
         try {
             const result = await mergeCustomers(selectedCustomers);
-            
+
             if (result.success) {
                 toast.success(`${result.count} customers merged`);
-                
+
                 // Clear selections after successful merge
                 setSelectedCustomers([]);
             } else {
@@ -201,7 +201,7 @@ export function CustomersTable({
 
 
 
-<div className="flex justify-between items-center mb-4 space-x-2">
+            <div className="flex justify-between items-center mb-4 space-x-2">
                 <div className="flex-1">
                     <Input
                         type="text"
@@ -212,39 +212,39 @@ export function CustomersTable({
                     />
                 </div>
 
-                    <Button variant="outline" onClick={() => {
-                        if (isModal && onSelectCustomer) {
-                            // Clean up modal scroll locks before navigation
-                            document.body.style.removeProperty('overflow');
-                            document.body.style.removeProperty('padding-right');
-                            
-                            // If in modal mode for customer selection, pass return parameters
-                            const params = new URLSearchParams({
-                                returnTo: flowType,
-                                selectCustomer: 'true'
-                            });
-                            if (productId) {
-                                params.set('productId', productId);
-                            }
-                            router.push(`/customers/new?${params.toString()}`);
-                        } else {
-                            router.push('/customers/new');
-                        }
-                    }}
-                        className="ml-4 flex items-center gap-1"
-                    >
-                        <PlusCircle size={18} />
-                        <span>New Customer</span>
-                    </Button>
+                <Button variant="outline" onClick={() => {
+                    if (isModal && onSelectCustomer) {
+                        // Clean up modal scroll locks before navigation
+                        document.body.style.removeProperty('overflow');
+                        document.body.style.removeProperty('padding-right');
 
-                    {!isModal && selectedCustomers.length >= 2 && (
-                        <Button 
-                            onClick={handleShowMergeConfirmation}
-                            variant="default"
-                        >
-                            Merge Customers
-                        </Button>
-                    )}
+                        // If in modal mode for customer selection, pass return parameters
+                        const params = new URLSearchParams({
+                            returnTo: flowType,
+                            selectCustomer: 'true'
+                        });
+                        if (productId) {
+                            params.set('productId', productId);
+                        }
+                        router.push(`/customers/new?${params.toString()}`);
+                    } else {
+                        router.push('/customers/new');
+                    }
+                }}
+                    className="ml-4 flex items-center gap-1"
+                >
+                    <PlusCircle size={18} />
+                    <span>New Customer</span>
+                </Button>
+
+                {!isModal && selectedCustomers.length >= 2 && (
+                    <Button
+                        onClick={handleShowMergeConfirmation}
+                        variant="default"
+                    >
+                        Merge Customers
+                    </Button>
+                )}
 
             </div>
 
@@ -267,10 +267,10 @@ export function CustomersTable({
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {customersList.map((customer: Customer) => (
-                        <TableRow 
-                            key={customer._id} 
-                            className="cursor-pointer hover:bg-gray-100" 
+                    {customersList.map((customer: Customer & { _id: string }) => (
+                        <TableRow
+                            key={customer._id}
+                            className="cursor-pointer hover:bg-gray-100"
                             onClick={(e) => handleRowClick(customer, e)}
                             onMouseDown={(e) => {
                                 // Prevent text selection from interfering with click detection
@@ -281,7 +281,7 @@ export function CustomersTable({
 
                             style={{ userSelect: 'text' }}
                         >
-                            <TableCell>{customer._id}</TableCell>
+                            <TableCell>{customer.customerNumber}</TableCell>
                             <TableCell>{customer.firstName + ' ' + customer.lastName}</TableCell>
                             <TableCell>{customer.city}</TableCell>
                             <TableCell>
@@ -369,7 +369,7 @@ export function CustomersTable({
                         <DialogTitle>Confirm Customer Merge</DialogTitle>
                         <DialogDescription>
                             You are about to merge {selectedCustomers.length} customers. This action cannot be undone.
-                            The customer with the lowest ID ({selectedCustomers.length > 0 ? Math.min(...selectedCustomers) : ''}) will be kept, 
+                            The customer with the lowest ID number will be kept,
                             and all other customers will be merged into it.
                         </DialogDescription>
                     </DialogHeader>

@@ -4,11 +4,9 @@ import { ViewReturn } from "@/components/returns/view";
 
 export default async function ViewReturnPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
-    const id = params.id;
-    const idNumber = parseInt(id);
 
     const [returnData, tenant] = await Promise.all([
-        fetchReturnById(idNumber),
+        fetchReturnById(params.id),
         fetchDefaultTenant()
     ]);
 

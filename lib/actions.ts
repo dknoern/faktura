@@ -251,7 +251,7 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
       email: formData.get("email") || '',
       phone: formData.get("phone") || ''
     };
-    
+
     if (currentRepair) {
       // Build updated search field
       updateData.search = buildRepairSearchField({
@@ -301,16 +301,22 @@ export async function createReturn(data: ReturnData) {
   try {
     await dbConnect();
 
-    // Get the next return number from the counter collection
-    const newReturnNumber = await Counter.findByIdAndUpdate(
-      { _id: 'returnNumber' },
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true }
-    );
+    // Get the default tenant (for now, assuming we have a way to get it or pass it)
+    // For this refactor, we'll fetch the default tenant if not provided
+    // TODO: Pass tenantId from context/auth
+    const { fetchDefaultTenant } = await import("./data");
+    const defaultTenant = await fetchDefaultTenant();
+    if (!defaultTenant) throw new Error("Default tenant not found");
+    const tenantId = defaultTenant._id;
+
+    // Get the next return number from the tenant counter
+    const { getNextSequence } = await import("./utils/tenant-utils");
+    const returnNumber = await getNextSequence(tenantId, 'return');
 
     // Clean the data to avoid any potential circular references or undefined values
     const cleanData = {
-      _id: newReturnNumber.seq,
+      returnNumber: returnNumber,
+      tenant: tenantId,
       customerName: data.customerName || '',
       customerId: data.customerId || undefined,
       invoiceId: data.invoiceId || '',
@@ -330,7 +336,7 @@ export async function createReturn(data: ReturnData) {
         longDesc: item.longDesc || undefined,
         included: Boolean(item.included)
       })),
-      search: newReturnNumber.seq + " " + data.invoiceId + " " + formatDate(data.returnDate) + " " + data.customerName + " " + data.salesPerson + " " + data.totalReturnAmount,
+      search: returnNumber + " " + data.invoiceId + " " + formatDate(data.returnDate) + " " + data.customerName + " " + data.salesPerson + " " + data.totalReturnAmount,
     };
 
     // Create a new return document with the cleaned data
@@ -340,7 +346,7 @@ export async function createReturn(data: ReturnData) {
 
     // Update product history for returned items
     const user = await getShortUser();
-    const refDoc = newReturnNumber.seq.toString();
+    const refDoc = returnNumber.toString();
     const action = 'item returned';
     const status = 'In Stock';
 
@@ -353,7 +359,7 @@ export async function createReturn(data: ReturnData) {
   }
 }
 
-export async function updateReturn(returnId: number, data: ReturnData) {
+export async function updateReturn(returnId: string, data: ReturnData) {
   try {
     await dbConnect();
 

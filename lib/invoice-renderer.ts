@@ -10,7 +10,8 @@ export interface LineItem {
 }
 
 export interface Invoice {
-  _id: number;
+  _id: string;
+  invoiceNumber: number;
   customerFirstName: string;
   customerLastName: string;
   address: string;
@@ -79,7 +80,7 @@ export const formatCurrency = (value: number | null | undefined = 0) => {
 export const formatDate = (dateString: string) => {
   // Get timezone from environment variable, default to Central timezone
   const timeZone = process.env.TIMEZONE || 'America/Chicago';
-  
+
   return new Date(dateString).toLocaleString('en-US', {
     timeZone,
     year: 'numeric',
@@ -131,7 +132,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
           </div>
         </div>
         <div style="text-align: left;">
-          <p style="margin: 1px 0;">${invoiceNumberLabel} #${invoice._id}</p>
+          <p style="margin: 1px 0;">${invoiceNumberLabel} #${invoice.invoiceNumber}</p>
           <p style="margin: 1px 0;">Date: ${formattedDate}</p>
           ${invoice.shipVia ? `<p style="margin: 1px 0;">Ship Via: ${invoice.shipVia}</p>` : ''}
           ${invoice.trackingNumber ? `<p style="margin: 1px 0;">Tracking Number: ${invoice.trackingNumber}</p>` : ''}

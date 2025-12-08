@@ -20,13 +20,15 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
   try {
     await dbConnect();
 
-    const newCustomerNumber = await Counter.findByIdAndUpdate({
-      _id: 'customerNumber'
-    }, {
-      $inc: {
-        seq: 1
-      }
-    });
+    // Get the default tenant
+    const { fetchDefaultTenant } = await import("@/lib/data");
+    const defaultTenant = await fetchDefaultTenant();
+    if (!defaultTenant) throw new Error("Default tenant not found");
+    const tenantId = defaultTenant._id;
+
+    // Generate a new customer number using TenantCounter
+    const { getNextSequence } = await import("@/lib/utils/tenant-utils");
+    const newCustomerNumber = await getNextSequence(tenantId, 'customer');
 
     const emailsString = data.emails
       ? data.emails.map((item: any) => typeof item === 'string' ? item : item.email).join(' ')
@@ -37,7 +39,8 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
 
     const customer = await customerModel.create({
       ...data,
-      _id: newCustomerNumber.seq,
+      customerNumber: newCustomerNumber,
+      tenant: tenantId,
       lastUpdated: new Date(),
       search: `${data.firstName} ${data.lastName} ${data.company} ${emailsString} ${phonesString}`.toLowerCase(),
     });
@@ -66,7 +69,7 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
   }
 }
 
-export async function updateCustomer(id: number, data: CustomerFormData): Promise<ActionResult<CustomerData>> {
+export async function updateCustomer(id: string, data: CustomerFormData): Promise<ActionResult<CustomerData>> {
   try {
     await dbConnect();
 

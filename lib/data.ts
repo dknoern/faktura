@@ -20,12 +20,12 @@ export async function fetchCustomers(page = 1, limit = 10, search = '') {
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: searchConditions };
         }
@@ -64,20 +64,20 @@ export async function fetchProducts(page = 1, limit = 10, search = '', sortBy = 
             { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
             { title: { $ne: null } } // Exclude items with null title
         ];
-        
+
         let query: any = {
             $and: baseConditions
         };
-        
+
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Use $and to ensure ALL tokens must be found (in any order)
             query = {
                 $and: [
@@ -123,7 +123,7 @@ export async function fetchProductById(id: string) {
         await dbConnect();
         var _id = new mongoose.Types.ObjectId(id);
         const product = await productModel.findOne({ _id: _id });
-        if(product){
+        if (product) {
             product.id = id;
         }
         return product;
@@ -134,10 +134,10 @@ export async function fetchProductById(id: string) {
 }
 
 
-export async function fetchCustomerById(id: number) {
+export async function fetchCustomerById(id: string) {
     try {
         await dbConnect();
-        const customer = await customerModel.findOne({ _id: id });
+        const customer = await customerModel.findById(id);
         return customer;
     } catch (error) {
         console.error('Error fetching customer:', error);
@@ -155,12 +155,12 @@ export async function fetchInvoices(page = 1, limit = 10, search = '') {
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: searchConditions };
         }
@@ -197,12 +197,12 @@ export async function fetchProposals(page = 1, limit = 10, search = '') {
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: searchConditions };
         }
@@ -250,12 +250,12 @@ export async function fetchReturns(page = 1, limit = 10, search = '') {
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: searchConditions };
         }
@@ -310,7 +310,7 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
                 }
             ]
         };
-        
+
         // Apply filter
         if (filter === 'outstanding') {
             query = {
@@ -334,20 +334,20 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
             };
         }
         // If filter is 'all', we keep the base query with date filtering
-        
+
         // If search parameter is provided, add search condition
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const tokenConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Combine token conditions with $and to ensure ALL tokens must be found (in any order)
             const searchConditions = { $and: tokenConditions };
-            
+
             // Combine filter and search conditions
             if (filter === 'outstanding') {
                 query = {
@@ -464,16 +464,16 @@ export async function fetchLogs(page = 1, limit = 10, search = '') {
                 { status: { $ne: 'Deleted' } }
             ]
         };
-        
+
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Combine status filter with search conditions
             query = {
                 $and: [
@@ -523,16 +523,16 @@ export async function fetchOuts(page = 1, limit = 10, search = '') {
                 { status: { $ne: 'Deleted' } }
             ]
         };
-        
+
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Combine status filter with search conditions
             query = {
                 $and: [
@@ -649,16 +649,28 @@ export async function fetchTenantById(id: string) {
     }
 }
 
-export async function fetchInvoiceById(id: number) {
+export async function fetchInvoiceById(id: string) {
     try {
         await dbConnect();
         //const _id = new mongoose.Types.ObjectId(id);
 
-        const invoice = await Invoice.findOne({ _id: id });
+        const invoice = await Invoice.findById(id);
 
         return invoice ? JSON.parse(JSON.stringify(invoice)) : null;
     } catch (error) {
         console.error("Error fetching invoice:", error);
+        throw error;
+    }
+}
+
+export async function fetchInvoiceByNumber(invoiceNumber: string | number) {
+    try {
+        await dbConnect();
+        const num = typeof invoiceNumber === 'string' ? Number(invoiceNumber) : invoiceNumber;
+        const invoice = await Invoice.findOne({ invoiceNumber: num });
+        return invoice ? JSON.parse(JSON.stringify(invoice)) : null;
+    } catch (error) {
+        console.error('Error fetching invoice by number:', error);
         throw error;
     }
 }
@@ -710,13 +722,17 @@ export async function fetchPartnerInvoiceByProductId(id: string) {
             );
 
 
-            const newInvoiceNumber = await Counter.findByIdAndUpdate(
-                { _id: 'invoiceNumber' },
-                { $inc: { seq: 1 } },
-                { new: true, upsert: true }
-            );
+            // Get the default tenant
+            const defaultTenant = await fetchDefaultTenant();
+            if (!defaultTenant) throw new Error("Default tenant not found");
+            const tenantId = defaultTenant._id;
 
-            invoice._id = newInvoiceNumber.seq;
+            // Generate a new invoice number using TenantCounter
+            const { getNextSequence } = await import("./utils/tenant-utils");
+            const newInvoiceNumber = await getNextSequence(tenantId, 'invoice');
+
+            invoice.invoiceNumber = newInvoiceNumber;
+            invoice.tenant = tenantId;
             invoice.search = `${invoice.customerFirstName} ${invoice.customerLastName} ${invoice.invoiceNo || ''}`;
             invoice.date = new Date();
 
@@ -747,10 +763,10 @@ export async function fetchOutById(id: string) {
     }
 }
 
-export async function fetchReturnById(id: number) {
+export async function fetchReturnById(id: string) {
     try {
         await dbConnect();
-        const returnItem = await Return.findOne({ _id: id });
+        const returnItem = await Return.findById(id);
         return returnItem ? JSON.parse(JSON.stringify(returnItem)) : null;
     } catch (error) {
         console.error("Error fetching return item:", error);
@@ -775,11 +791,11 @@ export async function fetchWanted(page = 1, limit = 10, search = '') {
         const skip = (page - 1) * limit;
 
         let query: any = {};
-        
+
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // For each token, create a condition that checks all searchable fields
             const tokenConditions = searchTokens.map(token => ({
                 $or: [
@@ -788,7 +804,7 @@ export async function fetchWanted(page = 1, limit = 10, search = '') {
                     { customerName: { $regex: token, $options: 'i' } }
                 ]
             }));
-            
+
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: tokenConditions };
         }

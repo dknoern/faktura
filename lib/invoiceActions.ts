@@ -19,7 +19,8 @@ export interface LineItem {
 }
 
 export interface InvoiceData {
-  _id?: number;
+  _id?: string;
+  invoiceNumber?: number;
   invoiceNo?: string;
   customerId?: number;
   customerFirstName: string;
@@ -59,19 +60,19 @@ export interface InvoiceData {
   status?: string;
 }
 
-export async function upsertInvoice(data: InvoiceData, id?: number) {
+export async function upsertInvoice(data: InvoiceData, id?: string) {
   try {
     await dbConnect();
-    
-    let invoiceId: number;
+
+    let invoiceId: string | undefined;
     let invoiceData: any;
-    
+
     // Check if we're updating an existing invoice or creating a new one
     const isUpdate = id !== undefined;
-    
+
     if (isUpdate) {
       // Update existing invoice
-      invoiceId = id;
+      // invoiceId = id; // We don't need to set invoiceId for update if we are using _id to find
       invoiceData = {
         ...data,
         date: new Date(data.date)
@@ -79,20 +80,25 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
     } else {
       // Create new invoice
       // Generate a new invoice number using Counter
-      const newInvoiceNumber = await Counter.findByIdAndUpdate(
-        { _id: 'invoiceNumber' },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      );
-      
-      invoiceId = newInvoiceNumber.seq;
+      // Get the default tenant
+      const { fetchDefaultTenant } = await import("./data");
+      const defaultTenant = await fetchDefaultTenant();
+      if (!defaultTenant) throw new Error("Default tenant not found");
+      const tenantId = defaultTenant._id;
+
+      // Generate a new invoice number using TenantCounter
+      const { getNextSequence } = await import("./utils/tenant-utils");
+      const newInvoiceNumber = await getNextSequence(tenantId, 'invoice');
+
+      // invoiceId = newInvoiceNumber; // We want to return the _id (string), not the number
       invoiceData = {
         ...data,
-        _id: invoiceId,
+        invoiceNumber: invoiceId,
+        tenant: tenantId,
         date: new Date(data.date)
       };
     }
-    
+
     // Calculate tax
     try {
       const calculatedTax = await calcTax(invoiceData as any);
@@ -106,7 +112,7 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
         error: taxError instanceof Error ? taxError.message : 'Tax calculation failed'
       };
     }
-    
+
     // Update item status to sold, but only if NOT Partner and NOT Estimate
     if (invoiceData.invoiceType !== "Partner" && invoiceData.invoiceType !== "Estimate") {
       let itemStatus = "Sold";
@@ -119,39 +125,41 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
 
       const user = await getShortUser();
       // Use the invoice ID for product history
-      const invoiceIdString = invoiceData._id ? invoiceData._id.toString() : '';
+      const invoiceIdString = invoiceData.invoiceNumber ? invoiceData.invoiceNumber.toString() : '';
       updateProductHistory(invoiceData.lineItems, itemStatus, itemAction, user, invoiceIdString);
     }
-    
+
     // Update search field
     invoiceData.search = buildSearchField(invoiceData);
-    
+
     if (isUpdate) {
       // Update existing invoice
       await Invoice.findByIdAndUpdate(id, invoiceData);
+      invoiceId = id;
     } else {
       // Create new invoice
       const invoice = new Invoice(invoiceData);
       await invoice.save();
+      invoiceId = invoice._id.toString();
     }
-    
+
     revalidatePath('/invoices');
     return { success: true, invoiceId };
   } catch (error) {
     console.error(`Error ${id ? 'updating' : 'creating'} invoice:`, error);
-    return { 
-      success: false, 
-      error: `Failed to ${id ? 'update' : 'create'} invoice${id ? ': ' + (error instanceof Error ? error.message : String(error)) : ''}` 
+    return {
+      success: false,
+      error: `Failed to ${id ? 'update' : 'create'} invoice${id ? ': ' + (error instanceof Error ? error.message : String(error)) : ''}`
     };
   }
 }
 
 
-function buildSearchField(doc: InvoiceData){
+function buildSearchField(doc: InvoiceData) {
 
   var search = "";
-  if(doc._id != null){
-      search += doc._id.toString() + " ";
+  if (doc.invoiceNumber != null) {
+    search += doc.invoiceNumber.toString() + " ";
   }
 
   const formattedDate = format(doc.date, 'yyyy-MM-dd');
@@ -160,11 +168,11 @@ function buildSearchField(doc: InvoiceData){
   search += doc.customerFirstName + " " + doc.customerLastName + " " + formattedDate + " ";
 
   if (doc.lineItems != null) {
-      for (var i = 0; i < doc.lineItems.length; i++) {
-          if(doc.lineItems[i] != null){
-              search += " " + doc.lineItems[i].itemNumber + " " + doc.lineItems[i].name;
-          }
+    for (var i = 0; i < doc.lineItems.length; i++) {
+      if (doc.lineItems[i] != null) {
+        search += " " + doc.lineItems[i].itemNumber + " " + doc.lineItems[i].name;
       }
+    }
   }
   return search;
 }

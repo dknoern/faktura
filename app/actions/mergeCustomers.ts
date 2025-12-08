@@ -13,74 +13,69 @@ type MergeCustomersResult = {
   count?: number;
 };
 
-export async function mergeCustomers(customerIds: number[]): Promise<MergeCustomersResult> {
+export async function mergeCustomers(customerIds: string[]): Promise<MergeCustomersResult> {
   try {
     if (!customerIds || customerIds.length < 2) {
-      return { 
-        success: false, 
-        message: "At least two customers must be selected for merging" 
+      return {
+        success: false,
+        message: "At least two customers must be selected for merging"
       };
     }
 
     await dbConnect();
-    
-    // The first customer ID will be the canonical (primary) customer
-    // canonicalId should be the one with the lowest
 
-    // sort customerIds in ascending order, canonicalId will be the first
-    customerIds.sort((a, b) => a - b);
-    const canonicalId = customerIds[0];
-    
-    // Find the canonical customer
-    const canonicalCustomer = await customerModel.findById(canonicalId);
-    if (!canonicalCustomer) {
-      return {
-        success: false,
-        message: "Primary customer not found"
-      };
+    // The first customer ID will be the canonical (primary) customer
+    // We need to fetch them all first to determine which one should be primary based on some criteria
+    // Or just trust the order passed? The original code sorted by ID (number).
+    // With ObjectIds, sorting by ID might not be what we want (creation time).
+    // Let's fetch all customers first.
+
+    const customers = await customerModel.find({ _id: { $in: customerIds } });
+
+    if (customers.length !== customerIds.length) {
+      return { success: false, message: "Some customers could not be found" };
     }
-    
-    // Process each customer ID
-    for (const id of customerIds) {
+
+    // Sort by customerNumber to keep the oldest one (lowest number) as canonical
+    customers.sort((a, b) => a.customerNumber - b.customerNumber);
+
+    const canonicalCustomer = customers[0];
+    const canonicalId = canonicalCustomer._id;
+    const canonicalNumber = canonicalCustomer.customerNumber;
+
+    // Process each customer (skip the first one which is canonical)
+    for (let i = 1; i < customers.length; i++) {
+      const customer = customers[i];
+      const id = customer._id;
+      const customerNumber = customer.customerNumber;
+
       // Update invoices to point to the canonical customer
-      const invoices = await Invoice.find({ customerId: id });
+      const invoices = await Invoice.find({ customerId: customerNumber });
       for (const invoice of invoices) {
-        if (id !== canonicalId) {
-          console.log(`Moving invoice ${invoice._id} from customer ${invoice.customerId} to ${canonicalId}`);
-          invoice.customerId = canonicalId;
-          await invoice.save();
-        }
+        console.log(`Moving invoice ${invoice._id} from customer ${invoice.customerId} to ${canonicalNumber}`);
+        invoice.customerId = canonicalNumber;
+        await invoice.save();
       }
-      
+
       // Update returns to point to the canonical customer
-      const returns = await Return.find({ customerId: id });
+      const returns = await Return.find({ customerId: customerNumber });
       for (const returnDoc of returns) {
-        if (id !== canonicalId) {
-          console.log(`Moving return ${returnDoc._id} from customer ${returnDoc.customerId} to ${canonicalId}`);
-          returnDoc.customerId = canonicalId;
-          await returnDoc.save();
-        }
+        console.log(`Moving return ${returnDoc._id} from customer ${returnDoc.customerId} to ${canonicalNumber}`);
+        returnDoc.customerId = canonicalNumber;
+        await returnDoc.save();
       }
 
       // Update repairs to point to the canonical customer
-      const repairs = await Repair.find({ customerId: id });
+      const repairs = await Repair.find({ customerId: customerNumber });
       for (const repair of repairs) {
-        if (id !== canonicalId) {
-          console.log(`Moving repair ${repair._id} from customer ${repair.customerId} to ${canonicalId}`);
-          repair.customerId = canonicalId;
-          await repair.save();
-        }
+        console.log(`Moving repair ${repair._id} from customer ${repair.customerId} to ${canonicalNumber}`);
+        repair.customerId = canonicalNumber;
+        await repair.save();
       }
     }
-    
-    // Collect all customers for merging
-    const allCustomers = [canonicalCustomer];
-    for (let i = 1; i < customerIds.length; i++) {
-      const customer = await customerModel.findById(customerIds[i]);
-      if (customer) {
-        allCustomers.push(customer);
-      }
-    }
+
+    // Collect all customers for merging (already fetched)
+    const allCustomers = customers;
 
     // Merge customer data and delete secondary customers
     for (let i = 1; i < allCustomers.length; i++) {
@@ -163,22 +158,22 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
     const emailsString = canonicalCustomer.emails.map((item: any) => item.email).join(' ');
     const phonesString = canonicalCustomer.phones.map((item: any) => item.phone).join(' ');
     canonicalCustomer.search = `${canonicalCustomer.firstName} ${canonicalCustomer.lastName} ${canonicalCustomer.company} ${emailsString} ${phonesString}`.toLowerCase();
-    
+
     // Save the updated canonical customer
     await canonicalCustomer.save();
-    
+
     // Revalidate the customers page to refresh the data
     revalidatePath('/customers');
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       message: `${customerIds.length} customers merged successfully`,
       count: customerIds.length
     };
   } catch (error) {
     console.error("Error merging customers:", error);
-    return { 
-      success: false, 
+    return {
+      success: false,
       message: "Failed to merge customers: " + (error instanceof Error ? error.message : String(error))
     };
   }

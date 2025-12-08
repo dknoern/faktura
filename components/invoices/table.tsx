@@ -31,6 +31,7 @@ interface LineItem {
 
 interface Invoice {
     _id: string;
+    invoiceNumber: number;
     customerFirstName: string;
     customerLastName: string;
     date: string;
@@ -60,7 +61,7 @@ export function InvoicesTable({
         currentPage: 1,
         limit: 10
     });
-    
+
     // This effect loads customer data on the server side when needed
     useEffect(() => {
         if (isCustomerModalOpen) {
@@ -74,19 +75,19 @@ export function InvoicesTable({
                             customers: [],
                             pagination: { total: 0, pages: 1, currentPage: 1, limit: 10 }
                         }));
-                    
+
                     setCustomers(result.customers || []);
-                    setCustomersPagination(result.pagination || { 
-                        total: 0, 
-                        pages: 1, 
-                        currentPage: 1, 
-                        limit: 10 
+                    setCustomersPagination(result.pagination || {
+                        total: 0,
+                        pages: 1,
+                        currentPage: 1,
+                        limit: 10
                     });
                 } catch (error) {
                     console.error('Error loading customers:', error);
                 }
             };
-            
+
             loadCustomers();
         }
     }, [isCustomerModalOpen]);
@@ -100,7 +101,7 @@ export function InvoicesTable({
             // User is selecting text, don't navigate
             return;
         }
-        
+
         // Check if the click started and ended on the same element (not a drag)
         const target = e.target as HTMLElement;
         if (target.tagName === 'TD' || target.closest('td')) {
@@ -116,12 +117,12 @@ export function InvoicesTable({
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchQuery(value);
-        
+
         // Clear any existing timeout
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
-        
+
         // Set a new timeout
         searchTimeoutRef.current = setTimeout(() => {
             const params = new URLSearchParams(searchParams.toString());
@@ -134,7 +135,7 @@ export function InvoicesTable({
             router.push(`${pathname}?${params.toString()}`);
         }, 300); // 300ms debounce delay
     };
-    
+
     // Cleanup timeout on unmount
     useEffect(() => {
         return () => {
@@ -147,13 +148,13 @@ export function InvoicesTable({
         <div>
             <div className="flex justify-between items-center mb-4">
                 <div className="flex-1">
-                <Input
-                    type="text"
-                    placeholder="Search invoices..."
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    className="max-w-sm"
-                />
+                    <Input
+                        type="text"
+                        placeholder="Search invoices..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        className="max-w-sm"
+                    />
                 </div>
                 <Button variant="outline"
                     onClick={() => setIsCustomerModalOpen(true)}
@@ -189,8 +190,8 @@ export function InvoicesTable({
                         }
 
                         return (
-                            <TableRow 
-                                key={invoice._id} 
+                            <TableRow
+                                key={invoice._id}
                                 onClick={(e) => handleRowClick(invoice._id, e)}
                                 className="cursor-pointer hover:bg-gray-100"
                                 onMouseDown={(e) => {
@@ -202,7 +203,7 @@ export function InvoicesTable({
 
                                 style={{ userSelect: 'text' }}
                             >
-                                <TableCell>{invoice._id}</TableCell>
+                                <TableCell>{invoice.invoiceNumber}</TableCell>
                                 <TableCell> {invoice.customerFirstName + ' ' + invoice.customerLastName}</TableCell>
                                 <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }) : ''}</TableCell>
                                 <TableCell>
@@ -224,19 +225,18 @@ export function InvoicesTable({
                                 <TableCell> {invoice.trackingNumber}</TableCell>
                                 <TableCell style={{ textAlign: 'right' }}>{(invoice.total ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                                 <TableCell>
-                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                        invoice.invoiceType === 'Memo' 
-                                            ? 'bg-yellow-100 text-yellow-800' 
-                                            : invoice.invoiceType === 'Partner'
+                                    <span className={`px-2 py-1 rounded-full text-xs ${invoice.invoiceType === 'Memo'
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : invoice.invoiceType === 'Partner'
                                             ? 'bg-blue-100 text-blue-800'
                                             : invoice.invoiceType === 'Consignment'
-                                            ? 'bg-gray-100 text-gray-800'
-                                            : 'bg-green-100 text-green-800'
-                                    }`}>
+                                                ? 'bg-gray-100 text-gray-800'
+                                                : 'bg-green-100 text-green-800'
+                                        }`}>
                                         {invoice.invoiceType}
                                     </span>
                                 </TableCell>
-                                </TableRow>
+                            </TableRow>
                         )
                     }
                     )}
@@ -273,7 +273,7 @@ export function InvoicesTable({
                 isOpen={isCustomerModalOpen}
                 onClose={() => setIsCustomerModalOpen(false)}
                 onSelect={(customer) => {
-                    router.push(`/invoices/new?customerId=${customer._id}`);
+                    router.push(`/invoices/new?customerId=${(customer as typeof customer & { _id: string })._id}`);
                     setIsCustomerModalOpen(false);
                 }}
                 customers={customers}

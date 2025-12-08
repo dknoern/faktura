@@ -16,6 +16,7 @@ interface LineItem {
 
 interface Return {
   _id: string;
+  returnNumber: number;
   customerName: string;
   customerId?: number;
   invoiceId: string;
@@ -70,7 +71,7 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
       <div className="flex justify-end gap-4 mb-4 print:hidden">
         <ReturnActionMenu returnData={returnData} />
       </div>
-      
+
       <div className="bg-white p-6 rounded-lg shadow print:shadow-none">
 
 
@@ -78,50 +79,50 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
 
 
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
 
-<div>
-        {/* Header with Logo */}
-        <div className="mb-4">
-          <div className="flex flex-col items-start">
-            <div className="w-48">
-              <Image
-                src={getApiUrl(tenant._id)}
-                alt={tenant.nameLong || ''}
-                width={300}
-                height={80}
-                className="w-full"
-                unoptimized
-              />
+          <div>
+            {/* Header with Logo */}
+            <div className="mb-4">
+              <div className="flex flex-col items-start">
+                <div className="w-48">
+                  <Image
+                    src={getApiUrl(tenant._id)}
+                    alt={tenant.nameLong || ''}
+                    width={300}
+                    height={80}
+                    className="w-full"
+                    unoptimized
+                  />
+                </div>
+              </div>
             </div>
+
+
+            {/* Return Header */}
+            <div className="text-left">
+              <h1 style={{ color: '#B69D57', fontSize: '24px', marginTop: '10px' }}>RETURN</h1>
+
+            </div>
+
           </div>
+
+          <div>
+            <div>Return #{returnData.returnNumber}</div>
+            <div>Invoice #{returnData.invoiceId}</div>
+            <div>Date: {formatDate(returnData.returnDate)}</div>
+          </div>
+
         </div>
-
-
-        {/* Return Header */}
-        <div className="text-left">
-          <h1 style={{ color: '#B69D57', fontSize: '24px', marginTop: '10px' }}>RETURN</h1>
-
-        </div>
-
-</div>
-
-        <div>
-          <div>Return #{returnData._id}</div>
-          <div>Invoice #{returnData.invoiceId}</div>
-          <div>Date: {formatDate(returnData.returnDate)}</div>
-        </div>  
-        
-      </div>
 
         {/* Return Details */}
-          <div>
-            <div className="space-y-2">
-              <div className="mt-4 mb-6 uppercase"><strong> {returnData.customerName}</strong></div>
-            </div>
+        <div>
+          <div className="space-y-2">
+            <div className="mt-4 mb-6 uppercase"><strong> {returnData.customerName}</strong></div>
           </div>
-          
+        </div>
+
         {/* Line Items Table */}
         <div className="mb-8">
           <div className="overflow-x-auto">
@@ -154,11 +155,10 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
                         </span>
                       </td>
                       <td className="border border-gray-300 px-4 py-2 text-center">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          item.included 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${item.included
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                          }`}>
                           {item.included ? 'Included' : 'Excluded'}
                         </span>
                       </td>
@@ -196,11 +196,10 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Taxable:</span>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    returnData.taxable 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${returnData.taxable
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
+                    }`}>
                     {returnData.taxable ? 'Yes' : 'No'}
                   </span>
                 </div>

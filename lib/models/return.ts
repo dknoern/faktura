@@ -11,7 +11,8 @@ const LineItemSchema = new Schema({
 });
 
 const ReturnSchema = new Schema({
-  _id: Number,
+  returnNumber: Number,
+  tenant: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
   customerName: { type: String, required: true },
   customerId: Number,
   invoiceId: { type: String, required: true },

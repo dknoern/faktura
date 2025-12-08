@@ -6,7 +6,8 @@ import mongoose, { model } from "mongoose";
 extendZod(z);
 
 export const customerSchema = z.object({
-    _id: z.number(),
+  customerNumber: z.number(),
+  tenant: z.string(), // ObjectId as string
   firstName: z.string().min(2).max(255),
   lastName: z.string().min(2).max(255),
   company: z.string().optional(),
@@ -36,7 +37,7 @@ export const customerSchema = z.object({
   search: z.string().optional(),
   copyAddress: z.boolean().optional(),
   customerType: z.string().optional(),
-  status:  z.string().optional(),
+  status: z.string().optional(),
   attachments: z.array(z.object({
     fileName: z.string(),
     originalName: z.string(),
@@ -58,5 +59,10 @@ const phonesPath = customerZodSchema.path('phones');
 if (phonesPath?.schema) {
   phonesPath.schema.set('_id', false);
 }
+
+// Add tenant reference to the schema definition
+customerZodSchema.add({
+  tenant: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true } as any
+});
 
 export const customerModel = mongoose.models.customer || model("customer", customerZodSchema);

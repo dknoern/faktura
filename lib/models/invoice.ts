@@ -22,7 +22,8 @@ LineItemSchema.virtual('amountFMT').get(function (this: { amount: number }) {
 });
 */
 var InvoiceSchema = new mongoose.Schema({
-  	_id: Number,
+    invoiceNumber: Number,
+    tenant: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
     customerId: Number,
     customerFirstName: String,
     customerLastName: String,
@@ -61,7 +62,7 @@ var InvoiceSchema = new mongoose.Schema({
     search: String,
     taxExempt: Boolean,
     lineItems: {
-  	    type: [LineItemSchema]
+        type: [LineItemSchema]
     },
     status: String,
     trackingNumber: String
@@ -123,9 +124,9 @@ InvoiceSchema.virtual('dateFMT').get(function (this: { date: Date }) {
 */
 InvoiceSchema.virtual('invoiceTypeFMT').get(function (this: { invoiceType: string }) {
     var invoiceType = this.invoiceType;
-    if(invoiceType == null) invoiceType = "Invoice";
-    if(invoiceType == 'Consignment') invoiceType = "Consignment Agreement";
-    else if(invoiceType == 'Partner') invoiceType = "Partner Invoice";
+    if (invoiceType == null) invoiceType = "Invoice";
+    if (invoiceType == 'Consignment') invoiceType = "Consignment Agreement";
+    else if (invoiceType == 'Partner') invoiceType = "Partner Invoice";
     return invoiceType.toUpperCase();
 });
 
@@ -154,25 +155,25 @@ InvoiceSchema.virtual('billingCityFMT').get(function (this: { billingCity: strin
     return formatCity(this.billingCity, this.billingState, this.billingZip);
 });
 
-function formatCity(city: string, state: string, zip: string){
+function formatCity(city: string, state: string, zip: string) {
     var cityFMT = "";
-    if(city) {
+    if (city) {
         cityFMT += city;
     }
 
-    if(city && state) {
+    if (city && state) {
         cityFMT += ", ";
     }
 
-    if(state) {
+    if (state) {
         cityFMT += state
     }
 
-    if(state && zip) {
+    if (state && zip) {
         cityFMT += " ";
     }
 
-    if(zip) {
+    if (zip) {
         cityFMT += zip;
     }
 

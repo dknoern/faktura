@@ -16,17 +16,17 @@ export async function GET(
         { status: 400 }
       );
     }
-    
-    const invoice = await fetchInvoiceById(Number(id));
+
+    const invoice = await fetchInvoiceById(id);
     const tenant = await fetchDefaultTenant();
-    
+
     if (!invoice) {
       return NextResponse.json(
         { error: 'Invoice not found' },
         { status: 404 }
       );
     }
-    
+
     return NextResponse.json({
       invoice,
       tenant

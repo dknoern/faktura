@@ -15,7 +15,8 @@ import {
 import { formatCurrency } from "@/lib/utils";
 
 type Invoice = {
-  _id: number;
+  _id: string;
+  invoiceNumber: number;
   date: string;
   total: number;
   status: string;
@@ -87,23 +88,23 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
   useEffect(() => {
     const fetchAllCounts = async () => {
       if (!customerId) return;
-      
+
       try {
         // Fetch invoice count
         const invoiceResponse = await fetch(`/api/customers/${customerId}/invoices`);
         const invoiceData = await invoiceResponse.json();
         setInvoices(invoiceData.invoices || []);
-        
+
         // Fetch repair count
         const repairResponse = await fetch(`/api/customers/${customerId}/repairs`);
         const repairData = await repairResponse.json();
         setRepairs(repairData.repairs || []);
-        
+
         // Fetch returns count
         const returnsResponse = await fetch(`/api/customers/${customerId}/returns`);
         const returnsData = await returnsResponse.json();
         setReturns(returnsData.returns || []);
-        
+
         // Fetch wanted count
         const wantedResponse = await fetch(`/api/customers/${customerId}/wanteds`);
         const wantedData = await wantedResponse.json();
@@ -117,7 +118,7 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
         setWantedLoading(false);
       }
     };
-    
+
     fetchAllCounts();
   }, [customerId]);
 
@@ -126,15 +127,15 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    
+
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day}`;
   };
 
-  const navigateToInvoice = (invoiceId: number) => {
+  const navigateToInvoice = (invoiceId: string) => {
     router.push(`/invoices/${invoiceId}/view`);
   };
 
@@ -151,7 +152,7 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
   };
 
   // Handle row clicks with text selection detection
-  const handleInvoiceRowClick = (invoiceId: number, e: React.MouseEvent) => {
+  const handleInvoiceRowClick = (invoiceId: string, e: React.MouseEvent) => {
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) {
       return;
@@ -248,8 +249,8 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                 </TableHeader>
                 <TableBody>
                   {invoices.map((invoice) => (
-                    <TableRow 
-                      key={invoice._id} 
+                    <TableRow
+                      key={invoice._id}
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={(e) => handleInvoiceRowClick(invoice._id, e)}
                       onMouseDown={(e) => {
@@ -262,10 +263,10 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                       }}
                       style={{ userSelect: 'text' }}
                     >
-                      <TableCell className="font-medium">{invoice._id}</TableCell>
+                      <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                       <TableCell style={{ whiteSpace: 'nowrap' }}>{formatDate(invoice.date)}</TableCell>
 
-                      
+
                       <TableCell>
                         {invoice.lineItems?.length ? (
                           <div className="whitespace-pre-line">
@@ -310,8 +311,8 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                 </TableHeader>
                 <TableBody>
                   {repairs.map((repair) => (
-                    <TableRow 
-                      key={repair._id} 
+                    <TableRow
+                      key={repair._id}
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={(e) => handleRepairRowClick(repair._id, e)}
                       onMouseDown={(e) => {
@@ -356,8 +357,8 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                 </TableHeader>
                 <TableBody>
                   {returns.map((returnItem) => (
-                    <TableRow 
-                      key={returnItem._id} 
+                    <TableRow
+                      key={returnItem._id}
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={(e) => handleReturnRowClick(returnItem._id, e)}
                       onMouseDown={(e) => {
@@ -406,8 +407,8 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                 </TableHeader>
                 <TableBody>
                   {wanted.map((wantedItem) => (
-                    <TableRow 
-                      key={wantedItem._id} 
+                    <TableRow
+                      key={wantedItem._id}
                       className="cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={(e) => handleWantedRowClick(wantedItem._id, e)}
                       onMouseDown={(e) => {
@@ -424,11 +425,10 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                       <TableCell className="max-w-xs truncate">{wantedItem.description}</TableCell>
                       <TableCell style={{ whiteSpace: 'nowrap' }}>{formatDate(wantedItem.createdDate)}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          wantedItem.foundDate 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs ${wantedItem.foundDate
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                          }`}>
                           {wantedItem.foundDate ? 'Found' : 'Wanted'}
                         </span>
                       </TableCell>
