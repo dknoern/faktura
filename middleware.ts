@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 import { auth } from "./auth"
 
 // Or like this if you need to do something here.
@@ -11,7 +12,7 @@ export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 }
 
-export default auth((req) => {
+export default auth((req: NextRequest & { auth: any }) => {
   const session = req.auth
   const { pathname } = req.nextUrl
   
