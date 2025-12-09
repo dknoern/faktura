@@ -18,6 +18,20 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    // Fix for clientModules bundling issues in Next.js 15
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
+  // Add webpack configuration to handle module resolution
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
   },
 };
 
