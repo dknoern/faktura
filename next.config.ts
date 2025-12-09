@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
     },
     // Fix for clientModules bundling issues in Next.js 15
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    // Fix for clientReferenceManifest issue in Next.js 15
+    serverComponentsExternalPackages: [],
   },
   // Add webpack configuration to handle module resolution
   webpack: (config, { isServer }) => {
@@ -31,6 +33,16 @@ const nextConfig: NextConfig = {
         tls: false,
       };
     }
+    
+    // Fix for clientReferenceManifest in production builds
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push({
+        'utf-8-validate': 'commonjs utf-8-validate',
+        'bufferutil': 'commonjs bufferutil',
+      });
+    }
+    
     return config;
   },
 };
