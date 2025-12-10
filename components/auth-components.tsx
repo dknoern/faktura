@@ -1,6 +1,9 @@
 import { signIn, signOut } from "@/auth"
 import { Button } from "./ui/button"
 
+// Force dynamic rendering for server actions
+export const dynamic = 'force-dynamic';
+
 export function SignIn({
   ...props
 }: { provider?: string } & React.ComponentPropsWithRef<typeof Button>) {

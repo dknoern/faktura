@@ -2,6 +2,9 @@ import { Button } from '@/components/ui/button';
 import { signIn } from "@/auth"
 import Image from 'next/image'
 
+// Force dynamic rendering to avoid clientReferenceManifest issues with server actions
+export const dynamic = 'force-dynamic';
+
 export default async function Page() {
   return (
     <main className="relative min-h-screen">

@@ -2,19 +2,24 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { auth } from "./auth"
 
-// Or like this if you need to do something here.
-// export default auth((req) => {
-//   console.log(req.auth) //  { session: { user: { ... } } }
-// })
-
 // Read more: https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
 }
 
 export default auth((req: NextRequest & { auth: any }) => {
   const session = req.auth
   const { pathname } = req.nextUrl
+  
+  // Skip middleware for server actions to avoid clientReferenceManifest issues
+  if (req.method === 'POST' && req.headers.get('content-type')?.includes('multipart/form-data')) {
+    return NextResponse.next()
+  }
+  
+  // Handle redirect from root to home for authenticated users
+  if (session?.user && pathname === '/') {
+    return NextResponse.redirect(new URL('/home', req.url))
+  }
   
   // Check payload size for server actions before processing
   const contentLength = req.headers.get('content-length')
