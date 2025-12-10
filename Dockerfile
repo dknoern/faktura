@@ -28,10 +28,22 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy the standalone output
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy package files for production dependencies
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
+
+# Install production dependencies including TypeScript (needed for next.config.ts)
+RUN npm ci --omit=dev && \
+    npm install --save-exact typescript && \
+    npm cache clean --force
+
+# Copy the Next.js build output
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.ts ./next.config.ts
+
+# Change ownership of node_modules to nextjs user
+RUN chown -R nextjs:nodejs /app/node_modules
 
 # Switch to non-root user
 USER nextjs
@@ -43,5 +55,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Run the standalone server directly
-CMD ["node", "server.js"]
+# Use Next.js start command instead of standalone
+CMD ["npm", "start"]

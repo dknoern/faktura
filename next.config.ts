@@ -13,17 +13,14 @@ const nextConfig: NextConfig = {
   },
   // Ensure static files are properly served
   trailingSlash: false,
-  output: 'standalone',
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
     },
     // Fix for clientModules bundling issues in Next.js 15
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-    // Fix for clientReferenceManifest issue in Next.js 15
-    serverComponentsExternalPackages: [],
   },
-  // Add webpack configuration to handle module resolution
+  // Simplified webpack configuration for standalone builds
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -32,15 +29,6 @@ const nextConfig: NextConfig = {
         net: false,
         tls: false,
       };
-    }
-    
-    // Fix for clientReferenceManifest in production builds
-    if (isServer) {
-      config.externals = config.externals || [];
-      config.externals.push({
-        'utf-8-validate': 'commonjs utf-8-validate',
-        'bufferutil': 'commonjs bufferutil',
-      });
     }
     
     return config;

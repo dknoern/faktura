@@ -7,10 +7,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: !!process.env.AUTH_DEBUG,
   theme: { logo: "https://authjs.dev/img/logo-sm.png" },
   providers: [
-    Auth0,
+    Auth0({
+      clientId: process.env.AUTH_AUTH0_ID!,
+      clientSecret: process.env.AUTH_AUTH0_SECRET!,
+      issuer: process.env.AUTH_AUTH0_ISSUER!,
+    }),
   ],
   basePath: "/auth",
   session: { strategy: "jwt" },
+  trustHost: true,
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
 
