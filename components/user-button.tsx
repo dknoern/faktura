@@ -24,7 +24,7 @@ export default async function UserButton() {
               <AvatarImage
                 src={
                   session.user.image ??
-                  `https://api.dicebear.com/9.x/thumbs/svg?seed=${session.user.email || session.user.name || 'default'}&randomizeIds=true`
+                  `https://api.dicebear.com/9.x/thumbs/svg?seed=${session.user.email || session.user.name || 'default'}`
                 }
                 alt={session.user.name ?? ""}
               />
