@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   // Moved from experimental.serverComponentsExternalPackages
   serverExternalPackages: [],
+  // Temporarily enable detailed React errors in production for debugging
+  productionBrowserSourceMaps: true,
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',

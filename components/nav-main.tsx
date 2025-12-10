@@ -2,6 +2,7 @@
 
 import { ChevronRight, type LucideIcon } from "lucide-react"
 import { useRouter, usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 import {
   Collapsible,
@@ -38,6 +39,11 @@ export function NavMain({
   const router = useRouter();
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Function to handle navigation and close sidebar on mobile
   const handleNavigation = (url: string) => {
@@ -67,10 +73,10 @@ export function NavMain({
     <SidebarGroup>
       <SidebarMenu>
         {items.map((item) => {
-          const isActive = isItemActive(item.url, item.items);
+          const isActive = mounted ? isItemActive(item.url, item.items) : false;
           
           return (
-            <Collapsible key={item.title} asChild defaultOpen={isActive}>
+            <Collapsible key={item.title} asChild defaultOpen={mounted ? isActive : false}>
               <SidebarMenuItem>
                 {item.items?.length ? (
                   <>
@@ -87,7 +93,7 @@ export function NavMain({
                     <CollapsibleContent>
                       <SidebarMenuSub>
                         {item.items?.map((subItem) => {
-                          const isSubItemActive = pathname === subItem.url;
+                          const isSubItemActive = mounted ? pathname === subItem.url : false;
                           
                           return (
                             <SidebarMenuSubItem key={subItem.title}>
