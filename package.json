@@ -87,6 +87,7 @@
   },
   "overrides": {
     "glob": "^10.0.0",
-    "inflight": "npm:@file-size/inflight@^1.0.4"
+    "inflight": "npm:@file-size/inflight@^1.0.4",
+    "nodemailer": "^7.0.11"
   }
 }

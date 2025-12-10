@@ -28,14 +28,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy package files for production dependencies
+# Copy the built node_modules from builder stage (includes TypeScript)
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/package-lock.json ./package-lock.json
-
-# Install production dependencies including TypeScript (needed for next.config.ts)
-RUN npm ci --omit=dev && \
-    npm install --save-exact typescript && \
-    npm cache clean --force
 
 # Copy the Next.js build output
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
