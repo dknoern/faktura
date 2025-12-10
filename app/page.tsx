@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { signIn } from "@/auth"
-import Image from 'next/image'
 
 // Force dynamic rendering to avoid clientReferenceManifest issues with server actions
 export const dynamic = 'force-dynamic';
@@ -9,12 +8,9 @@ export default async function Page() {
   return (
     <main className="relative min-h-screen">
       {/* Background Image */}
-      <Image 
-        src="/rolex-blackbook.png" 
-        alt="Background" 
-        fill
-        className="object-cover"
-        priority
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: 'url(/rolex-blackbook.png)' }}
       />
       
       {/* Sign In Button - Upper Right */}
