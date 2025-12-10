@@ -13,22 +13,19 @@ const nextConfig: NextConfig = {
   },
   // Ensure static files are properly served
   trailingSlash: false,
+  // Moved from experimental.serverComponentsExternalPackages
+  serverExternalPackages: [],
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
     },
     // Fix for clientModules bundling issues in Next.js 15
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-    // Fix for clientReferenceManifest issue in Next.js 15
-    serverComponentsExternalPackages: [],
-    // Force client reference manifest generation
-    clientRouterFilter: true,
-    clientRouterFilterRedirects: true,
     // Additional fixes for Next.js 15 production builds
     forceSwcTransforms: true,
     // Disable problematic features that can cause clientReferenceManifest issues
     ppr: false,
-    dynamicIO: false,
+    cacheComponents: false,
   },
   // Enhanced webpack configuration for clientReferenceManifest
   webpack: (config, { isServer, dev, webpack }) => {
