@@ -17,20 +17,25 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [],
   // Temporarily enable detailed React errors in production for debugging
   productionBrowserSourceMaps: true,
+  // Disable minification to get readable error messages
+  swcMinify: false,
+  compiler: {
+    removeConsole: false,
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
+      // Ensure server actions are properly handled
+      allowedOrigins: ['localhost:3000', '127.0.0.1:3000'],
     },
     // Fix for clientModules bundling issues in Next.js 15
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-    // Additional fixes for Next.js 15 production builds
-    forceSwcTransforms: true,
-    // Disable problematic features that can cause clientReferenceManifest issues
+    // Disable problematic features that can cause server action issues
     ppr: false,
     cacheComponents: false,
   },
-  // Enhanced webpack configuration for clientReferenceManifest
-  webpack: (config, { isServer, dev, webpack }) => {
+  // Simplified webpack configuration to avoid server action conflicts
+  webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -39,44 +44,7 @@ const nextConfig: NextConfig = {
         tls: false,
       };
     }
-    
-    // Enhanced fix for clientReferenceManifest in production builds
-    if (isServer && !dev) {
-      config.externals = config.externals || [];
-      config.externals.push({
-        'utf-8-validate': 'commonjs utf-8-validate',
-        'bufferutil': 'commonjs bufferutil',
-      });
-      
-      // Ensure proper client reference manifest generation
-      config.optimization = config.optimization || {};
-      config.optimization.splitChunks = {
-        ...config.optimization.splitChunks,
-        cacheGroups: {
-          ...config.optimization.splitChunks?.cacheGroups,
-          default: {
-            minChunks: 2,
-            priority: -20,
-            reuseExistingChunk: true,
-          },
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            priority: -10,
-            chunks: 'all',
-          },
-        },
-      };
 
-      // Add plugin to ensure client reference manifest is available
-      config.plugins = config.plugins || [];
-      config.plugins.push(
-        new webpack.DefinePlugin({
-          'process.env.__NEXT_CLIENT_REFERENCE_MANIFEST': JSON.stringify(true),
-        })
-      );
-    }
-    
     return config;
   },
 };
