@@ -6,7 +6,6 @@ import { ProductHistory } from "./product-history";
 import { Watch, Gem, BriefcaseBusiness, Clock } from "lucide-react";
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Table,
   TableBody,
@@ -84,10 +83,12 @@ export function ProductViewDetails({ product, repairs }: ProductViewDetailsProps
             <div className="col-span-2">
               <div>
                 {product.manufacturer && product.manufacturer !== 'Additional Brands' &&
-                  <Image src={`/manufacturers/${product.manufacturer.replace(/\s*&\s*/g, '-').replace(/\s+/g, '-')}.png`}
+                  <img 
+                    src={`/manufacturers/${product.manufacturer.replace(/\s*&\s*/g, '-').replace(/\s+/g, '-')}.png`}
                     alt={`${product.manufacturer} logo`}
                     width={120}
                     height={120}
+                    className="object-contain"
                   />}
 
 
