@@ -17,10 +17,6 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Repairs</h1>
-      </div>
-      
       <div className="flex-1">
         <Suspense fallback={<SkeletonTable />}>
           <RepairsTable repairs={repairs} pagination={pagination} />

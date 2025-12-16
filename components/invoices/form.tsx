@@ -94,6 +94,7 @@ interface Product {
 
 export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesPerson }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, salesPerson?: string }) {
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   // Create initial line items if a product is selected
   const initialLineItems = selectedProduct ? [
     {
@@ -173,6 +174,11 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Prevent double submission
+    if (isSubmitting) {
+      return;
+    }
+    
     if (!invoiceTypeValid) {
       alert("Please select an invoice type before saving.");
       return;
@@ -188,8 +194,9 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
       return;
     }
     
+    setIsSubmitting(true);
+    
     try {
-      
       // Use upsertInvoice for both create and update
       const result = await upsertInvoice(formData, formData._id)
       
@@ -201,6 +208,8 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save invoice"
       toast.error(errorMessage)
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -552,8 +561,8 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
-        <Button type="submit" disabled={!canSubmit}>
-          {formData._id ? "Update Invoice" : "Create Invoice"}
+        <Button type="submit" disabled={!canSubmit || isSubmitting}>
+          {isSubmitting ? (formData._id ? "Updating..." : "Creating...") : (formData._id ? "Update Invoice" : "Create Invoice")}
         </Button>
       </div>
     </form>

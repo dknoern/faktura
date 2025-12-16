@@ -377,6 +377,17 @@ export async function POST(request: NextRequest) {
         // Parse the JSON body
         const parsedBody = JSON.parse(body);
 
+        // Check if this is a valid Trello webhook format
+        if (!parsedBody.action || !parsedBody.action.type) {
+            console.log('Invalid Trello webhook format - missing action.type');
+            console.log('Parsed body structure:', typeof parsedBody, Array.isArray(parsedBody) ? 'Array' : 'Object');
+            console.log('This appears to be data from a different webhook source');
+            return NextResponse.json({ 
+                error: 'Invalid Trello webhook format - expected action.type property',
+                received: typeof parsedBody 
+            }, { status: 400 });
+        }
+
         const actionType = parsedBody.action.type;
         console.log('actionType:', actionType);
 
