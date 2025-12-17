@@ -604,6 +604,8 @@ async function handleUpdateCard(actionData: any) {
             }
         } else {
             console.log('No existing repair found for card:', actionData.card.name);
+            console.log('creating repair');
+            await createRepair(repairDetails);
         }
     } else {
         console.log('Could not parse repair details from card:', actionData.card.name);
