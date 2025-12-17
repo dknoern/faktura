@@ -487,17 +487,10 @@ async function handleCreateCard(actionData: any) {
     console.log('List ID:', actionData.list?.id);
     console.log('---------------------');
 
-    // Get list name to use as vendor
-    let listName = null;
-    listName = actionData.list.name;
-    console.log('List name (vendor):', listName);
-    
     // Parse repair details from card name and description
     const parsedFields = await getTrelloCardDetails(actionData.card.id);
 
     if (parsedFields) {
-        // Add list name as vendor to parsed fields
-        parsedFields.vendor = listName || '';
 
         const existingRepair = await findExistingRecord(parsedFields.repairNumber, parsedFields.firstName, parsedFields.lastName);
 
@@ -535,34 +528,22 @@ async function handleUpdateCard(actionData: any) {
             console.log('Current vendor:', existingRepair.vendor || 'empty');
             console.log('New vendor (list name):', newListName);
             
-            if (!newListName || newListName === "New Customer Repair" || newListName != "Incoming Repair" || newListName != "Daily Log In") {
-                console.log('Skipping vendor update for card:', actionData.card.name);
-                return;
-            }
-
-            // Check if vendor field needs updating
-            if (existingRepair.vendor !== newListName) {
-                console.log('Vendor field differs, updating repair record...');
+            try {
+                const connectToDatabase = (await import('../../../lib/dbConnect')).default;
+                await connectToDatabase();
+                const { Repair } = await import('../../../lib/models/repair');
                 
-                try {
-                    const connectToDatabase = (await import('../../../lib/dbConnect')).default;
-                    await connectToDatabase();
-                    const { Repair } = await import('../../../lib/models/repair');
-                    
-                    // Update only the vendor field
-                    await Repair.findByIdAndUpdate(
-                        existingRepair._id,
-                        { vendor: newListName },
-                        { new: true }
-                    );
-                    
-                    console.log('Successfully updated repair vendor to:', newListName);
-                } catch (error) {
-                    console.error('Error updating repair vendor:', error);
-                }
-            } else {
-                console.log('Vendor field already matches, no update needed');
+                // Update only the vendor field
+                await Repair.findByIdAndUpdate(
+                    existingRepair._id,
+                    { vendor: newListName }
+                );
+                
+                console.log('Successfully updated repair vendor to:', newListName);
+            } catch (error) {
+                console.error('Error updating repair vendor:', error);
             }
+  
         } else {
             console.log('No existing repair found for card:', actionData.card.name);
             console.log('creating repair');
