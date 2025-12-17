@@ -479,35 +479,6 @@ async function getTrelloCardDetails(cardId: string) {
     }
 }
 
-async function getTrelloListName(listId: string) {
-    try {
-        // Add Trello OAuth authentication header
-        const trelloApiKey = process.env.TRELLO_API_KEY;
-        const trelloToken = process.env.TRELLO_TOKEN;
-
-        if (!trelloApiKey || !trelloToken) {
-            throw new Error('Trello API credentials not configured');
-        }
-
-        const trelloApiUrl = `https://api.trello.com/1/lists/${listId}?key=${trelloApiKey}&token=${trelloToken}&fields=name`;
-
-        console.log('Fetching list name from Trello API for list ID:', listId);
-        const response = await fetch(trelloApiUrl);
-
-        if (response.ok) {
-            const listData = await response.json();
-            console.log('List name:', listData.name);
-            return listData.name;
-        } else {
-            console.log('Failed to fetch list details from Trello API:', response.status, response.statusText);
-            return null;
-        }
-    } catch (error) {
-        console.error('Error fetching Trello list name:', error);
-        return null;
-    }
-}
-
 
 async function handleCreateCard(actionData: any) {
     console.log('--- CREATE CARD ---');
@@ -518,11 +489,9 @@ async function handleCreateCard(actionData: any) {
 
     // Get list name to use as vendor
     let listName = null;
-    if (actionData.list?.id) {
-        listName = await getTrelloListName(actionData.list.id);
-        console.log('List name (vendor):', listName);
-    }
-
+    listName = actionData.list.name;
+    console.log('List name (vendor):', listName);
+    
     // Parse repair details from card name and description
     const parsedFields = await getTrelloCardDetails(actionData.card.id);
 
@@ -551,21 +520,8 @@ async function handleUpdateCard(actionData: any) {
     console.log('---------------------');
 
     // Get the new list name
-    let newListName = null;
-    if (actionData.listAfter?.id) {
-        newListName = await getTrelloListName(actionData.listAfter.id);
-        console.log('New list name (vendor):', newListName);
-    }
-
-    if (newListName === "New Customer Repair" || newListName != "Incoming Repair" || newListName != "Daily Log In") {
-        console.log('Skipping vendor update for card:', actionData.card.name);
-        return;
-    }
-        
-    if (!newListName) {
-        console.log('No new list name found, skipping vendor update');
-        return;
-    }
+    const newListName = actionData.list.name;
+     console.log('List name (vendor):', newListName);
 
     // Get card details to extract repair information
     const repairDetails = await getTrelloCardDetails(actionData.card.id);
@@ -579,6 +535,11 @@ async function handleUpdateCard(actionData: any) {
             console.log('Current vendor:', existingRepair.vendor || 'empty');
             console.log('New vendor (list name):', newListName);
             
+            if (!newListName || newListName === "New Customer Repair" || newListName != "Incoming Repair" || newListName != "Daily Log In") {
+                console.log('Skipping vendor update for card:', actionData.card.name);
+                return;
+            }
+
             // Check if vendor field needs updating
             if (existingRepair.vendor !== newListName) {
                 console.log('Vendor field differs, updating repair record...');
