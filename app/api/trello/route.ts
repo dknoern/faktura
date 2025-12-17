@@ -512,10 +512,6 @@ async function handleUpdateCard(actionData: any) {
     console.log('List ID (after):', actionData.listAfter?.id);
     console.log('---------------------');
 
-    // Get the new list name
-    const newListName = actionData.list.name;
-     console.log('List name (vendor):', newListName);
-
     // Get card details to extract repair information
     const repairDetails = await getTrelloCardDetails(actionData.card.id);
 
@@ -524,9 +520,11 @@ async function handleUpdateCard(actionData: any) {
         const existingRepair = await findExistingRecord(repairDetails.repairNumber, repairDetails.firstName, repairDetails.lastName);
         
         if (existingRepair) {
+
             console.log('Found existing repair:', existingRepair._id);
-            console.log('Current vendor:', existingRepair.vendor || 'empty');
-            console.log('New vendor (list name):', newListName);
+
+            const vendor = (actionData.list.name !== "New Customer Repairs" && actionData.list.name !== "Incoming Repair") ? actionData.list.name : '';
+             console.log('Updaging vendor to:', vendor);
             
             try {
                 const connectToDatabase = (await import('../../../lib/dbConnect')).default;
@@ -536,10 +534,8 @@ async function handleUpdateCard(actionData: any) {
                 // Update only the vendor field
                 await Repair.findByIdAndUpdate(
                     existingRepair._id,
-                    { vendor: newListName }
+                    { vendor: vendor }
                 );
-                
-                console.log('Successfully updated repair vendor to:', newListName);
             } catch (error) {
                 console.error('Error updating repair vendor:', error);
             }
