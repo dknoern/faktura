@@ -17,8 +17,6 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [],
   // Temporarily enable detailed React errors in production for debugging
   productionBrowserSourceMaps: true,
-  // Disable minification to get readable error messages
-  swcMinify: false,
   compiler: {
     removeConsole: false,
   },
