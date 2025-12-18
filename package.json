@@ -55,7 +55,7 @@
     "lucide-react": "^0.454.0",
     "moment": "^2.30.1",
     "mongoose": "^8.12.1",
-    "next": "^15.5.7",
+    "next": "15.5.9",
     "next-auth": "^5.0.0-beta.30",
     "react": "latest",
     "react-day-picker": "^9.7.0",
