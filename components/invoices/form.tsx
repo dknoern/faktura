@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { LineItems, LineItem } from "./line-items"
 import { upsertInvoice } from "@/lib/invoiceActions"
@@ -95,6 +95,7 @@ interface Product {
 export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesPerson }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, salesPerson?: string }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const submissionRef = useRef(false)
   // Create initial line items if a product is selected
   const initialLineItems = selectedProduct ? [
     {
@@ -174,10 +175,14 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Prevent double submission
-    if (isSubmitting) {
+    // Prevent double submission using both state and ref for stronger protection
+    if (isSubmitting || submissionRef.current) {
+      console.log('Submission blocked - already in progress');
       return;
     }
+    
+    // Immediately set ref to prevent race conditions
+    submissionRef.current = true;
     
     if (!invoiceTypeValid) {
       alert("Please select an invoice type before saving.");
@@ -193,10 +198,14 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
       alert("Please ensure every item has a description and amount.");
       return;
     }
+
+    console.log("setting is submitting ");
     
     setIsSubmitting(true);
     
     try {
+      console.log('Submitting invoice with ID:', formData._id || 'new');
+      
       // Use upsertInvoice for both create and update
       const result = await upsertInvoice(formData, formData._id)
       
@@ -204,12 +213,15 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
         throw new Error(result.error || "Failed to save invoice")
       }
       
+      console.log('Invoice submission successful, redirecting...');
       router.push("/invoices")
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save invoice"
+      console.error('Invoice submission error:', errorMessage);
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false);
+      submissionRef.current = false;
     }
   }
 
