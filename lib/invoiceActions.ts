@@ -154,7 +154,7 @@ function buildSearchField(doc: InvoiceData){
       search += doc._id.toString() + " ";
   }
 
-  const formattedDate = format(doc.date, 'yyyy-MM-dd');
+  const formattedDate = format(doc.date instanceof Date ? doc.date : new Date(doc.date), 'yyyy-MM-dd');
 
 
   search += doc.customerFirstName + " " + doc.customerLastName + " " + formattedDate + " ";

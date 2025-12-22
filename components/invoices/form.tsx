@@ -110,7 +110,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
 
   const [formData, setFormData] = useState<InvoiceFormData>(
     invoice
-      ? { ...invoice, date: formatDateTime(invoice.date) }
+      ? { ...invoice, date: invoice.date }
       : {
           customerId: selectedCustomer?._id,
           customerFirstName: selectedCustomer?.firstName || "",
@@ -274,7 +274,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
               type="text"
               readOnly
               className="bg-gray-50"
-              value={formData.date}
+              value={formatDateTime(formData.date)}
             />
           </div>
           
