@@ -30,6 +30,17 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const data = await request.json();
+
+    // Normalize itemNumber to avoid duplicate variants caused by whitespace
+    if (typeof data.itemNumber === 'string') {
+      data.itemNumber = data.itemNumber.trim();
+      if (!data.itemNumber) {
+        return NextResponse.json(
+          { error: 'itemNumber is required' },
+          { status: 400 }
+        );
+      }
+    }
     
     // Check if a product with the same itemNumber already exists
     if (data.itemNumber) {

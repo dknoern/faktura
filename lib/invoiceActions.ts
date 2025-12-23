@@ -8,6 +8,7 @@ import { calcTax } from "./utils/tax";
 import { updateProductHistory } from "./utils/product-history";
 import { getShortUser } from "./auth-utils";
 import { format } from "date-fns";
+import { productModel } from "./models/product";
 
 export interface LineItem {
   productId?: string;
@@ -68,6 +69,45 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
     
     // Check if we're updating an existing invoice or creating a new one
     const isUpdate = id !== undefined;
+
+    // When creating a new invoice, ensure all referenced products are eligible
+    // (must be In Stock or Memo) before we allocate a new invoice number.
+    if (!isUpdate) {
+      const eligibleStatuses = new Set(["In Stock", "Memo"]);
+      const productIds = (data.lineItems || [])
+        .map((li) => li?.productId)
+        .filter((pid): pid is string => typeof pid === 'string' && pid.trim() !== '');
+
+      if (productIds.length > 0) {
+        const products = await productModel
+          .find({ _id: { $in: productIds } })
+          .select({ status: 1, itemNumber: 1, title: 1 })
+          .lean();
+
+        const productsById = new Map(products.map((p: any) => [p._id.toString(), p]));
+
+        for (const lineItem of data.lineItems || []) {
+          if (!lineItem?.productId) continue;
+          const product = productsById.get(lineItem.productId);
+
+          if (!product) {
+            return {
+              success: false,
+              error: `Cannot create invoice: product '${lineItem.itemNumber || lineItem.productId}' was not found`,
+            };
+          }
+
+          const status = (product.status || "").toString();
+          if (!eligibleStatuses.has(status)) {
+            const label = product.itemNumber || lineItem.itemNumber || product.title || lineItem.productId;
+            return {
+              success: false,
+              error: `Cannot create invoice: product '${label}' is '${status}'. Only 'In Stock' or 'Memo' items can be invoiced.`,
+            };
+          }
+        }
+      }
+    }
     
     if (isUpdate) {
       // Update existing invoice
