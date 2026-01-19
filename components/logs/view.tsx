@@ -348,8 +348,14 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
 
       {/* Custom Signature Canvas */}
       {showSignaturePad && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+        <div 
+          className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={() => setShowSignaturePad(false)}
+        >
+          <div 
+            className="bg-white rounded-lg p-6 max-w-lg w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mb-4">
               <h3 className="text-lg font-semibold mb-2">Add Signature</h3>
               <p className="text-sm text-gray-600">Sign using your finger, mouse, or stylus.</p>

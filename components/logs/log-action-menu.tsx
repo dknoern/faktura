@@ -89,7 +89,8 @@ export function LogActionMenu({ log, onSignatureClick }: LogActionMenuProps) {
     }
   };
 
-  const captureImage = () => {
+  const captureImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (imageInputRef.current) {
       imageInputRef.current.click();
     }
@@ -140,7 +141,12 @@ export function LogActionMenu({ log, onSignatureClick }: LogActionMenuProps) {
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={captureImage}>
+          <DropdownMenuItem 
+            onSelect={(e) => {
+              e.preventDefault();
+              captureImage();
+            }}
+          >
             <ImagePlus className="mr-2 h-4 w-4" />
             Add Image
           </DropdownMenuItem>
