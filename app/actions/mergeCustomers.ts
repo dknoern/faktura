@@ -13,7 +13,7 @@ type MergeCustomersResult = {
   count?: number;
 };
 
-export async function mergeCustomers(customerIds: number[]): Promise<MergeCustomersResult> {
+export async function mergeCustomers(customerIds: string[]): Promise<MergeCustomersResult> {
   try {
     if (!customerIds || customerIds.length < 2) {
       return { 
@@ -24,12 +24,17 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
 
     await dbConnect();
     
-    // The first customer ID will be the canonical (primary) customer
-    // canonicalId should be the one with the lowest
-
-    // sort customerIds in ascending order, canonicalId will be the first
-    customerIds.sort((a, b) => a - b);
-    const canonicalId = customerIds[0];
+    // Fetch all customers to sort by customerNumber
+    const allCustomersForSort = await customerModel.find({ _id: { $in: customerIds } }).lean() as any[];
+    
+    // Sort by customerNumber to find the one with the lowest number (will be kept)
+    allCustomersForSort.sort((a, b) => (a.customerNumber || 0) - (b.customerNumber || 0));
+    
+    // The customer with the lowest customerNumber will be the canonical (primary) customer
+    const canonicalId = allCustomersForSort[0]._id.toString();
+    
+    // Re-sort customerIds array to put canonical first
+    const sortedCustomerIds = [canonicalId, ...customerIds.filter(id => id !== canonicalId)];
     
     // Find the canonical customer
     const canonicalCustomer = await customerModel.findById(canonicalId);

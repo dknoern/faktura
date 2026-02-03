@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 
 export default async function ViewCustomerPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
-    const id = Number(params.id);
+    const id = params.id;
     const customer = await fetchCustomerById(id);
 
     if (!customer) {

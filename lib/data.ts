@@ -33,11 +33,19 @@ export async function fetchCustomers(page = 1, limit = 10, search = '') {
         const customers = await customerModel.find(query)
             .sort({ lastUpdated: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .lean();
+
+        // Convert ObjectIds to strings for Client Component compatibility
+        const serializedCustomers = customers.map((customer: any) => ({
+            ...customer,
+            _id: customer._id.toString(),
+            tenantId: customer.tenantId?.toString()
+        }));
 
         const totalCount = await customerModel.countDocuments(query);
         return {
-            customers: JSON.parse(JSON.stringify(customers)),
+            customers: serializedCustomers,
             pagination: {
                 total: totalCount,
                 pages: Math.ceil(totalCount / limit),
@@ -134,11 +142,21 @@ export async function fetchProductById(id: string) {
 }
 
 
-export async function fetchCustomerById(id: number) {
+export async function fetchCustomerById(id: string) {
     try {
         await dbConnect();
-        const customer = await customerModel.findOne({ _id: id });
-        return customer;
+        const customer = await customerModel.findById(id).lean() as any;
+        
+        if (!customer) {
+            return null;
+        }
+
+        // Convert ObjectIds to strings for Client Component compatibility
+        return {
+            ...customer,
+            _id: customer._id.toString(),
+            tenantId: customer.tenantId?.toString()
+        };
     } catch (error) {
         console.error('Error fetching customer:', error);
         throw error;

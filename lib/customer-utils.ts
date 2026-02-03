@@ -69,13 +69,13 @@ export async function searchCustomers(params: SearchCustomersParams) {
   console.log("query", query)
 
   const customers = await customerModel.find(query)
-    .select('firstName lastName emails company phones')
-    .sort({ _id: 1 })
+    .select('firstName lastName emails company phones customerNumber')
+    .sort({ customerNumber: 1 })
     .limit(20)
     .lean()
 
   return customers.map((customer: any) => ({
-    _id: customer._id.toString(),
+    _id: customer.customerNumber,
     firstName: customer.firstName,
     lastName: customer.lastName,
     emails: customer.emails,

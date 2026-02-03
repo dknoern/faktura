@@ -6,7 +6,9 @@ import mongoose, { model } from "mongoose";
 extendZod(z);
 
 export const customerSchema = z.object({
-    _id: z.number(),
+    _id: z.instanceof(mongoose.Types.ObjectId).or(z.string()),
+  customerNumber: z.number().optional(),
+  tenantId: z.instanceof(mongoose.Types.ObjectId).or(z.string()),
   firstName: z.string().min(2).max(255),
   lastName: z.string().min(2).max(255),
   company: z.string().optional(),
@@ -49,6 +51,10 @@ export const customerSchema = z.object({
 
 const customerZodSchema = zodSchema(customerSchema);
 
+// Manually set _id and tenantId to ObjectId type for proper Mongoose querying
+customerZodSchema.path('_id').instance = 'ObjectID';
+customerZodSchema.path('tenantId').instance = 'ObjectID';
+
 // Disable _id on email and phone subdocuments
 const emailsPath = customerZodSchema.path('emails');
 if (emailsPath?.schema) {
@@ -60,3 +66,9 @@ if (phonesPath?.schema) {
 }
 
 export const customerModel = mongoose.models.customer || model("customer", customerZodSchema);
+
+// Type for serialized customer data (after ObjectIds are converted to strings for Client Components)
+export type SerializedCustomer = Omit<z.infer<typeof customerSchema>, '_id' | 'tenantId'> & {
+  _id: string;
+  tenantId: string;
+};

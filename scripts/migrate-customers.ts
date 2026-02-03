@@ -37,12 +37,6 @@ interface OldCustomer {
   tenantId?: string | ObjectId;
 }
 
-interface NewCustomer extends Omit<OldCustomer, '_id' | 'tenantId'> {
-  _id: ObjectId;
-  customerNumber: number;
-  tenantId?: ObjectId;
-}
-
 async function connectToDatabase() {
   try {
     await mongoose.connect(MONGODB_URI);
@@ -249,7 +243,7 @@ process.on('SIGINT', async () => {
 });
 
 // Run the migration
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 

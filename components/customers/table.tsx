@@ -7,7 +7,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { customerSchema } from "@/lib/models/customer";
+import { SerializedCustomer } from "@/lib/models/customer";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
@@ -30,7 +30,7 @@ interface PaginationProps {
     limit: number;
 }
 
-type Customer = z.infer<typeof customerSchema>;
+type Customer = SerializedCustomer;
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ export function CustomersTable({
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     
     // State for selected customers
-    const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
+    const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
     
     // State for confirmation dialog
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -281,7 +281,7 @@ export function CustomersTable({
 
                             style={{ userSelect: 'text' }}
                         >
-                            <TableCell>{customer._id}</TableCell>
+                            <TableCell>{customer.customerNumber}</TableCell>
                             <TableCell>{customer.firstName + ' ' + customer.lastName}</TableCell>
                             <TableCell>{customer.city}</TableCell>
                             <TableCell>
@@ -369,8 +369,7 @@ export function CustomersTable({
                         <DialogTitle>Confirm Customer Merge</DialogTitle>
                         <DialogDescription>
                             You are about to merge {selectedCustomers.length} customers. This action cannot be undone.
-                            The customer with the lowest ID ({selectedCustomers.length > 0 ? Math.min(...selectedCustomers) : ''}) will be kept, 
-                            and all other customers will be merged into it.
+                            The customer with the lowest customer number will be kept, and all other customers will be merged into it.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="mt-4">

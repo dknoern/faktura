@@ -6,9 +6,10 @@ import { Counter } from "@/lib/models/counter";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { customerSchema } from "@/lib/models/customer";
+import { getTenantId } from "@/lib/auth-utils";
 
 type CustomerData = z.infer<typeof customerSchema>;
-type CustomerFormData = Omit<CustomerData, '_id' | 'lastUpdated' | 'search'>;
+type CustomerFormData = Omit<CustomerData, '_id' | 'lastUpdated' | 'search' | 'tenantId'>;
 
 type ActionResult<T> = {
   success: boolean;
@@ -19,6 +20,8 @@ type ActionResult<T> = {
 export async function createCustomer(data: CustomerFormData): Promise<ActionResult<CustomerData>> {
   try {
     await dbConnect();
+
+    const tenantId = await getTenantId();
 
     const newCustomerNumber = await Counter.findByIdAndUpdate({
       _id: 'customerNumber'
@@ -38,6 +41,7 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
     const customer = await customerModel.create({
       ...data,
       _id: newCustomerNumber.seq,
+      tenantId,
       lastUpdated: new Date(),
       search: `${data.firstName} ${data.lastName} ${data.company} ${emailsString} ${phonesString}`.toLowerCase(),
     });
@@ -45,30 +49,39 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
     revalidatePath('/customers');
     const customerObj = customer.toObject();
 
+    // Convert ObjectIds to strings for Client Component compatibility
+    const serializedCustomer = {
+      ...customerObj,
+      _id: customerObj._id.toString(),
+      tenantId: customerObj.tenantId?.toString()
+    };
+
     // Convert emails and phones to plain objects without MongoDB _id fields
-    if (customerObj.emails) {
-      customerObj.emails = customerObj.emails.map((item: any) => ({
+    if (serializedCustomer.emails) {
+      serializedCustomer.emails = serializedCustomer.emails.map((item: any) => ({
         email: item.email,
         type: item.type
       }));
     }
-    if (customerObj.phones) {
-      customerObj.phones = customerObj.phones.map((item: any) => ({
+    if (serializedCustomer.phones) {
+      serializedCustomer.phones = serializedCustomer.phones.map((item: any) => ({
         phone: item.phone,
         type: item.type
       }));
     }
 
-    return { success: true, data: customerObj };
+    return { success: true, data: serializedCustomer };
   } catch (error) {
     console.error("Error creating customer:", error);
     return { success: false, error: "Failed to create customer" };
   }
 }
 
-export async function updateCustomer(id: number, data: CustomerFormData): Promise<ActionResult<CustomerData>> {
+export async function updateCustomer(id: string, data: CustomerFormData): Promise<ActionResult<CustomerData>> {
   try {
     await dbConnect();
+
+    const tenantId = await getTenantId();
 
     const emailsString = data.emails
       ? data.emails.map((item: any) => typeof item === 'string' ? item : item.email).join(' ')
@@ -77,8 +90,8 @@ export async function updateCustomer(id: number, data: CustomerFormData): Promis
       ? data.phones.map((item: any) => typeof item === 'string' ? item : item.phone).join(' ')
       : '';
 
-    const customer = await customerModel.findByIdAndUpdate(
-      id,
+    const customer = await customerModel.findOneAndUpdate(
+      { _id: id, tenantId },
       {
         ...data,
         lastUpdated: new Date(),
@@ -94,21 +107,28 @@ export async function updateCustomer(id: number, data: CustomerFormData): Promis
     revalidatePath('/customers');
     const customerObj = customer.toObject();
 
+    // Convert ObjectIds to strings for Client Component compatibility
+    const serializedCustomer = {
+      ...customerObj,
+      _id: customerObj._id.toString(),
+      tenantId: customerObj.tenantId?.toString()
+    };
+
     // Convert emails and phones to plain objects without MongoDB _id fields
-    if (customerObj.emails) {
-      customerObj.emails = customerObj.emails.map((item: any) => ({
+    if (serializedCustomer.emails) {
+      serializedCustomer.emails = serializedCustomer.emails.map((item: any) => ({
         email: item.email,
         type: item.type
       }));
     }
-    if (customerObj.phones) {
-      customerObj.phones = customerObj.phones.map((item: any) => ({
+    if (serializedCustomer.phones) {
+      serializedCustomer.phones = serializedCustomer.phones.map((item: any) => ({
         phone: item.phone,
         type: item.type
       }));
     }
 
-    return { success: true, data: customerObj };
+    return { success: true, data: serializedCustomer };
   } catch (error) {
     console.error("Error updating customer:", error);
     return { success: false, error: "Failed to update customer" };

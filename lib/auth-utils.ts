@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import mongoose from "mongoose";
 
 const defaultTenantId = "67f48a2050abe41246b22a87"
 const defaultTenantName = "lager"
@@ -26,10 +27,11 @@ export async function getFullName() {
 export async function getTenantId() {
   try {
     const headersList = await headers();
-    return headersList.get('x-tenant-id') || defaultTenantId;
+    const tenantIdString = headersList.get('x-tenant-id') || defaultTenantId;
+    return new mongoose.Types.ObjectId(tenantIdString);
   } catch {
     // Headers not available (likely during build time)
-    return defaultTenantId;
+    return new mongoose.Types.ObjectId(defaultTenantId);
   }
 }
 
