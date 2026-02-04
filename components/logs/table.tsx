@@ -29,6 +29,7 @@ interface Log {
     comments?: string;
     user?: string;
     customerName?: string;
+    vendor?: string;
     lineItems?: LineItem[];
 }
 
@@ -124,6 +125,7 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
                         <TableHead>Date</TableHead>
                         <TableHead style={{ whiteSpace: 'nowrap' }}>Received From</TableHead>
                         <TableHead>Customer</TableHead>
+                        <TableHead>Vendor</TableHead>
                         <TableHead>Item Received</TableHead>
                         <TableHead style={{ whiteSpace: 'nowrap' }}>Item #</TableHead>
                         <TableHead style={{ whiteSpace: 'nowrap' }}>Repair #</TableHead>
@@ -175,6 +177,7 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
                                 </TableCell>
                                 <TableCell> {log.receivedFrom}</TableCell>
                                 <TableCell> {log.customerName}</TableCell>
+                                <TableCell> {log.vendor}</TableCell>
 
                                 <TableCell>
                                     {itemNames.split("<br/>").map((line, index, array) => (

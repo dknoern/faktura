@@ -223,6 +223,8 @@ function buildSearchString(data: { date: Date; receivedFrom: string; id?: string
   return (formatDate(new Date()) + " "
     + data.receivedFrom + " "
     + valueOrBlank(data.customerName) + " "
+    + valueOrBlank(data.vendor) + " "
+    + valueOrBlank(data.user) + " "
     + (data.lineItems?.map(function (k:any) { return k.name }).join(",") || "") + " "
     + (data.lineItems?.map(function (k:any) { return valueOrBlank(k.itemNumber) }).join(" ") || "") + " "
     + (data.lineItems?.map(function (k:any) { return valueOrBlank(k.repairNumber) }).join(" ") || "") + " "

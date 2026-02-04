@@ -1,11 +1,11 @@
 import { config } from 'dotenv';
 import path from 'path';
+import { pathToFileURL } from 'url';
 
 // Load environment variables from .env.local FIRST
 config({ path: path.resolve(process.cwd(), '.env.local') });
 
 import mongoose from 'mongoose';
-import { logModel } from '../lib/models/log';
 
 interface LogDocument {
   _id: mongoose.Types.ObjectId;
@@ -55,6 +55,28 @@ async function rebuildLogSearchFields() {
   console.log('  - MONGODB_URI starts with mongodb:', process.env.MONGODB_URI?.startsWith('mongodb') || false);
   
   try {
+    const logSchema = new mongoose.Schema(
+      {
+        receivedFrom: String,
+        customerName: String,
+        vendor: String,
+        comments: String,
+        user: String,
+        search: String,
+        status: String,
+        lineItems: [
+          {
+            itemNumber: String,
+            name: String,
+            repairNumber: String,
+          },
+        ],
+      },
+      { strict: false }
+    );
+
+    const logModel = mongoose.models.log || mongoose.model('log', logSchema);
+
     // Connect directly to MongoDB
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI environment variable is not set');
@@ -145,7 +167,9 @@ async function rebuildLogSearchFields() {
 }
 
 // Run the script
-if (require.main === module) {
+const isMain = import.meta.url === pathToFileURL(process.argv[1] ?? '').href;
+
+if (isMain) {
   rebuildLogSearchFields()
     .then(() => {
       console.log('🎉 Script completed successfully');

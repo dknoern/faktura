@@ -241,6 +241,7 @@ export function LogForm({ log, user }: { log?: z.infer<typeof logSchema>, user?:
         comments: log.comments || "",
         user: log.user || "",
         customerName: log.customerName || "",
+        vendor: log.vendor || "",
         lineItems: log.lineItems || [],
       });
       
