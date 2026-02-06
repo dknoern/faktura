@@ -7,7 +7,7 @@ import { createLog } from '@/app/actions/logs';
 import { z } from 'zod';
 import { logSchema, lineItemSchema } from '@/lib/models/log';
 import console from 'console';
-import { buildRepairSearchField } from '@/lib/actions';
+import { buildRepairSearchField } from '@/lib/utils/repair-search';
 
 type LogData = z.infer<typeof logSchema>;
 type LineItem = z.infer<typeof lineItemSchema>;

@@ -10,6 +10,7 @@ import { Counter } from "./models/counter";
 import { updateProductHistory } from "./utils/product-history";
 import { createTrelloRepairCard } from "./trello-api";
 import { revalidatePath } from "next/cache";
+import { buildRepairSearchField } from "./utils/repair-search";
 
 // Helper function to get next repair number
 async function getNextRepairNumber(): Promise<string> {
@@ -24,39 +25,6 @@ async function getNextRepairNumber(): Promise<string> {
     console.error("Error getting next repair number:", error);
     throw error;
   }
-}
-
-// Helper function to build search field for repairs
-export function buildRepairSearchField(repairData: {
-  repairNumber?: string;
-  itemNumber?: string;
-  description?: string;
-  dateOut?: Date | string | null;
-  returnDate?: Date | string | null;
-  customerFirstName?: string;
-  customerLastName?: string;
-  vendor?: string;
-}): string {
-  const formatDate = (date: Date | string | null | undefined): string => {
-    if (!date) return '';
-    try {
-      const dateObj = typeof date === 'string' ? new Date(date) : date;
-      return format(dateObj, "MM/dd/yyyy");
-    } catch {
-      return '';
-    }
-  };
-
-  return [
-    repairData.repairNumber || '',
-    repairData.itemNumber || '',
-    repairData.description || '',
-    formatDate(repairData.dateOut),
-    formatDate(repairData.returnDate),
-    repairData.customerFirstName || '',
-    repairData.customerLastName || '',
-    repairData.vendor || ''
-  ].join(' ').trim();
 }
 
 export type State = {
