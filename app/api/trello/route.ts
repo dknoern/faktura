@@ -7,6 +7,7 @@ import { createLog } from '@/app/actions/logs';
 import { z } from 'zod';
 import { logSchema, lineItemSchema } from '@/lib/models/log';
 import console from 'console';
+import { buildRepairSearchField } from '@/lib/actions';
 
 type LogData = z.infer<typeof logSchema>;
 type LineItem = z.infer<typeof lineItemSchema>;
@@ -530,11 +531,19 @@ async function handleUpdateCard(actionData: any) {
                 const connectToDatabase = (await import('../../../lib/dbConnect')).default;
                 await connectToDatabase();
                 const { Repair } = await import('../../../lib/models/repair');
-                
+
+                const originalRepairRecord = await Repair.findById(existingRepair._id);
+
+                // rebuild search field
+                const fullRepairDetails = {
+                    ...originalRepairRecord,
+                    vendor: vendor
+                }
+                const searchField = buildRepairSearchField(fullRepairDetails);
                 // Update only the vendor field
                 await Repair.findByIdAndUpdate(
                     existingRepair._id,
-                    { vendor: vendor }
+                    { vendor: vendor, search: searchField }
                 );
             } catch (error) {
                 console.error('Error updating repair vendor:', error);

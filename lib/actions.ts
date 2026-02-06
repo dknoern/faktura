@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { Counter } from "./models/counter";
 import { updateProductHistory } from "./utils/product-history";
 import { createTrelloRepairCard } from "./trello-api";
+import { revalidatePath } from "next/cache";
 
 // Helper function to get next repair number
 async function getNextRepairNumber(): Promise<string> {
@@ -26,7 +27,7 @@ async function getNextRepairNumber(): Promise<string> {
 }
 
 // Helper function to build search field for repairs
-function buildRepairSearchField(repairData: {
+export function buildRepairSearchField(repairData: {
   repairNumber?: string;
   itemNumber?: string;
   description?: string;
@@ -214,6 +215,7 @@ export async function createRepair(formData: FormData) {
       }
     }
 
+    revalidatePath('/repairs');
     return { success: true };
   } catch (error) {
     console.error("Error creating repair:", error);
@@ -267,6 +269,7 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
     }
 
     await Repair.findByIdAndUpdate(repairId, updateData);
+    revalidatePath('/repairs');
     return { success: true };
   } catch (error) {
     console.error("Error updating repair:", error);
