@@ -321,6 +321,37 @@ export async function getInStock() {
     }
 }
 
+export async function getAllStock() {
+
+    try {
+        await dbConnect();
+
+        const products = await productModel.find({
+            $and: [{
+                status: { $in: ["In Stock", "Memo", "Repair"] }
+            },
+            { itemNumber: { $ne: null } }
+            ]
+        }).sort({
+            lastUpdated: -1
+        }).select({
+            _id: 1,
+            title: 1,
+            lastUpdated: 1,
+            itemNumber: 1,
+            seller: 1,
+            status: 1,
+            productType: 1
+        });
+
+        return products;
+
+    } catch (error) {
+        console.error('Error fetching report data:', error);
+        throw error;
+    }
+}
+
 export async function getShowReport() {
 
     try {

@@ -126,6 +126,10 @@ const data = {
           url: "/reports/in-stock",
         },
         {
+          title: "All Stock",
+          url: "/reports/all-stock",
+        },
+        {
           title: "Customers",
           url: "/reports/customers",
         },
