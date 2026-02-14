@@ -30,6 +30,13 @@ export interface RecentTransaction {
   itemNumber?: string;
 }
 
+export interface InventoryBreakdown {
+  name: string;
+  value: number;
+  fill: string;
+  [key: string]: string | number;
+}
+
 export async function getDashboardStats(): Promise<DashboardStats> {
   try {
     await dbConnect();
@@ -39,7 +46,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
       $and: [
 
-        { status: 'In Stock' },
+        { status: { $in: ['In Stock', 'Memo', 'Repair'] } },
         // someday we should delete all the bad records
         { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
         { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
@@ -233,6 +240,102 @@ export async function getRecentTransactions(): Promise<RecentTransaction[]> {
   } catch (error) {
     console.error('Error fetching recent transactions:', error);
     // Return mock data as fallback
+    return [];
+  }
+}
+
+export async function getInventoryByProductType(): Promise<InventoryBreakdown[]> {
+  try {
+    await dbConnect();
+    
+    const productTypes = ['Watch', 'Pocket Watch', 'Jewelry', 'Accessories'];
+    const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+    
+    const breakdown: InventoryBreakdown[] = [];
+    
+    for (let i = 0; i < productTypes.length; i++) {
+      const count = await productModel.countDocuments({
+        $and: [
+          { status: { $in: ['In Stock', 'Memo', 'Repair'] } },
+          { productType: productTypes[i] },
+          { itemNumber: { $ne: null } },
+          { itemNumber: { $ne: '' } },
+          { title: { $ne: null } }
+        ]
+      });
+      
+      if (count > 0) {
+        breakdown.push({
+          name: productTypes[i],
+          value: count,
+          fill: colors[i]
+        });
+      }
+    }
+    
+    const otherCount = await productModel.countDocuments({
+      $and: [
+        { status: { $in: ['In Stock', 'Memo', 'Repair'] } },
+        { 
+          $or: [
+            { productType: { $exists: false } },
+            { productType: null },
+            { productType: '' },
+            { productType: { $nin: productTypes } }
+          ]
+        },
+        { itemNumber: { $ne: null } },
+        { itemNumber: { $ne: '' } },
+        { title: { $ne: null } }
+      ]
+    });
+    
+    if (otherCount > 0) {
+      breakdown.push({
+        name: 'Other',
+        value: otherCount,
+        fill: colors[4]
+      });
+    }
+    
+    return breakdown;
+  } catch (error) {
+    console.error('Error fetching inventory by product type:', error);
+    return [];
+  }
+}
+
+export async function getInventoryByStatus(): Promise<InventoryBreakdown[]> {
+  try {
+    await dbConnect();
+    
+    const statuses = ['In Stock', 'Memo', 'Repair'];
+    const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+    
+    const breakdown: InventoryBreakdown[] = [];
+    
+    for (let i = 0; i < statuses.length; i++) {
+      const count = await productModel.countDocuments({
+        $and: [
+          { status: statuses[i] },
+          { itemNumber: { $ne: null } },
+          { itemNumber: { $ne: '' } },
+          { title: { $ne: null } }
+        ]
+      });
+      
+      if (count > 0) {
+        breakdown.push({
+          name: statuses[i],
+          value: count,
+          fill: colors[i]
+        });
+      }
+    }
+    
+    return breakdown;
+  } catch (error) {
+    console.error('Error fetching inventory by status:', error);
     return [];
   }
 }

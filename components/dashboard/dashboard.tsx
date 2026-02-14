@@ -3,19 +3,22 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip} from "@/components/ui/chart";
-import {  type DashboardStats, type MonthlySalesData, type RecentTransaction } from "@/lib/dashboard-actions";
+import {  type DashboardStats, type MonthlySalesData, type RecentTransaction, type InventoryBreakdown } from "@/lib/dashboard-actions";
 import { Package, Wrench, Plane, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight, Gift } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { BRAND_CONFIG } from "@/lib/constants";
 import Link from "next/link";
+import { InventoryPieCharts } from "./inventory-pie-charts";
 
 interface DashboardProps {
   stats: DashboardStats;
   salesData: MonthlySalesData[];
   transactions: RecentTransaction[];
+  productTypeData: InventoryBreakdown[];
+  statusData: InventoryBreakdown[];
 }
 
-export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
+export function Dashboard({ stats, salesData, transactions, productTypeData, statusData }: DashboardProps) {
   // Chart configuration
   const chartConfig = {
     sales: {
@@ -138,6 +141,12 @@ export function Dashboard({ stats, salesData, transactions }: DashboardProps) {
         </Card>
         </Link>
       </div>
+
+      {/* Inventory Breakdown Pie Charts */}
+      <InventoryPieCharts 
+        productTypeData={productTypeData}
+        statusData={statusData}
+      />
 
       {/* Monthly Sales Chart */}
       <Card>
