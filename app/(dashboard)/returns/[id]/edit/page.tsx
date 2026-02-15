@@ -5,9 +5,8 @@ import { notFound } from "next/navigation";
 export default async function EditReturnPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const id = params.id;
-    const idNumber = parseInt(id);
 
-    const returnData = await fetchReturnById(idNumber);
+    const returnData = await fetchReturnById(id);
 
     if (!returnData) {
         notFound();

@@ -18,8 +18,7 @@ export default async function NewReturnPage({ searchParams }: { searchParams: Pr
   
   // If we have an invoice ID, fetch the invoice to pre-populate the form
   if (params.invoiceId) {
-    const invoiceId = parseInt(params.invoiceId);
-    const invoice = await fetchInvoiceById(invoiceId);
+    const invoice = await fetchInvoiceById(params.invoiceId);
     
     if (!invoice) {
       notFound();
@@ -29,7 +28,9 @@ export default async function NewReturnPage({ searchParams }: { searchParams: Pr
     const initialData = {
       customerName: `${invoice.customerFirstName || ''} ${invoice.customerLastName || ''}`.trim(),
       customerId: invoice.customerId,
+      customerNumber: invoice.customerNumber,
       invoiceId: invoice._id.toString(),
+      invoiceNumber: invoice.invoiceNumber,
       returnDate: new Date().toISOString().split('T')[0],
       subTotal: 0,
       taxable: invoice.taxable || false,
@@ -50,7 +51,7 @@ export default async function NewReturnPage({ searchParams }: { searchParams: Pr
     
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6">Create Return for Invoice #{invoice._id}</h1>
+        <h1 className="text-2xl font-bold mb-6">Create Return for Invoice #{invoice.invoiceNumber}</h1>
         <ReturnForm initialData={initialData} />
       </div>
     );

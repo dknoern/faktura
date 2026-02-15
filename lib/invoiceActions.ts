@@ -20,9 +20,10 @@ export interface LineItem {
 }
 
 export interface InvoiceData {
-  _id?: number;
-  invoiceNo?: string;
-  customerId?: number;
+  _id?: string;
+  invoiceNumber?: number;
+  customerId?: string;
+  customerNumber?: number;
   customerFirstName: string;
   customerLastName: string;
   customerEmail?: string;
@@ -60,11 +61,11 @@ export interface InvoiceData {
   status?: string;
 }
 
-export async function upsertInvoice(data: InvoiceData, id?: number) {
+export async function upsertInvoice(data: InvoiceData, id?: string) {
   try {
     await dbConnect();
     
-    let invoiceId: number;
+    let invoiceNumber: number;
     let invoiceData: any;
     
     // Check if we're updating an existing invoice or creating a new one
@@ -110,8 +111,9 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
     }
     
     if (isUpdate) {
-      // Update existing invoice
-      invoiceId = id;
+      // Update existing invoice - fetch existing invoiceNumber
+      const existing = await Invoice.findById(id).select('invoiceNumber').lean();
+      invoiceNumber = (existing as any)?.invoiceNumber || data.invoiceNumber || 0;
       invoiceData = {
         ...data,
         date: new Date(data.date)
@@ -125,10 +127,10 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
         { new: true, upsert: true }
       );
       
-      invoiceId = newInvoiceNumber.seq;
+      invoiceNumber = newInvoiceNumber.seq;
       invoiceData = {
         ...data,
-        _id: invoiceId,
+        invoiceNumber: invoiceNumber,
         date: new Date(data.date)
       };
     }
@@ -176,7 +178,15 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
     }
     
     revalidatePath('/invoices');
-    return { success: true, invoiceId };
+    
+    // For new invoices, get the saved document's _id
+    let savedId = id;
+    if (!isUpdate) {
+      const saved = await Invoice.findOne({ invoiceNumber }).select('_id').lean();
+      savedId = saved ? (saved as any)._id.toString() : undefined;
+    }
+    
+    return { success: true, invoiceId: savedId, invoiceNumber };
   } catch (error) {
     console.error(`Error ${id ? 'updating' : 'creating'} invoice:`, error);
     return { 
@@ -187,11 +197,11 @@ export async function upsertInvoice(data: InvoiceData, id?: number) {
 }
 
 
-function buildSearchField(doc: InvoiceData){
+function buildSearchField(doc: any){
 
   var search = "";
-  if(doc._id != null){
-      search += doc._id.toString() + " ";
+  if(doc.invoiceNumber != null){
+      search += doc.invoiceNumber.toString() + " ";
   }
 
   const formattedDate = format(doc.date instanceof Date ? doc.date : new Date(doc.date), 'yyyy-MM-dd');

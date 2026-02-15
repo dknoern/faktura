@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const customer = await fetchCustomerById(parseInt(id));
+    const customer = await fetchCustomerById(id);
     
     if (!customer) {
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 });

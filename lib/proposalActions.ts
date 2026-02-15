@@ -14,7 +14,8 @@ export interface ProposalLineItem {
 
 export interface ProposalData {
   _id?: number;
-  customerId?: number;
+  customerId?: string;
+  customerNumber?: number;
   customerFirstName: string;
   customerLastName: string;
   date: string | Date;

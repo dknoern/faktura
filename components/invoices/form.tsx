@@ -21,9 +21,10 @@ const formatDateTime = (input: string) => {
 };
 
 interface InvoiceFormData {
-  _id?: number
-  invoiceNo?: string
-  customerId?: number
+  _id?: string
+  invoiceNumber?: number
+  customerId?: string
+  customerNumber?: number
   customerFirstName: string
   customerLastName: string
   customerEmail?: string
@@ -61,7 +62,8 @@ interface InvoiceFormData {
 }
 
 interface Customer {
-  _id: number
+  _id: string
+  customerNumber: number
   firstName: string
   lastName: string
   company?: string
@@ -113,6 +115,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
       ? { ...invoice, date: invoice.date }
       : {
           customerId: selectedCustomer?._id,
+          customerNumber: selectedCustomer?.customerNumber,
           customerFirstName: selectedCustomer?.firstName || "",
           customerLastName: selectedCustomer?.lastName || "",
           shipAddress1: selectedCustomer?.address1 || "",
@@ -262,7 +265,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
           <div className="grid grid-cols-[120px_1fr] items-center">
             <label className="text-sm font-medium">Invoice No</label>
             <Input
-              value={formData._id ? formData._id.toString() : (formData.invoiceNo || "")}
+              value={formData.invoiceNumber ? formData.invoiceNumber.toString() : ""}
               readOnly
               className="bg-gray-50"
             />

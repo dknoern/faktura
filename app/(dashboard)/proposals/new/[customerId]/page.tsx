@@ -9,7 +9,7 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const { customerId } = await params;
   
-  const customer = await fetchCustomerById(parseInt(customerId));
+  const customer = await fetchCustomerById(customerId);
   
   if (!customer) {
     notFound();

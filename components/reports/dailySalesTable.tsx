@@ -17,6 +17,7 @@ interface DailySalesTableProps {
 
 interface Invoice {
     _id: string;
+    invoiceNumber: number;
     date: string | Date;
     lineItems: Array<{ name: string; itemNumber?: string }>;
     salesPerson: string;
@@ -82,7 +83,7 @@ export function DailySalesTable({ selectedDate }: DailySalesTableProps) {
                         return (
                             <TableRow key={invoice._id}>
                                 <TableCell></TableCell>
-                                <TableCell>{invoice._id}</TableCell>
+                                <TableCell>{invoice.invoiceNumber}</TableCell>
                                 <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
                                 <TableCell></TableCell>
                                 <TableCell>{invoice.salesPerson}</TableCell>
@@ -96,7 +97,7 @@ export function DailySalesTable({ selectedDate }: DailySalesTableProps) {
                     return invoice.lineItems.map((lineItem, index) => (
                         <TableRow key={`${invoice._id}-${index}`}>
                             <TableCell>{lineItem.itemNumber || ''}</TableCell>
-                            <TableCell>{invoice._id}</TableCell>
+                            <TableCell>{invoice.invoiceNumber}</TableCell>
                             <TableCell style={{ whiteSpace: 'nowrap' }}>{invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : ''}</TableCell>
                             <TableCell>{lineItem.name || ''}</TableCell>
                             <TableCell>{invoice.salesPerson}</TableCell>

@@ -61,7 +61,7 @@ export async function createRepairRecord(repairData: {
       repairIssues: repairData.repairOptions || '',
       repairNotes: `${repairData.itemValue ? 'Item Value: ${repairData.itemValue}\n' : ''}${repairData.repairNotes}`,
       warrantyService: false,
-      customerId: parseInt(repairData.customerId) || 0,
+      customerId: repairData.customerId || '',
       itemId: null, // No specific product linked for trello repairs
       // get repairConfirmMessage from tenant config
       messages: [{

@@ -37,13 +37,14 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
 
     const customer = await customerModel.create({
       ...data,
-      _id: newCustomerNumber.seq,
+      customerNumber: newCustomerNumber.seq,
       lastUpdated: new Date(),
-      search: `${data.firstName} ${data.lastName} ${data.company} ${emailsString} ${phonesString}`.toLowerCase(),
+      search: `${newCustomerNumber.seq} ${data.firstName} ${data.lastName} ${data.company} ${emailsString} ${phonesString}`.toLowerCase(),
     });
 
     revalidatePath('/customers');
     const customerObj = customer.toObject();
+    customerObj._id = customerObj._id.toString();
 
     // Convert emails and phones to plain objects without MongoDB _id fields
     if (customerObj.emails) {
@@ -66,7 +67,7 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
   }
 }
 
-export async function updateCustomer(id: number, data: CustomerFormData): Promise<ActionResult<CustomerData>> {
+export async function updateCustomer(id: string, data: CustomerFormData): Promise<ActionResult<CustomerData>> {
   try {
     await dbConnect();
 
@@ -77,12 +78,16 @@ export async function updateCustomer(id: number, data: CustomerFormData): Promis
       ? data.phones.map((item: any) => typeof item === 'string' ? item : item.phone).join(' ')
       : '';
 
+    // Fetch existing customer to get customerNumber for search field
+    const existingCustomer = await customerModel.findById(id).select('customerNumber');
+    const customerNumber = existingCustomer?.customerNumber || '';
+
     const customer = await customerModel.findByIdAndUpdate(
       id,
       {
         ...data,
         lastUpdated: new Date(),
-        search: `${data.firstName} ${data.lastName} ${data.company} ${emailsString} ${phonesString}`.toLowerCase(),
+        search: `${customerNumber} ${data.firstName} ${data.lastName} ${data.company} ${emailsString} ${phonesString}`.toLowerCase(),
       },
       { new: true, runValidators: true }
     );
@@ -93,6 +98,7 @@ export async function updateCustomer(id: number, data: CustomerFormData): Promis
 
     revalidatePath('/customers');
     const customerObj = customer.toObject();
+    customerObj._id = customerObj._id.toString();
 
     // Convert emails and phones to plain objects without MongoDB _id fields
     if (customerObj.emails) {

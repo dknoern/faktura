@@ -5,8 +5,9 @@ import mongoose, { model } from "mongoose";
 
 extendZod(z);
 
-export const customerSchema = z.object({
-    _id: z.number(),
+// Base schema without _id for Mongoose (lets Mongoose use default ObjectId _id)
+const customerBaseSchema = z.object({
+  customerNumber: z.number().optional(),
   firstName: z.string().min(2).max(255),
   lastName: z.string().min(2).max(255),
   company: z.string().optional(),
@@ -36,7 +37,7 @@ export const customerSchema = z.object({
   search: z.string().optional(),
   copyAddress: z.boolean().optional(),
   customerType: z.string().optional(),
-  status:  z.string().optional(),
+  status: z.string().optional(),
   attachments: z.array(z.object({
     fileName: z.string(),
     originalName: z.string(),
@@ -46,8 +47,12 @@ export const customerSchema = z.object({
   })).optional(),
 });
 
+// Extended schema with _id for TypeScript type inference in components
+export const customerSchema = customerBaseSchema.extend({
+  _id: z.any().optional(),
+});
 
-const customerZodSchema = zodSchema(customerSchema);
+const customerZodSchema = zodSchema(customerBaseSchema);
 
 // Disable _id on email and phone subdocuments
 const emailsPath = customerZodSchema.path('emails');

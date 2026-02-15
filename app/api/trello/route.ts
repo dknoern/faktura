@@ -263,7 +263,8 @@ async function createRepair(parsedFields: any) {
                 firstName: customerResult.data.firstName,
                 lastName: customerResult.data.lastName,
                 emails: customerResult.data.emails,
-                phones: customerResult.data.phones
+                phones: customerResult.data.phones,
+                customerNumber: customerResult.data.customerNumber
             };
             console.log('Created new customer:', customerResult.data._id.toString(), customerResult.data.firstName, customerResult.data.lastName);
         } else {
@@ -295,6 +296,7 @@ async function createRepair(parsedFields: any) {
     const repairData = {
         repairNumber,
         customerId: customer._id,
+        customerNumber: customer.customerNumber,
         customerFirstName: customer.firstName,
         customerLastName: customer.lastName,
         email: customer.emails?.[0]?.email || '',

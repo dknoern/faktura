@@ -40,7 +40,8 @@ interface RepairFormProps {
     phone?: string;
   };
   selectedCustomer?: {
-    _id: number;
+    _id: string;
+    customerNumber: number;
     firstName: string;
     lastName: string;
     email?: string;
@@ -152,6 +153,11 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
         type="hidden" 
         name="selectedCustomerId" 
         defaultValue={selectedCustomer?._id.toString() || ''} 
+      />
+      <input 
+        type="hidden" 
+        name="selectedCustomerNumber" 
+        defaultValue={selectedCustomer?.customerNumber?.toString() || ''} 
       />
       <input 
         type="hidden" 

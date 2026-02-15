@@ -12,7 +12,8 @@ interface Wanted {
   title: string;
   description: string;
   customerName: string;
-  customerId: number;
+  customerId: string;
+  customerNumber: number;
   createdDate?: string;
   foundDate?: string | null;
   createdBy?: string;
@@ -21,7 +22,7 @@ interface Wanted {
 
 interface Customer {
   _id: string;
-  customerId?: number;
+  customerNumber?: number;
   firstName?: string;
   lastName?: string;
   companyName?: string;
@@ -39,7 +40,8 @@ export function WantedForm({ wanted, isEditing = false, selectedCustomer }: Want
   const [formData, setFormData] = useState<Wanted>(() => {
     // Initialize with customer data if provided
     let customerName = "";
-    let customerId = 0;
+    let customerId = "";
+    let customerNumber = 0;
     
     if (selectedCustomer && !isEditing) {
       if (selectedCustomer.firstName || selectedCustomer.lastName) {
@@ -47,7 +49,8 @@ export function WantedForm({ wanted, isEditing = false, selectedCustomer }: Want
       } else if (selectedCustomer.companyName) {
         customerName = selectedCustomer.companyName;
       }
-      customerId = selectedCustomer.customerId || parseInt(selectedCustomer._id) || 0;
+      customerId = selectedCustomer._id;
+      customerNumber = selectedCustomer.customerNumber || 0;
     }
     
     return {
@@ -55,6 +58,7 @@ export function WantedForm({ wanted, isEditing = false, selectedCustomer }: Want
       description: wanted?.description || "",
       customerName: wanted?.customerName || customerName,
       customerId: wanted?.customerId || customerId,
+      customerNumber: wanted?.customerNumber || customerNumber,
     };
   });
   

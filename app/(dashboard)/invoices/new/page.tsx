@@ -13,7 +13,7 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: S
         redirect("/invoices");
     }
 
-    const customerId = parseInt(params.customerId);
+    const customerId = params.customerId;
     const customerData = await fetchCustomerById(customerId);
     const fullName = await getFullName()
     console.log('in new invoice form, fullName is',fullName)

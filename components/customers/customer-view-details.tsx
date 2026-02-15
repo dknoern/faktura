@@ -55,8 +55,8 @@ export function CustomerViewDetails({ customer: initialCustomer }: CustomerViewD
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div>
-                            <label className="text-sm font-medium text-muted-foreground">Customer ID</label>
-                            <p className="text-sm">{customer._id}</p>
+                            <label className="text-sm font-medium text-muted-foreground">Customer Number</label>
+                            <p className="text-sm">{customer.customerNumber}</p>
                         </div>
                         <div>
                             <label className="text-sm font-medium text-muted-foreground">Name</label>

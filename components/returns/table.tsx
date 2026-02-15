@@ -31,7 +31,9 @@ interface LineItem {
 
 interface Return {
     _id: string;
+    returnNumber: number;
     invoiceId: string;
+    invoiceNumber?: number;
     lineItems: LineItem[];
     returnDate: string | null;
     customerName: string;
@@ -141,8 +143,8 @@ export function ReturnsTable({ returns, pagination }: { returns: Return[], pagin
 
                                 style={{ userSelect: 'text' }}
                             >
-                                <TableCell>{ret._id}</TableCell>
-                                <TableCell>{ret.invoiceId}</TableCell>
+                                <TableCell>{ret.returnNumber}</TableCell>
+                                <TableCell>{ret.invoiceNumber || ret.invoiceId}</TableCell>
                                 <TableCell>
                                     {ret.lineItems
                                         .filter((lineItem: LineItem) => lineItem.itemNumber !== '')

@@ -8,9 +8,9 @@ export async function GET(
   try {
     // Await params before using its properties
     const { id } = await params;
-    const customerId = parseInt(id);
+    const customerId = id;
     
-    if (isNaN(customerId)) {
+    if (!customerId) {
       return NextResponse.json(
         { error: 'Invalid customer ID' },
         { status: 400 }

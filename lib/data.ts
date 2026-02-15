@@ -134,10 +134,10 @@ export async function fetchProductById(id: string) {
 }
 
 
-export async function fetchCustomerById(id: number) {
+export async function fetchCustomerById(id: string) {
     try {
         await dbConnect();
-        const customer = await customerModel.findOne({ _id: id });
+        const customer = await customerModel.findById(id);
         return customer;
     } catch (error) {
         console.error('Error fetching customer:', error);
@@ -166,7 +166,7 @@ export async function fetchInvoices(page = 1, limit = 10, search = '') {
         }
 
         const invoices = await Invoice.find(query)
-            .sort({ _id: -1 })
+            .sort({ date: -1 })
             .skip(skip)
             .limit(limit);
 
@@ -261,7 +261,7 @@ export async function fetchReturns(page = 1, limit = 10, search = '') {
         }
 
         const returns = await Return.find(query)
-            .sort({ _id: -1 })
+            .sort({ returnDate: -1 })
             .skip(skip)
             .limit(limit);
 
@@ -649,12 +649,11 @@ export async function fetchTenantById(id: string) {
     }
 }
 
-export async function fetchInvoiceById(id: number) {
+export async function fetchInvoiceById(id: string) {
     try {
         await dbConnect();
-        //const _id = new mongoose.Types.ObjectId(id);
 
-        const invoice = await Invoice.findOne({ _id: id });
+        const invoice = await Invoice.findById(id);
 
         return invoice ? JSON.parse(JSON.stringify(invoice)) : null;
     } catch (error) {
@@ -716,8 +715,8 @@ export async function fetchPartnerInvoiceByProductId(id: string) {
                 { new: true, upsert: true }
             );
 
-            invoice._id = newInvoiceNumber.seq;
-            invoice.search = `${invoice.customerFirstName} ${invoice.customerLastName} ${invoice.invoiceNo || ''}`;
+            invoice.invoiceNumber = newInvoiceNumber.seq;
+            invoice.search = `${newInvoiceNumber.seq} ${invoice.customerFirstName} ${invoice.customerLastName}`;
             invoice.date = new Date();
 
             await invoice.save();
@@ -747,10 +746,10 @@ export async function fetchOutById(id: string) {
     }
 }
 
-export async function fetchReturnById(id: number) {
+export async function fetchReturnById(id: string) {
     try {
         await dbConnect();
-        const returnItem = await Return.findOne({ _id: id });
+        const returnItem = await Return.findById(id);
         return returnItem ? JSON.parse(JSON.stringify(returnItem)) : null;
     } catch (error) {
         console.error("Error fetching return item:", error);
@@ -761,7 +760,7 @@ export async function fetchReturnById(id: number) {
 export async function fetchReturnByInvoiceId(invoiceId: string) {
     try {
         await dbConnect();
-        const returnItem = await Return.findOne({ invoiceId });
+        const returnItem = await Return.findOne({ invoiceId: new mongoose.Types.ObjectId(invoiceId) });
         return returnItem ? JSON.parse(JSON.stringify(returnItem)) : null;
     } catch (error) {
         console.error("Error fetching return by invoice ID:", error);

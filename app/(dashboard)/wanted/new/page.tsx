@@ -12,7 +12,7 @@ export default async function NewWantedPage({ searchParams }: { searchParams: Se
     redirect("/wanted");
   }
 
-  const customerId = parseInt(params.customerId);
+  const customerId = params.customerId;
   const customerData = await fetchCustomerById(customerId);
 
   // If customer not found, redirect back to wanted page

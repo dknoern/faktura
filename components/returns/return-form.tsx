@@ -20,10 +20,13 @@ interface LineItem {
 }
 
 interface ReturnData {
-  _id?: number;
+  _id?: string;
+  returnNumber?: number;
   customerName: string;
-  customerId?: number;
+  customerId?: string;
+  customerNumber?: number;
   invoiceId: string;
+  invoiceNumber?: number;
   returnDate: string;
   subTotal: number;
   taxable: boolean;
@@ -159,24 +162,22 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
-          <Label htmlFor="returnId">Return No</Label>
+          <Label htmlFor="returnNumber">Return No</Label>
           <Input
-            id="returnId"
-            name="_id"
-            value={formData._id || ''}
-            onChange={handleNumberInputChange}
+            id="returnNumber"
+            name="returnNumber"
+            value={formData.returnNumber || ''}
             readOnly={isEditing}
             disabled
           />
         </div>
         
         <div>
-          <Label htmlFor="invoiceId">Invoice No</Label>
+          <Label htmlFor="invoiceNumber">Invoice No</Label>
           <Input
-            id="invoiceId"
-            name="invoiceId"
-            value={formData.invoiceId || ''}
-            onChange={handleInputChange}
+            id="invoiceNumber"
+            name="invoiceNumber"
+            value={formData.invoiceNumber || ''}
             disabled
           />
         </div>
@@ -274,10 +275,10 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
                 <td className="p-2 text-center">
                   <Checkbox
                     checked={item.included || false}
-                    onCheckedChange={formData._id ? undefined : (checked) => 
+                    onCheckedChange={formData.returnNumber ? undefined : (checked) => 
                       handleLineItemChange(index, 'included', checked === true)
                     }
-                    disabled={!!formData._id}
+                    disabled={!!formData.returnNumber}
                   />
                 </td>
               </tr>

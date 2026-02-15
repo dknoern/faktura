@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const emailAddresses = email.split(',').map((addr: string) => addr.trim()).filter((addr: string) => addr.length > 0);
     
     // Fetch invoice and tenant data
-    const invoice = await fetchInvoiceById(Number(invoiceId));
+    const invoice = await fetchInvoiceById(invoiceId);
     const tenant = await fetchDefaultTenant();
     const imageHost = await getImageHost();
     
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       },
       Message: {
         Subject: {
-          Data: `Invoice #${invoice._id} from ${tenant.nameLong || 'DeMesy'}`,
+          Data: `Invoice #${invoice.invoiceNumber} from ${tenant.nameLong || 'DeMesy'}`,
         },
         Body: {
           Html: {

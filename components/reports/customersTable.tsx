@@ -27,7 +27,7 @@ export async function CustomersTable() {
             <TableBody>
                 {customers.map((customer) => (
                     <TableRow key={customer._id}>
-                        <TableCell>{customer._id}</TableCell>
+                        <TableCell>{customer.customerNumber}</TableCell>
                         <TableCell>{customer.firstName + ' ' + customer.lastName}</TableCell>
                         <TableCell>{customer.city}</TableCell>
                         <TableCell>{customer.emails?.[0]?.email || ''}</TableCell>

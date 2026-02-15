@@ -18,6 +18,7 @@ interface MonthlySalesTableProps {
 
 interface Invoice {
     _id: string;
+    invoiceNumber: number;
     customerFirstName: string;
     customerLastName: string;
     customerEmail: string;

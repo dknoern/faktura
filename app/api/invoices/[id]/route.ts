@@ -17,7 +17,7 @@ export async function GET(
       );
     }
     
-    const invoice = await fetchInvoiceById(Number(id));
+    const invoice = await fetchInvoiceById(id);
     const tenant = await fetchDefaultTenant();
     
     if (!invoice) {

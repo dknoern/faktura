@@ -16,9 +16,12 @@ interface LineItem {
 
 interface Return {
   _id: string;
+  returnNumber: number;
   customerName: string;
-  customerId?: number;
+  customerId?: string;
+  customerNumber?: number;
   invoiceId: string;
+  invoiceNumber?: number;
   returnDate: string;
   subTotal: number;
   taxable: boolean;
@@ -108,8 +111,8 @@ export function ViewReturn({ returnData, tenant }: { returnData: Return, tenant:
 </div>
 
         <div>
-          <div>Return #{returnData._id}</div>
-          <div>Invoice #{returnData.invoiceId}</div>
+          <div>Return #{returnData.returnNumber}</div>
+          <div>Invoice #{returnData.invoiceNumber || returnData.invoiceId}</div>
           <div>Date: {formatDate(returnData.returnDate)}</div>
         </div>  
         

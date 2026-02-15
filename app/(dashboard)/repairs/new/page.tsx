@@ -23,7 +23,7 @@ export default async function NewRepairPage({ searchParams }: { searchParams: Se
         product = JSON.parse(JSON.stringify(productRecord));
     }
 
-    const customerId = parseInt(params.customerId);
+    const customerId = params.customerId;
 
     const customerData = await fetchCustomerById(customerId);
 

@@ -13,7 +13,8 @@ import { useRouter } from "next/navigation";
 interface Return {
     _id: string;
     customerName: string;
-    customerId?: number;
+    customerId?: string;
+    customerNumber?: number;
     invoiceId: string;
     returnDate: string;
     subTotal: number;

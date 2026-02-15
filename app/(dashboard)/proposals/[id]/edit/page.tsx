@@ -15,7 +15,7 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  const customer = await fetchCustomerById(proposal.customerId);
+  const customer = await fetchCustomerById(proposal.customerId.toString());
   
   if (!customer) {
     notFound();

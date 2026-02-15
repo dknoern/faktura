@@ -15,7 +15,8 @@ import {
 import { formatCurrency } from "@/lib/utils";
 
 type Invoice = {
-  _id: number;
+  _id: string;
+  invoiceNumber: number;
   date: string;
   total: number;
   status: string;
@@ -43,10 +44,12 @@ type Repair = {
 };
 
 type Return = {
-  _id: number;
+  _id: string;
+  returnNumber: number;
   invoiceId: string;
   returnDate: string;
-  customerId: number;
+  customerId: string;
+  customerNumber: number;
   customerName: string;
   totalReturnAmount: number;
   lineItems: Array<{
@@ -65,14 +68,15 @@ type Wanted = {
   title: string;
   description: string;
   customerName: string;
-  customerId: number;
+  customerId: string;
+  customerNumber: number;
   createdDate: string;
   foundDate: string | null;
   createdBy?: string;
   foundBy?: string;
 };
 
-export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
+export function CustomerRecordsTabs({ customerId }: { customerId: string }) {
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [repairs, setRepairs] = useState<Repair[]>([]);
@@ -134,7 +138,7 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
     return `${year}-${month}-${day}`;
   };
 
-  const navigateToInvoice = (invoiceId: number) => {
+  const navigateToInvoice = (invoiceId: string) => {
     router.push(`/invoices/${invoiceId}/view`);
   };
 
@@ -142,7 +146,7 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
     router.push(`/repairs/${repairNumber}/view`);
   };
 
-  const navigateToReturn = (returnId: number) => {
+  const navigateToReturn = (returnId: string) => {
     router.push(`/returns/${returnId}`);
   };
 
@@ -151,7 +155,7 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
   };
 
   // Handle row clicks with text selection detection
-  const handleInvoiceRowClick = (invoiceId: number, e: React.MouseEvent) => {
+  const handleInvoiceRowClick = (invoiceId: string, e: React.MouseEvent) => {
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) {
       return;
@@ -173,7 +177,7 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
     }
   };
 
-  const handleReturnRowClick = (returnId: number, e: React.MouseEvent) => {
+  const handleReturnRowClick = (returnId: string, e: React.MouseEvent) => {
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) {
       return;
@@ -262,7 +266,7 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                       }}
                       style={{ userSelect: 'text' }}
                     >
-                      <TableCell className="font-medium">{invoice._id}</TableCell>
+                      <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                       <TableCell style={{ whiteSpace: 'nowrap' }}>{formatDate(invoice.date)}</TableCell>
 
                       
@@ -370,7 +374,7 @@ export function CustomerRecordsTabs({ customerId }: { customerId: number }) {
                       }}
                       style={{ userSelect: 'text' }}
                     >
-                      <TableCell className="font-medium">#{returnItem._id}</TableCell>
+                      <TableCell className="font-medium">#{returnItem.returnNumber}</TableCell>
                       <TableCell style={{ whiteSpace: 'nowrap' }}>{formatDate(returnItem.returnDate)}</TableCell>
                       <TableCell>
                         {returnItem.lineItems?.length ? (

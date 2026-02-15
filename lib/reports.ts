@@ -130,6 +130,7 @@ export async function getDailySales(year: number, month: number, day: number) {
         }).sort({
             date: -1
         }).select({
+            invoiceNumber: 1,
             date: 1,
             lineItems: 1,
             salesPerson: 1,
@@ -249,7 +250,7 @@ export async function getMonthlySales(year: number, month: number) {
             customerLastName: 1,
             date: 1,
             customerEmail: 1,
-            _id: 1,
+            invoiceNumber: 1,
             total: 1,
             lineItems: 1,
             salesPerson: 1,
@@ -429,14 +430,15 @@ export async function getCustomers() {
 
         const customers = await customerModel.find({
         }).sort({
-            _id: -1
+            customerNumber: -1
         }).select({
+            customerNumber: 1,
             firstName: 1,
             lastName: 1,
             city: 1,
             state: 1,
-            email: 1,
-            phone: 1,
+            emails: 1,
+            phones: 1,
             company: 1
         });
 

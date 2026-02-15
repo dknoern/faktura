@@ -66,7 +66,7 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
 
     const proposalData = {
       ...formData,
-      customerId: parseInt(formData.customerId),
+      customerId: formData.customerId,
       lineItems: validLineItems,
       total: calculateTotal()
     }

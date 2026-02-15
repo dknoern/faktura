@@ -1,5 +1,6 @@
 "use server"
 
+import mongoose from "mongoose";
 import { Repair } from "./models/repair";
 import { Return } from "./models/return";
 import { productModel } from "./models/product";
@@ -56,6 +57,8 @@ export async function createRepair(formData: FormData) {
 
     const productId = formData.get("selectedProductId");
     const customerId = formData.get("selectedCustomerId");
+    const customerNumberStr = formData.get("selectedCustomerNumber") as string;
+    const customerNumber = customerNumberStr ? parseInt(customerNumberStr) : undefined;
 
     // Get repair number from form or generate new one if blank
     let repairNumber = formData.get("repairNumber") as string;
@@ -108,6 +111,7 @@ export async function createRepair(formData: FormData) {
       phone: formData.get("phone"),
       itemId: productId,
       customerId: customerId,
+      customerNumber: customerNumber,
     });
 
     console.log('dateOut', repair.dateOut);
@@ -246,10 +250,13 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
 }
 
 type ReturnData = {
-  _id?: number;
+  _id?: string;
+  returnNumber?: number;
   customerName: string;
-  customerId?: number;
+  customerId?: string;
+  customerNumber?: number;
   invoiceId: string;
+  invoiceNumber?: number;
   returnDate: string;
   subTotal: number;
   taxable: boolean;
@@ -279,12 +286,16 @@ export async function createReturn(data: ReturnData) {
       { new: true, upsert: true }
     );
 
+    const returnNumber = newReturnNumber.seq;
+
     // Clean the data to avoid any potential circular references or undefined values
     const cleanData = {
-      _id: newReturnNumber.seq,
+      returnNumber: returnNumber,
       customerName: data.customerName || '',
       customerId: data.customerId || undefined,
-      invoiceId: data.invoiceId || '',
+      customerNumber: data.customerNumber || undefined,
+      invoiceId: data.invoiceId ? new mongoose.Types.ObjectId(data.invoiceId) : undefined,
+      invoiceNumber: data.invoiceNumber || undefined,
       returnDate: new Date(),
       subTotal: Number(data.subTotal) || 0,
       taxable: Boolean(data.taxable),
@@ -301,7 +312,7 @@ export async function createReturn(data: ReturnData) {
         longDesc: item.longDesc || undefined,
         included: Boolean(item.included)
       })),
-      search: newReturnNumber.seq + " " + data.invoiceId + " " + formatDate(data.returnDate) + " " + data.customerName + " " + data.salesPerson + " " + data.totalReturnAmount,
+      search: returnNumber + " " + data.invoiceId + " " + formatDate(data.returnDate) + " " + data.customerName + " " + data.salesPerson + " " + data.totalReturnAmount,
     };
 
     // Create a new return document with the cleaned data
@@ -311,7 +322,7 @@ export async function createReturn(data: ReturnData) {
 
     // Update product history for returned items
     const user = await getShortUser();
-    const refDoc = newReturnNumber.seq.toString();
+    const refDoc = returnDoc._id.toString();
     const action = 'item returned';
     const status = 'In Stock';
 
@@ -324,7 +335,7 @@ export async function createReturn(data: ReturnData) {
   }
 }
 
-export async function updateReturn(returnId: number, data: ReturnData) {
+export async function updateReturn(returnId: string, data: ReturnData) {
   try {
     await dbConnect();
 
@@ -342,7 +353,7 @@ export async function updateReturn(returnId: number, data: ReturnData) {
 
     // Update product history for returned items
     const user = await getShortUser();
-    const refDoc = returnId.toString();
+    const refDoc = returnId;
     const action = 'return';
     const status = 'In Stock';
 
@@ -364,7 +375,7 @@ export async function checkReturnByInvoiceId(invoiceId: string) {
   try {
     await dbConnect();
 
-    const returnItem = await Return.findOne({ invoiceId });
+    const returnItem = await Return.findOne({ invoiceId: new mongoose.Types.ObjectId(invoiceId) });
 
     if (returnItem) {
       return { returnId: returnItem._id };

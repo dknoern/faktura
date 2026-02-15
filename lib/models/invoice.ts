@@ -22,8 +22,9 @@ LineItemSchema.virtual('amountFMT').get(function (this: { amount: number }) {
 });
 */
 var InvoiceSchema = new mongoose.Schema({
-  	_id: Number,
-    customerId: Number,
+    invoiceNumber: Number,
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'customer' },
+    customerNumber: Number,
     customerFirstName: String,
     customerLastName: String,
     customerEmail: String,

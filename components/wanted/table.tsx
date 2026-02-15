@@ -29,7 +29,8 @@ interface Wanted {
     title: string;
     description: string;
     customerName: string;
-    customerId: number;
+    customerId: string;
+    customerNumber: number;
     createdDate: string;
     foundDate: string | null;
 }

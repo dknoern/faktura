@@ -4,7 +4,7 @@ import { Repair } from './models/repair';
 import { Return } from './models/return';
 import { Wanted } from './models/wanted';
 
-export async function fetchInvoicesByCustomerId(customerId: number, page = 1, limit = 10) {
+export async function fetchInvoicesByCustomerId(customerId: string, page = 1, limit = 10) {
   try {
     await dbConnect();
     const skip = (page - 1) * limit;
@@ -31,7 +31,7 @@ export async function fetchInvoicesByCustomerId(customerId: number, page = 1, li
   }
 }
 
-export async function fetchRepairsByCustomerId(customerId: number, page = 1, limit = 10) {
+export async function fetchRepairsByCustomerId(customerId: string, page = 1, limit = 10) {
   try {
     await dbConnect();
     const skip = (page - 1) * limit;
@@ -58,7 +58,7 @@ export async function fetchRepairsByCustomerId(customerId: number, page = 1, lim
   }
 }
 
-export async function fetchReturnsByCustomerId(customerId: number, page = 1, limit = 10) {
+export async function fetchReturnsByCustomerId(customerId: string, page = 1, limit = 10) {
   try {
     await dbConnect();
     const skip = (page - 1) * limit;
@@ -86,7 +86,7 @@ export async function fetchReturnsByCustomerId(customerId: number, page = 1, lim
 }
 
 
-export async function fetchWantedsByCustomerId(customerId: number, page = 1, limit = 10) {
+export async function fetchWantedsByCustomerId(customerId: string, page = 1, limit = 10) {
   try {
     await dbConnect();
     const skip = (page - 1) * limit;

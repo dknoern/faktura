@@ -11,10 +11,12 @@ const LineItemSchema = new Schema({
 });
 
 const ReturnSchema = new Schema({
-  _id: Number,
+  returnNumber: Number,
   customerName: { type: String, required: true },
-  customerId: Number,
-  invoiceId: { type: String, required: true },
+  customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'customer' },
+  customerNumber: Number,
+  invoiceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Invoice', required: true },
+  invoiceNumber: Number,
   returnDate: { type: Date, required: true },
   subTotal: { type: Number, required: true },
   taxable: { type: Boolean, default: false },

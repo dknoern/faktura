@@ -8,7 +8,8 @@ var ProposalLineItemSchema = new mongoose.Schema({
 
 var ProposalSchema = new mongoose.Schema({
     _id: Number,
-    customerId: Number,
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'customer' },
+    customerNumber: Number,
     customerFirstName: String,
     customerLastName: String,
     date: Date,

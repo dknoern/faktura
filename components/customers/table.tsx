@@ -70,8 +70,8 @@ export function CustomersTable({
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     
-    // State for selected customers
-    const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
+    // State for selected customers (ObjectId strings)
+    const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
     
     // State for confirmation dialog
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -281,7 +281,7 @@ export function CustomersTable({
 
                             style={{ userSelect: 'text' }}
                         >
-                            <TableCell>{customer._id}</TableCell>
+                            <TableCell>{customer.customerNumber}</TableCell>
                             <TableCell>{customer.firstName + ' ' + customer.lastName}</TableCell>
                             <TableCell>{customer.city}</TableCell>
                             <TableCell>
@@ -317,12 +317,12 @@ export function CustomersTable({
                                 <TableCell className="text-center">
                                     <div onClick={(e) => e.stopPropagation()} className="flex justify-center">
                                         <Checkbox
-                                            checked={selectedCustomers.includes(customer._id)}
+                                            checked={selectedCustomers.includes(customer._id.toString())}
                                             onCheckedChange={(checked) => {
                                                 if (checked) {
-                                                    setSelectedCustomers(prev => [...prev, customer._id]);
+                                                    setSelectedCustomers(prev => [...prev, customer._id.toString()]);
                                                 } else {
-                                                    setSelectedCustomers(prev => prev.filter(id => id !== customer._id));
+                                                    setSelectedCustomers(prev => prev.filter(id => id !== customer._id.toString()));
                                                 }
                                             }}
                                             onClick={(e) => handleCheckboxChange(e)}
@@ -369,7 +369,7 @@ export function CustomersTable({
                         <DialogTitle>Confirm Customer Merge</DialogTitle>
                         <DialogDescription>
                             You are about to merge {selectedCustomers.length} customers. This action cannot be undone.
-                            The customer with the lowest ID ({selectedCustomers.length > 0 ? Math.min(...selectedCustomers) : ''}) will be kept, 
+                            The customer with the lowest number will be kept, 
                             and all other customers will be merged into it.
                         </DialogDescription>
                     </DialogHeader>

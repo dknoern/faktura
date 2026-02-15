@@ -13,7 +13,7 @@ type MergeCustomersResult = {
   count?: number;
 };
 
-export async function mergeCustomers(customerIds: number[]): Promise<MergeCustomersResult> {
+export async function mergeCustomers(customerIds: string[]): Promise<MergeCustomersResult> {
   try {
     if (!customerIds || customerIds.length < 2) {
       return { 
@@ -24,21 +24,18 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
 
     await dbConnect();
     
-    // The first customer ID will be the canonical (primary) customer
-    // canonicalId should be the one with the lowest
-
-    // sort customerIds in ascending order, canonicalId will be the first
-    customerIds.sort((a, b) => a - b);
-    const canonicalId = customerIds[0];
-    
-    // Find the canonical customer
-    const canonicalCustomer = await customerModel.findById(canonicalId);
-    if (!canonicalCustomer) {
+    // Find all customers and pick the one with the lowest customerNumber as canonical
+    const allCustomerDocs = await customerModel.find({ _id: { $in: customerIds } }).sort({ customerNumber: 1 });
+    if (allCustomerDocs.length === 0) {
       return {
         success: false,
-        message: "Primary customer not found"
+        message: "No customers found"
       };
     }
+    
+    const canonicalCustomer = allCustomerDocs[0];
+    const canonicalId = canonicalCustomer._id.toString();
+    const canonicalCustomerNumber = canonicalCustomer.customerNumber;
     
     // Process each customer ID
     for (const id of customerIds) {
@@ -48,6 +45,7 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
         if (id !== canonicalId) {
           console.log(`Moving invoice ${invoice._id} from customer ${invoice.customerId} to ${canonicalId}`);
           invoice.customerId = canonicalId;
+          invoice.customerNumber = canonicalCustomerNumber;
           await invoice.save();
         }
       }
@@ -58,6 +56,7 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
         if (id !== canonicalId) {
           console.log(`Moving return ${returnDoc._id} from customer ${returnDoc.customerId} to ${canonicalId}`);
           returnDoc.customerId = canonicalId;
+          returnDoc.customerNumber = canonicalCustomerNumber;
           await returnDoc.save();
         }
       }
@@ -68,19 +67,14 @@ export async function mergeCustomers(customerIds: number[]): Promise<MergeCustom
         if (id !== canonicalId) {
           console.log(`Moving repair ${repair._id} from customer ${repair.customerId} to ${canonicalId}`);
           repair.customerId = canonicalId;
+          repair.customerNumber = canonicalCustomerNumber;
           await repair.save();
         }
       }
     }
     
-    // Collect all customers for merging
-    const allCustomers = [canonicalCustomer];
-    for (let i = 1; i < customerIds.length; i++) {
-      const customer = await customerModel.findById(customerIds[i]);
-      if (customer) {
-        allCustomers.push(customer);
-      }
-    }
+    // Use the already-fetched customer documents
+    const allCustomers = allCustomerDocs;
 
     // Merge customer data and delete secondary customers
     for (let i = 1; i < allCustomers.length; i++) {

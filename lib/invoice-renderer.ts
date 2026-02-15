@@ -10,7 +10,8 @@ export interface LineItem {
 }
 
 export interface Invoice {
-  _id: number;
+  _id: string;
+  invoiceNumber: number;
   customerFirstName: string;
   customerLastName: string;
   address: string;
@@ -42,6 +43,7 @@ export interface Invoice {
   customerEmail: string;
   taxExempt: boolean;
   customerId: string;
+  customerNumber?: number;
   salesPerson: string;
   methodOfSale: string;
   paidBy: string;
@@ -131,7 +133,7 @@ export const generateInvoiceHtml = (invoice: Invoice, tenant: Tenant, imageBaseU
           </div>
         </div>
         <div style="text-align: left;">
-          <p style="margin: 1px 0;">${invoiceNumberLabel} #${invoice._id}</p>
+          <p style="margin: 1px 0;">${invoiceNumberLabel} #${invoice.invoiceNumber}</p>
           <p style="margin: 1px 0;">Date: ${formattedDate}</p>
           ${invoice.shipVia ? `<p style="margin: 1px 0;">Ship Via: ${invoice.shipVia}</p>` : ''}
           ${invoice.trackingNumber ? `<p style="margin: 1px 0;">Tracking Number: ${invoice.trackingNumber}</p>` : ''}

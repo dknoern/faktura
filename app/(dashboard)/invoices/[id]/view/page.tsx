@@ -9,12 +9,8 @@ export default async function ViewInvoicePage(props: { params: Promise<{ id: str
     const id = params.id;
     const imageHost = await getImageHost();
 
-    if (isNaN(parseInt(id))) {
-        notFound();
-    }
-
     const [invoice, tenant] = await Promise.all([
-        fetchInvoiceById(parseInt(id)),
+        fetchInvoiceById(id),
         fetchDefaultTenant()
     ]);
 

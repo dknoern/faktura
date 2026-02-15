@@ -9,11 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const resolvedParams = await params;
-  const invoiceId = parseInt(resolvedParams.id);
-  
-  if (isNaN(invoiceId)) {
-    return new NextResponse('Invoice not found', { status: 404 });
-  }
+  const invoiceId = resolvedParams.id;
 
   try {
     const imageHost = await getImageHost();
@@ -32,7 +28,7 @@ export async function GET(
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Invoice #${invoice._id}</title>
+    <title>Invoice #${invoice.invoiceNumber}</title>
     <style>
       body {
         margin: 0;
