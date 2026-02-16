@@ -1,9 +1,11 @@
 "use server"
 
+import mongoose from "mongoose"
 import dbConnect from "@/lib/dbConnect"
 import { Repair } from "@/lib/models/repair"
 import { Counter } from "@/lib/models/counter"
 import { fetchDefaultTenant } from "./data"
+import { getTenantId } from "@/lib/auth-utils"
 
 export async function getNextRepairNumber(): Promise<string> {
   try {
@@ -48,8 +50,10 @@ export async function createRepairRecord(repairData: {
     const tenant = await fetchDefaultTenant();
     const repairConfirmMessage = tenant.repairConfirmationText || "Thank you for your repair request. We will contact you soon.";
     
+    const tenantId = await getTenantId();
     const repair = new Repair({
       repairNumber: repairData.repairNumber,
+      tenantId: new mongoose.Types.ObjectId(tenantId),
       itemNumber: null, // No item number for trello repairs
       description: repairData.description || '',
       dateOut: new Date(),

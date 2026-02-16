@@ -25,6 +25,7 @@ const ReturnSchema = new Schema({
   totalReturnAmount: { type: Number, required: true },
   salesPerson: String,
   search: String,
+  tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' },
   lineItems: [LineItemSchema]
 }, {
   timestamps: true

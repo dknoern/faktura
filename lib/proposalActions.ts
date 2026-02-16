@@ -1,10 +1,12 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
+import mongoose from "mongoose";
 import dbConnect from "./dbConnect";
 import { Proposal } from "./models/proposal";
 import { Counter } from "./models/counter";
 import { format } from "date-fns";
+import { getTenantId } from "./auth-utils";
 
 export interface ProposalLineItem {
   name: string;
@@ -51,9 +53,11 @@ export async function upsertProposal(data: ProposalData, id?: number) {
       );
       
       proposalId = newProposalNumber.seq;
+      const tenantId = await getTenantId();
       proposalData = {
         ...data,
         _id: proposalId,
+        tenantId: new mongoose.Types.ObjectId(tenantId),
         date: new Date(data.date)
       };
     }

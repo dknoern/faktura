@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: 'Wanted item not found' }, { status: 404 });
     }
     
-    return NextResponse.json(wanted);
+    return NextResponse.json(JSON.parse(JSON.stringify(wanted)));
   } catch (error) {
     console.error('Error fetching wanted item:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -49,7 +49,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Wanted item not found' }, { status: 404 });
     }
     
-    return NextResponse.json(wanted);
+    return NextResponse.json(JSON.parse(JSON.stringify(wanted)));
   } catch (error) {
     console.error('Error updating wanted item:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -5,7 +5,7 @@ import { Repair } from "./models/repair";
 import { Return } from "./models/return";
 import { productModel } from "./models/product";
 import dbConnect from "./dbConnect";
-import { getShortUser } from "./auth-utils";
+import { getShortUser, getTenantId } from "./auth-utils";
 import { format } from "date-fns";
 import { Counter } from "./models/counter";
 import { updateProductHistory } from "./utils/product-history";
@@ -93,6 +93,7 @@ export async function createRepair(formData: FormData) {
       }
     }
 
+    const tenantId = await getTenantId();
     const repair = new Repair({
       repairNumber: repairNumber,
       itemNumber: formData.get("itemNumber"),
@@ -112,6 +113,7 @@ export async function createRepair(formData: FormData) {
       itemId: productId,
       customerId: customerId,
       customerNumber: customerNumber,
+      tenantId: new mongoose.Types.ObjectId(tenantId),
     });
 
     console.log('dateOut', repair.dateOut);
@@ -288,6 +290,7 @@ export async function createReturn(data: ReturnData) {
 
     const returnNumber = newReturnNumber.seq;
 
+    const tenantId = await getTenantId();
     // Clean the data to avoid any potential circular references or undefined values
     const cleanData = {
       returnNumber: returnNumber,
@@ -296,6 +299,7 @@ export async function createReturn(data: ReturnData) {
       customerNumber: data.customerNumber || undefined,
       invoiceId: data.invoiceId ? new mongoose.Types.ObjectId(data.invoiceId) : undefined,
       invoiceNumber: data.invoiceNumber || undefined,
+      tenantId: new mongoose.Types.ObjectId(tenantId),
       returnDate: new Date(),
       subTotal: Number(data.subTotal) || 0,
       taxable: Boolean(data.taxable),

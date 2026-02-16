@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { Wanted } from '@/lib/models/wanted';
-import { getShortUser } from '@/lib/auth-utils';
+import mongoose from 'mongoose';
+import { getShortUser, getTenantId } from '@/lib/auth-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,15 +10,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const currentUser = await getShortUser();
     
+    const tenantId = await getTenantId();
     const wanted = new Wanted({
       ...body,
       createdDate: new Date(),
       createdBy: currentUser,
+      tenantId: new mongoose.Types.ObjectId(tenantId),
     });
     
     await wanted.save();
     
-    return NextResponse.json(wanted, { status: 201 });
+    return NextResponse.json(JSON.parse(JSON.stringify(wanted)), { status: 201 });
   } catch (error) {
     console.error('Error creating wanted item:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -65,7 +65,8 @@ var InvoiceSchema = new mongoose.Schema({
   	    type: [LineItemSchema]
     },
     status: String,
-    trackingNumber: String
+    trackingNumber: String,
+    tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' }
 });
 
 // TODO: remove pre hook

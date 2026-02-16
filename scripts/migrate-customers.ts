@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
 
 // Database connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/lager';
-const DEFAULT_TENANT_ID = process.env.DEFAULT_TENANT_ID || '67f48a2050abe41246b22a87';
+const  = process.env.DEFAULT_TENANT_ID || '67f48a2050abe41246b22a87';
 
 interface OldCustomer {
   _id: number;

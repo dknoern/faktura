@@ -3,7 +3,7 @@ import { fetchProducts } from '@/lib/data';
 import dbConnect from '@/lib/dbConnect';
 import { productModel } from '@/lib/models/product';
 import mongoose from 'mongoose';
-import { getShortUser } from '@/lib/auth-utils';
+import { getShortUser, getTenantId } from '@/lib/auth-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -85,13 +85,17 @@ export async function POST(request: NextRequest) {
       action: "entered",
     });
     
+    // Set tenantId
+    const tenantId = await getTenantId();
+    data.tenantId = new mongoose.Types.ObjectId(tenantId);
+
     // Create the new product
     const newProduct = await productModel.create(data);
     
-    return NextResponse.json({
-      _id: newProduct._id,
-      ...newProduct.toObject()
-    }, { status: 201 });
+    return NextResponse.json(
+      JSON.parse(JSON.stringify(newProduct)),
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error creating product:', error);
     return NextResponse.json(

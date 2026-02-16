@@ -18,7 +18,8 @@ var ProposalSchema = new mongoose.Schema({
     lineItems: {
         type: [ProposalLineItemSchema]
     },
-    status: String
+    status: String,
+    tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' }
 });
 
 export const Proposal = mongoose.models.Proposal || mongoose.model('Proposal', ProposalSchema);

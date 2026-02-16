@@ -32,5 +32,6 @@ export const logSchema = z.object({
 });
 
 const logMongooseSchema = zodToMongoose(logSchema);
+(logMongooseSchema as any).add({ tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' } });
 export const logModel = mongoose.models?.log || mongoose.model("log", logMongooseSchema);
 

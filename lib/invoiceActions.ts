@@ -6,8 +6,9 @@ import { Invoice } from "./models/invoice";
 import { Counter } from "./models/counter";
 import { calcTax } from "./utils/tax";
 import { updateProductHistory } from "./utils/product-history";
-import { getShortUser } from "./auth-utils";
+import { getShortUser, getTenantId } from "./auth-utils";
 import { format } from "date-fns";
+import mongoose from "mongoose";
 import { productModel } from "./models/product";
 
 export interface LineItem {
@@ -128,9 +129,11 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
       );
       
       invoiceNumber = newInvoiceNumber.seq;
+      const tenantId = await getTenantId();
       invoiceData = {
         ...data,
         invoiceNumber: invoiceNumber,
+        tenantId: new mongoose.Types.ObjectId(tenantId),
         date: new Date(data.date)
       };
     }

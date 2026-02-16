@@ -64,4 +64,5 @@ if (phonesPath?.schema) {
   phonesPath.schema.set('_id', false);
 }
 
+(customerZodSchema as any).add({ tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' } });
 export const customerModel = mongoose.models.customer || model("customer", customerZodSchema);

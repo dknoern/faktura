@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { Out } from '@/lib/models/out';
+import mongoose from 'mongoose';
+import { getTenantId } from '@/lib/auth-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -72,10 +74,12 @@ export async function POST(request: NextRequest) {
       data.user
     ].filter(Boolean).join(' ').toLowerCase();
     
+    const tenantId = await getTenantId();
+    data.tenantId = new mongoose.Types.ObjectId(tenantId);
     const newOut = new Out(data);
     const savedOut = await newOut.save();
     
-    return NextResponse.json(savedOut, { status: 201 });
+    return NextResponse.json(JSON.parse(JSON.stringify(savedOut)), { status: 201 });
   } catch (error) {
     console.error('Error creating out:', error);
     return NextResponse.json(

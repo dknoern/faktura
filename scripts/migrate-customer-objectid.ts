@@ -378,6 +378,41 @@ async function migrate() {
   // in the invoice action menu passes invoice._id which is now an ObjectId string
 
   // =============================================
+  // ADD TENANT ID TO ALL COLLECTIONS
+  // =============================================
+  const DEFAULT_TENANT_ID = new mongoose.Types.ObjectId('67f48a2050abe41246b22a87');
+  const collectionsToUpdate = [
+    { name: 'customers', collection: customersCollection },
+    { name: 'invoices', collection: invoicesCollection },
+    { name: 'returns', collection: returnsCollection },
+    { name: 'wanteds', collection: wantedsCollection },
+    { name: 'repairs', collection: repairsCollection },
+    { name: 'proposals', collection: proposalsCollection },
+  ];
+
+  // Also add logs, outs, and products
+  const logsCollection = db.collection('logs');
+  const outsCollection = db.collection('outs');
+  const productsCollection = db.collection('products');
+  collectionsToUpdate.push(
+    { name: 'logs', collection: logsCollection },
+    { name: 'outs', collection: outsCollection },
+    { name: 'products', collection: productsCollection },
+  );
+
+  console.log('\n========================================');
+  console.log('  ADDING TENANT ID TO ALL COLLECTIONS');
+  console.log('========================================');
+
+  for (const { name, collection } of collectionsToUpdate) {
+    const result = await collection.updateMany(
+      { tenantId: { $exists: false } },
+      { $set: { tenantId: DEFAULT_TENANT_ID } }
+    );
+    console.log(`  ${name}: ${result.modifiedCount} documents updated with tenantId`);
+  }
+
+  // =============================================
   // VERIFICATION
   // =============================================
   console.log('\n--- Verification ---');

@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { logModel, logSchema } from '@/lib/models/log';
 import dbConnect from '@/lib/dbConnect';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { getTenantId } from '@/lib/auth-utils';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { productModel } from '@/lib/models/product';
@@ -28,6 +29,8 @@ export async function createLog(data: LogData) {
     await dbConnect();
 
     data.search = buildSearchString(data);
+    const tenantId = await getTenantId();
+    (data as any).tenantId = new mongoose.Types.ObjectId(tenantId);
    
     const log = await logModel.create(data);
 

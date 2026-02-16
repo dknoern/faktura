@@ -55,5 +55,6 @@ export const productSchema = z.object({
 });
 
 const productMongooseSchema = zodToMongoose(productSchema);
+(productMongooseSchema as any).add({ tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' } });
 export const productModel = mongoose.models?.product || mongoose.model("product", productMongooseSchema);
 

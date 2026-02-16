@@ -1,11 +1,13 @@
 'use server'
 
+import mongoose from "mongoose";
 import dbConnect from "@/lib/dbConnect";
 import { customerModel } from "@/lib/models/customer";
 import { Counter } from "@/lib/models/counter";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { customerSchema } from "@/lib/models/customer";
+import { getTenantId } from "@/lib/auth-utils";
 
 type CustomerData = z.infer<typeof customerSchema>;
 type CustomerFormData = Omit<CustomerData, '_id' | 'lastUpdated' | 'search'>;
@@ -35,16 +37,19 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
       ? data.phones.map((item: any) => typeof item === 'string' ? item : item.phone).join(' ')
       : '';
 
+    const tenantId = await getTenantId();
     const customer = await customerModel.create({
       ...data,
       customerNumber: newCustomerNumber.seq,
       lastUpdated: new Date(),
+      tenantId: new mongoose.Types.ObjectId(tenantId),
       search: `${newCustomerNumber.seq} ${data.firstName} ${data.lastName} ${data.company} ${emailsString} ${phonesString}`.toLowerCase(),
     });
 
     revalidatePath('/customers');
     const customerObj = customer.toObject();
     customerObj._id = customerObj._id.toString();
+    if (customerObj.tenantId) customerObj.tenantId = customerObj.tenantId.toString();
 
     // Convert emails and phones to plain objects without MongoDB _id fields
     if (customerObj.emails) {
@@ -99,6 +104,7 @@ export async function updateCustomer(id: string, data: CustomerFormData): Promis
     revalidatePath('/customers');
     const customerObj = customer.toObject();
     customerObj._id = customerObj._id.toString();
+    if (customerObj.tenantId) customerObj.tenantId = customerObj.tenantId.toString();
 
     // Convert emails and phones to plain objects without MongoDB _id fields
     if (customerObj.emails) {
