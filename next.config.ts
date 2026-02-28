@@ -23,8 +23,6 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
-      // Ensure server actions are properly handled
-      allowedOrigins: ['localhost:3000', '127.0.0.1:3000'],
     },
     // Fix for clientModules bundling issues in Next.js 15
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
