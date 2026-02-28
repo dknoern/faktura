@@ -2,6 +2,7 @@
 
 import dbConnect from "@/lib/dbConnect"
 import { customerModel } from "@/lib/models/customer"
+import { getTenantObjectId } from "@/lib/tenant-utils"
 
 interface SearchCustomersParams {
   firstName?: string
@@ -65,6 +66,14 @@ export async function searchCustomers(params: SearchCustomersParams) {
 
   // Only return active customers
   query.status = { $ne: "Deleted" }
+
+  // Scope to current tenant
+  const tenantObjectId = await getTenantObjectId()
+  if (query.$and) {
+    query.$and.push({ tenantId: tenantObjectId })
+  } else {
+    query.tenantId = tenantObjectId
+  }
 
   console.log("query", query)
 

@@ -8,15 +8,16 @@ import { Return } from './models/return';
 import { Repair } from './models/repair';
 import { Out } from './models/out';
 import { customerModel } from './models/customer'; import { logModel } from './models/log';
-import { Counter } from './models/counter';
 import { Wanted } from './models/wanted';
+import { addTenantFilter, getTenantObjectId, getNextCounter } from './tenant-utils';
 
 export async function fetchCustomers(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
-        let query = {}; // Define an empty query object
+        let query: any = {}; // Define an empty query object
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
@@ -29,6 +30,8 @@ export async function fetchCustomers(page = 1, limit = 10, search = '') {
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: searchConditions };
         }
+
+        query = addTenantFilter(query, tenantObjectId);
 
         const customers = await customerModel.find(query)
             .sort({ lastUpdated: -1 })
@@ -55,6 +58,7 @@ export async function fetchCustomers(page = 1, limit = 10, search = '') {
 export async function fetchProducts(page = 1, limit = 10, search = '', sortBy = 'lastUpdated', sortOrder = 'desc') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
         // Base query conditions that apply to all queries
@@ -62,7 +66,8 @@ export async function fetchProducts(page = 1, limit = 10, search = '', sortBy = 
             { status: { $ne: 'Deleted' } }, // Exclude items with status "Deleted"
             { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
             { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
-            { title: { $ne: null } } // Exclude items with null title
+            { title: { $ne: null } }, // Exclude items with null title
+            { tenantId: tenantObjectId }
         ];
         
         let query: any = {
@@ -121,8 +126,9 @@ export async function fetchProducts(page = 1, limit = 10, search = '', sortBy = 
 export async function fetchProductById(id: string) {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         var _id = new mongoose.Types.ObjectId(id);
-        const product = await productModel.findOne({ _id: _id });
+        const product = await productModel.findOne({ _id: _id, tenantId: tenantObjectId });
         if(product){
             product.id = id;
         }
@@ -137,7 +143,8 @@ export async function fetchProductById(id: string) {
 export async function fetchCustomerById(id: string) {
     try {
         await dbConnect();
-        const customer = await customerModel.findById(id);
+        const tenantObjectId = await getTenantObjectId();
+        const customer = await customerModel.findOne({ _id: id, tenantId: tenantObjectId });
         return customer;
     } catch (error) {
         console.error('Error fetching customer:', error);
@@ -149,9 +156,10 @@ export async function fetchCustomerById(id: string) {
 export async function fetchInvoices(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
-        let query = {};
+        let query: any = {};
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
@@ -164,6 +172,8 @@ export async function fetchInvoices(page = 1, limit = 10, search = '') {
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: searchConditions };
         }
+
+        query = addTenantFilter(query, tenantObjectId);
 
         const invoices = await Invoice.find(query)
             .sort({ date: -1 })
@@ -191,9 +201,10 @@ export async function fetchInvoices(page = 1, limit = 10, search = '') {
 export async function fetchProposals(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
-        let query = {};
+        let query: any = {};
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
@@ -206,6 +217,8 @@ export async function fetchProposals(page = 1, limit = 10, search = '') {
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: searchConditions };
         }
+
+        query = addTenantFilter(query, tenantObjectId);
 
         const proposals = await Proposal.find(query)
             .sort({ _id: -1 })
@@ -230,10 +243,11 @@ export async function fetchProposals(page = 1, limit = 10, search = '') {
     }
 }
 
-export async function fetchProposalById(id: number) {
+export async function fetchProposalById(id: string) {
     try {
         await dbConnect();
-        const proposal = await Proposal.findById(id);
+        const tenantObjectId = await getTenantObjectId();
+        const proposal = await Proposal.findOne({ _id: id, tenantId: tenantObjectId });
         return JSON.parse(JSON.stringify(proposal));
     } catch (error) {
         console.error('Error fetching proposal:', error);
@@ -244,9 +258,10 @@ export async function fetchProposalById(id: number) {
 export async function fetchReturns(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
-        let query = {};
+        let query: any = {};
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
@@ -259,6 +274,8 @@ export async function fetchReturns(page = 1, limit = 10, search = '') {
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: searchConditions };
         }
+
+        query = addTenantFilter(query, tenantObjectId);
 
         const returns = await Return.find(query)
             .sort({ returnDate: -1 })
@@ -285,6 +302,7 @@ export async function fetchReturns(page = 1, limit = 10, search = '') {
 export async function fetchRepairs(page = 1, limit = 10, search = '', filter = 'outstanding') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
         // Calculate cutoff date (2 years ago)
@@ -340,10 +358,22 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
             
-            // Create a regex condition for each token
-            const tokenConditions = searchTokens.map(token => (
-                { search: { $regex: token, $options: 'i' } }
-            ));
+            // Create a regex condition for each token, matching against search field OR repairNumber
+            // also match token to dateOut but as a string formatted as 02/24/2026, note dateOut in db is a date field
+            
+
+            const tokenConditions = searchTokens.map(token => ({
+                $or: [
+                    { repairNumber: { $regex: token, $options: 'i' } },
+                    { description: { $regex: token, $options: 'i' } },
+                    { customerFirstName: { $regex: token, $options: 'i' } },
+                    { customerLastName: { $regex: token, $options: 'i' } },
+                    { vendor: { $regex: token, $options: 'i' } },
+                    { $expr: { $regexMatch: { input: { $dateToString: { format: '%m/%d/%Y', date: '$dateOut' } }, regex: token, options: 'i' } } },
+                    { $expr: { $regexMatch: { input: { $dateToString: { format: '%m/%d/%Y', date: '$returnDate' } }, regex: token, options: 'i' } } },
+                    { $expr: { $regexMatch: { input: { $toString: '$repairCost' }, regex: token, options: 'i' } } }
+                ]
+            }));
             
             // Combine token conditions with $and to ensure ALL tokens must be found (in any order)
             const searchConditions = { $and: tokenConditions };
@@ -393,6 +423,8 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
             }
         }
 
+        query = addTenantFilter(query, tenantObjectId);
+
         const repairs = await Repair.find(query)
             .sort({ _id: -1 })
             .skip(skip)
@@ -417,6 +449,7 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
 export async function fetchOutstandingRepairs(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
         // Build query to find repairs that don't have a return date (outstanding repairs)
@@ -432,6 +465,8 @@ export async function fetchOutstandingRepairs(page = 1, limit = 10, search = '')
                 ]
             };
         }
+
+        query = addTenantFilter(query, tenantObjectId);
 
         const repairs = await Repair.find(query)
             .sort({ dateOut: -1 })
@@ -455,6 +490,7 @@ export async function fetchOutstandingRepairs(page = 1, limit = 10, search = '')
 export async function fetchLogs(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
         let query: any = {
@@ -490,6 +526,8 @@ export async function fetchLogs(page = 1, limit = 10, search = '') {
             };
         }
 
+        query = addTenantFilter(query, tenantObjectId);
+
         const logs = await logModel.find(query)
             .sort({ _id: -1 })
             .skip(skip)
@@ -514,6 +552,7 @@ export async function fetchLogs(page = 1, limit = 10, search = '') {
 export async function fetchOuts(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
         let query: any = {
@@ -549,6 +588,8 @@ export async function fetchOuts(page = 1, limit = 10, search = '') {
             };
         }
 
+        query = addTenantFilter(query, tenantObjectId);
+
         const outs = await Out.find(query)
             .sort({ _id: -1 })
             .skip(skip)
@@ -574,7 +615,8 @@ export async function fetchOuts(page = 1, limit = 10, search = '') {
 export async function getRepairsForItem(productId: string) {
     try {
         await dbConnect();
-        const repairs = await Repair.find({ itemId: productId });
+        const tenantObjectId = await getTenantObjectId();
+        const repairs = await Repair.find({ itemId: productId, tenantId: tenantObjectId });
         return repairs;
     } catch (error) {
         console.error('Error fetching outs:', error);
@@ -586,12 +628,13 @@ export async function getRepairsForItem(productId: string) {
 export async function fetchLogItemById(id: string) {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         // Get the raw collection and convert to ObjectId
         const collection = logModel.collection;
         const _id = new mongoose.Types.ObjectId(id);
 
         // Use raw MongoDB query that we know works
-        const log = await collection.findOne({ _id });
+        const log = await collection.findOne({ _id, tenantId: tenantObjectId });
 
         if (!log) {
             return null;
@@ -607,7 +650,8 @@ export async function fetchLogItemById(id: string) {
 export async function fetchRepairByNumber(repairNumber: string) {
     try {
         await dbConnect();
-        const repair = await Repair.findOne({ repairNumber });
+        const tenantObjectId = await getTenantObjectId();
+        const repair = await Repair.findOne({ repairNumber, tenantId: tenantObjectId });
 
         return repair ? JSON.parse(JSON.stringify(repair)) : null;
     } catch (error) {
@@ -619,7 +663,8 @@ export async function fetchRepairByNumber(repairNumber: string) {
 export async function fetchRepairById(id: string) {
     try {
         await dbConnect();
-        const repair = await Repair.findOne({ _id: id });
+        const tenantObjectId = await getTenantObjectId();
+        const repair = await Repair.findOne({ _id: id, tenantId: tenantObjectId });
         return repair ? JSON.parse(JSON.stringify(repair)) : null;
     } catch (error) {
         console.error("Error fetching repair:", error);
@@ -652,8 +697,9 @@ export async function fetchTenantById(id: string) {
 export async function fetchInvoiceById(id: string) {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
-        const invoice = await Invoice.findById(id);
+        const invoice = await Invoice.findOne({ _id: id, tenantId: tenantObjectId });
 
         return invoice ? JSON.parse(JSON.stringify(invoice)) : null;
     } catch (error) {
@@ -709,14 +755,11 @@ export async function fetchPartnerInvoiceByProductId(id: string) {
             );
 
 
-            const newInvoiceNumber = await Counter.findByIdAndUpdate(
-                { _id: 'invoiceNumber' },
-                { $inc: { seq: 1 } },
-                { new: true, upsert: true }
-            );
+            const newInvoiceNumber = await getNextCounter('invoiceNumber');
 
-            invoice.invoiceNumber = newInvoiceNumber.seq;
-            invoice.search = `${newInvoiceNumber.seq} ${invoice.customerFirstName} ${invoice.customerLastName}`;
+            invoice.invoiceNumber = newInvoiceNumber;
+            invoice.tenantId = await getTenantObjectId();
+            invoice.search = `${newInvoiceNumber} ${invoice.customerFirstName} ${invoice.customerLastName}`;
             invoice.date = new Date();
 
             await invoice.save();
@@ -737,8 +780,9 @@ export async function fetchPartnerInvoiceByProductId(id: string) {
 export async function fetchOutById(id: string) {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const _id = new mongoose.Types.ObjectId(id);
-        const out = await Out.findOne({ _id });
+        const out = await Out.findOne({ _id, tenantId: tenantObjectId });
         return out ? JSON.parse(JSON.stringify(out)) : null;
     } catch (error) {
         console.error("Error fetching out item:", error);
@@ -749,7 +793,8 @@ export async function fetchOutById(id: string) {
 export async function fetchReturnById(id: string) {
     try {
         await dbConnect();
-        const returnItem = await Return.findById(id);
+        const tenantObjectId = await getTenantObjectId();
+        const returnItem = await Return.findOne({ _id: id, tenantId: tenantObjectId });
         return returnItem ? JSON.parse(JSON.stringify(returnItem)) : null;
     } catch (error) {
         console.error("Error fetching return item:", error);
@@ -760,7 +805,8 @@ export async function fetchReturnById(id: string) {
 export async function fetchReturnByInvoiceId(invoiceId: string) {
     try {
         await dbConnect();
-        const returnItem = await Return.findOne({ invoiceId: new mongoose.Types.ObjectId(invoiceId) });
+        const tenantObjectId = await getTenantObjectId();
+        const returnItem = await Return.findOne({ invoiceId: new mongoose.Types.ObjectId(invoiceId), tenantId: tenantObjectId });
         return returnItem ? JSON.parse(JSON.stringify(returnItem)) : null;
     } catch (error) {
         console.error("Error fetching return by invoice ID:", error);
@@ -771,6 +817,7 @@ export async function fetchReturnByInvoiceId(invoiceId: string) {
 export async function fetchWanted(page = 1, limit = 10, search = '') {
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
         let query: any = {};
@@ -791,6 +838,8 @@ export async function fetchWanted(page = 1, limit = 10, search = '') {
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: tokenConditions };
         }
+
+        query = addTenantFilter(query, tenantObjectId);
 
         const wanted = await Wanted.find(query)
             .sort({ createdDate: -1 })
@@ -816,7 +865,8 @@ export async function fetchWanted(page = 1, limit = 10, search = '') {
 export async function fetchWantedById(id: string) {
     try {
         await dbConnect();
-        const wanted = await Wanted.findById(id);
+        const tenantObjectId = await getTenantObjectId();
+        const wanted = await Wanted.findOne({ _id: id, tenantId: tenantObjectId });
         return JSON.parse(JSON.stringify(wanted));
     } catch (error) {
         console.error('Error fetching wanted item:', error);

@@ -1,8 +1,8 @@
 
 import { ViewProposal } from "@/components/proposals/view-proposal";
-import { fetchProposalById } from "@/lib/data";
+import { fetchProposalById, fetchTenantById } from "@/lib/data";
 import { notFound } from "next/navigation";
-import { fetchDefaultTenant } from "@/lib/data";
+import { getTenantId } from "@/lib/auth-utils";
 import { getImageHost } from "@/lib/utils/imageHost";
 
 interface PageProps {
@@ -12,8 +12,9 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
   
-  const proposal = await fetchProposalById(parseInt(id));
-  const tenant = await fetchDefaultTenant();
+  const proposal = await fetchProposalById(id);
+  const tenantId = await getTenantId();
+  const tenant = await fetchTenantById(tenantId);
   const imageHost = await getImageHost();
 
   

@@ -413,6 +413,72 @@ async function migrate() {
   }
 
   // =============================================
+  // SEED TENANT-SCOPED COUNTERS
+  // =============================================
+  console.log('\n========================================');
+  console.log('  SEEDING TENANT-SCOPED COUNTERS');
+  console.log('========================================');
+
+  const countersCollection = db.collection('counters');
+  const TENANT_ID_STR = '67f48a2050abe41246b22a87';
+
+  // Map of old counter _id to new tenant-scoped key
+  const counterNames = ['customerNumber', 'invoiceNumber', 'returnNumber', 'repairNumber', 'proposalNumber'];
+
+  for (const counterName of counterNames) {
+    const tenantKey = `${counterName}_${TENANT_ID_STR}`;
+    
+    // Check if tenant-scoped counter already exists
+    const existing = await countersCollection.findOne({ _id: tenantKey as any });
+    if (existing) {
+      console.log(`  ${counterName}: tenant-scoped counter already exists (seq=${existing.seq}), skipping`);
+      continue;
+    }
+
+    // Get the old counter value
+    const oldCounter = await countersCollection.findOne({ _id: counterName as any });
+    if (oldCounter) {
+      await countersCollection.insertOne({
+        _id: tenantKey as any,
+        tenantId: DEFAULT_TENANT_ID,
+        seq: oldCounter.seq
+      });
+      console.log(`  ${counterName}: created tenant-scoped counter with seq=${oldCounter.seq}`);
+    } else {
+      // No old counter exists; find max value from the collection
+      let maxSeq = 0;
+      if (counterName === 'customerNumber') {
+        const maxDoc = await customersCollection.find({}).sort({ customerNumber: -1 }).limit(1).toArray();
+        maxSeq = maxDoc[0]?.customerNumber || 0;
+      } else if (counterName === 'invoiceNumber') {
+        const maxDoc = await invoicesCollection.find({}).sort({ invoiceNumber: -1 }).limit(1).toArray();
+        maxSeq = maxDoc[0]?.invoiceNumber || 0;
+      } else if (counterName === 'returnNumber') {
+        const maxDoc = await returnsCollection.find({}).sort({ returnNumber: -1 }).limit(1).toArray();
+        maxSeq = maxDoc[0]?.returnNumber || 0;
+      } else if (counterName === 'repairNumber') {
+        const maxDoc = await repairsCollection.find({}).sort({ repairNumber: -1 }).limit(1).toArray();
+        const repairNum = parseInt(maxDoc[0]?.repairNumber || '0', 10);
+        maxSeq = isNaN(repairNum) ? 0 : repairNum;
+      } else if (counterName === 'proposalNumber') {
+        const maxDoc = await proposalsCollection.find({}).sort({ _id: -1 }).limit(1).toArray();
+        maxSeq = typeof maxDoc[0]?._id === 'number' ? maxDoc[0]._id : 0;
+      }
+
+      if (maxSeq > 0) {
+        await countersCollection.insertOne({
+          _id: tenantKey as any,
+          tenantId: DEFAULT_TENANT_ID,
+          seq: maxSeq
+        });
+        console.log(`  ${counterName}: no old counter found, created from max value seq=${maxSeq}`);
+      } else {
+        console.log(`  ${counterName}: no old counter and no existing data, skipping`);
+      }
+    }
+  }
+
+  // =============================================
   // VERIFICATION
   // =============================================
   console.log('\n--- Verification ---');

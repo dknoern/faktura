@@ -7,6 +7,7 @@ import { Invoice } from './models/invoice';
 import { logModel } from './models/log';
 import { fetchOuts } from './data';
 import { Wanted } from './models/wanted';
+import { getTenantObjectId } from './tenant-utils';
 
 export interface DashboardStats {
   totalInventory: number;
@@ -40,6 +41,7 @@ export interface InventoryBreakdown {
 export async function getDashboardStats(): Promise<DashboardStats> {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     
     // Total items in inventory (In Stock status)
     const totalInventory = await productModel.countDocuments({ 
@@ -50,7 +52,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         // someday we should delete all the bad records
         { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
         { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
-        { title: { $ne: null } } // Exclude items with null title
+        { title: { $ne: null } }, // Exclude items with null title
+        { tenantId: tenantObjectId }
     ]
     });
     
@@ -75,19 +78,20 @@ export async function getDashboardStats(): Promise<DashboardStats> {
             { status: { $exists: false } },
             { status: { $ne: 'Deleted' } }
           ]
-        }
+        },
+        { tenantId: tenantObjectId }
       ]
     });
     
     // Total items out at show (At Show status)
     const totalItemsAtShow = await productModel.countDocuments({ 
-      status: 'At Show' 
+      status: 'At Show', tenantId: tenantObjectId 
     });
 
     // Total items wanted where there is no found date
     // count records in wanteds collection that are not found
     const totalItemsWanted = await Wanted.countDocuments({ 
-      foundDate: null 
+      foundDate: null, tenantId: tenantObjectId 
     });
     
     return {
@@ -111,6 +115,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 export async function getMonthlySalesData(): Promise<MonthlySalesData[]> {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     
     // Get the last 24 months (2 years)
     const endDate = new Date();
@@ -121,7 +126,8 @@ export async function getMonthlySalesData(): Promise<MonthlySalesData[]> {
     const salesData = await Invoice.aggregate([
       {
         $match: {
-          date: { $gte: startDate, $lte: endDate }
+          date: { $gte: startDate, $lte: endDate },
+          tenantId: tenantObjectId
         }
       },
       {
@@ -180,8 +186,10 @@ export async function getRecentTransactions(): Promise<RecentTransaction[]> {
     
     const transactions: RecentTransaction[] = [];
     
+    const tenantObjectId = await getTenantObjectId();
+
     // Get recent sales (invoices)
-    const recentInvoices = await Invoice.find({})
+    const recentInvoices = await Invoice.find({ tenantId: tenantObjectId })
       .sort({ date: -1 })
       .limit(5)
       .lean();
@@ -198,7 +206,7 @@ export async function getRecentTransactions(): Promise<RecentTransaction[]> {
     }
     
     // Get recent log entries (log ins/outs)
-    const recentLogs = await logModel.find({})
+    const recentLogs = await logModel.find({ tenantId: tenantObjectId })
       .sort({ date: -1 })
       .limit(5)
       .lean();
@@ -247,6 +255,7 @@ export async function getRecentTransactions(): Promise<RecentTransaction[]> {
 export async function getInventoryByProductType(): Promise<InventoryBreakdown[]> {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     
     const productTypes = ['Watch', 'Pocket Watch', 'Jewelry', 'Accessories'];
     const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
@@ -260,7 +269,8 @@ export async function getInventoryByProductType(): Promise<InventoryBreakdown[]>
           { productType: productTypes[i] },
           { itemNumber: { $ne: null } },
           { itemNumber: { $ne: '' } },
-          { title: { $ne: null } }
+          { title: { $ne: null } },
+          { tenantId: tenantObjectId }
         ]
       });
       
@@ -286,7 +296,8 @@ export async function getInventoryByProductType(): Promise<InventoryBreakdown[]>
         },
         { itemNumber: { $ne: null } },
         { itemNumber: { $ne: '' } },
-        { title: { $ne: null } }
+        { title: { $ne: null } },
+        { tenantId: tenantObjectId }
       ]
     });
     
@@ -308,6 +319,7 @@ export async function getInventoryByProductType(): Promise<InventoryBreakdown[]>
 export async function getInventoryByStatus(): Promise<InventoryBreakdown[]> {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     
     const statuses = ['In Stock', 'Memo', 'Repair'];
     const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
@@ -320,7 +332,8 @@ export async function getInventoryByStatus(): Promise<InventoryBreakdown[]> {
           { status: statuses[i] },
           { itemNumber: { $ne: null } },
           { itemNumber: { $ne: '' } },
-          { title: { $ne: null } }
+          { title: { $ne: null } },
+          { tenantId: tenantObjectId }
         ]
       });
       

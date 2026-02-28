@@ -3,18 +3,21 @@ import { Invoice } from "./models/invoice";
 import { Repair } from './models/repair';
 import { Return } from './models/return';
 import { Wanted } from './models/wanted';
+import { getTenantObjectId } from './tenant-utils';
 
 export async function fetchInvoicesByCustomerId(customerId: string, page = 1, limit = 10) {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     const skip = (page - 1) * limit;
+    const filter = { customerId: customerId, tenantId: tenantObjectId };
 
-    const invoices = await Invoice.find({ customerId: customerId })
+    const invoices = await Invoice.find(filter)
       .sort({ _id: -1 })
       .skip(skip)
       .limit(limit);
 
-    const totalCount = await Invoice.countDocuments({ customerId: customerId });
+    const totalCount = await Invoice.countDocuments(filter);
 
     return {
       invoices: JSON.parse(JSON.stringify(invoices)),
@@ -34,14 +37,16 @@ export async function fetchInvoicesByCustomerId(customerId: string, page = 1, li
 export async function fetchRepairsByCustomerId(customerId: string, page = 1, limit = 10) {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     const skip = (page - 1) * limit;
+    const filter = { customerId: customerId, tenantId: tenantObjectId };
 
-    const repairs = await Repair.find({ customerId: customerId })
+    const repairs = await Repair.find(filter)
       .sort({ dateOut: -1 })
       .skip(skip)
       .limit(limit);
 
-    const totalCount = await Repair.countDocuments({ customerId: customerId });
+    const totalCount = await Repair.countDocuments(filter);
 
     return {
       repairs: JSON.parse(JSON.stringify(repairs)),
@@ -61,14 +66,16 @@ export async function fetchRepairsByCustomerId(customerId: string, page = 1, lim
 export async function fetchReturnsByCustomerId(customerId: string, page = 1, limit = 10) {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     const skip = (page - 1) * limit;
+    const filter = { customerId: customerId, tenantId: tenantObjectId };
 
-    const returns = await Return.find({ customerId: customerId })
+    const returns = await Return.find(filter)
       .sort({ returnDate: -1 })
       .skip(skip)
       .limit(limit);
 
-    const totalCount = await Return.countDocuments({ customerId: customerId });
+    const totalCount = await Return.countDocuments(filter);
 
     return {
       returns: JSON.parse(JSON.stringify(returns)),
@@ -89,14 +96,16 @@ export async function fetchReturnsByCustomerId(customerId: string, page = 1, lim
 export async function fetchWantedsByCustomerId(customerId: string, page = 1, limit = 10) {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     const skip = (page - 1) * limit;
+    const filter = { customerId: customerId, tenantId: tenantObjectId };
 
-    const wanteds = await Wanted.find({ customerId: customerId })
+    const wanteds = await Wanted.find(filter)
       .sort({ dateOut: -1 })
       .skip(skip)
       .limit(limit);
 
-    const totalCount = await Wanted.countDocuments({ customerId: customerId });
+    const totalCount = await Wanted.countDocuments(filter);
 
     return {
       wanteds: JSON.parse(JSON.stringify(wanteds)),

@@ -18,6 +18,7 @@ export default async function Page({ params }: PageProps) {
   // Serialize customer to plain object for client component
   const serializedCustomer = {
     _id: customer._id.toString(),
+    customerNumber: customer.customerNumber,
     firstName: customer.firstName,
     lastName: customer.lastName,
     email: customer.emails?.[0]?.email || '',

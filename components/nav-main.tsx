@@ -69,69 +69,11 @@ export function NavMain({
     return pathname.startsWith(itemUrl) && itemUrl !== '#';
   };
 
-  if (!mounted) {
-    return (
-      <SidebarGroup>
-        <SidebarMenu>
-          {items.map((item) => (
-            <Collapsible key={item.title} asChild defaultOpen={false}>
-              <SidebarMenuItem>
-                {item.items?.length ? (
-                  <>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton 
-                        tooltip={item.title}
-                        isActive={false}
-                      >
-                        <item.icon />
-                        <span>{item.title}</span>
-                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {item.items?.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton 
-                              asChild
-                              onClick={() => handleNavigation(subItem.url)}
-                              isActive={false}
-                            >
-                              <div className="cursor-pointer">
-                                <span>{subItem.title}</span>
-                              </div>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </>
-                ) : (
-                  <SidebarMenuButton 
-                    asChild 
-                    tooltip={item.title}
-                    onClick={() => handleNavigation(item.url)}
-                    isActive={false}
-                  >
-                    <div className="cursor-pointer">
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </div>
-                  </SidebarMenuButton>
-                )}
-              </SidebarMenuItem>
-            </Collapsible>
-          ))}
-        </SidebarMenu>
-      </SidebarGroup>
-    );
-  }
-
   return (
     <SidebarGroup>
       <SidebarMenu>
         {items.map((item) => {
-          const isActive = isItemActive(item.url, item.items);
+          const isActive = mounted ? isItemActive(item.url, item.items) : false;
           
           return (
             <Collapsible key={item.title} asChild defaultOpen={isActive}>
@@ -151,7 +93,7 @@ export function NavMain({
                     <CollapsibleContent>
                       <SidebarMenuSub>
                         {item.items?.map((subItem) => {
-                          const isSubItemActive = pathname === subItem.url;
+                          const isSubItemActive = mounted ? pathname === subItem.url : false;
                           
                           return (
                             <SidebarMenuSubItem key={subItem.title}>

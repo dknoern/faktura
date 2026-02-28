@@ -8,7 +8,7 @@ interface ProposalLineItem {
 }
 
 export interface Proposal {
-  _id: number;
+  _id: string;
   customerId: string;
   customerFirstName: string;
   customerLastName: string;
@@ -46,7 +46,7 @@ export function generateProposalHtml(proposal: Proposal, tenant: Tenant, imageBa
       <!-- Header -->
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; border-bottom: 2px solid #B69D57; padding-bottom: 20px;">
         <div style="flex: 1;">
-          ${logoUrl ? `<img src="${logoUrl}" alt="Logo" style="height: 76px; width: 190px; margin-bottom: 10px;">` : ''}
+          ${logoUrl ? `<img src="${logoUrl}" alt="Logo" style="max-height: 76px; width: auto; margin-bottom: 10px;">` : ''}
           <h1 style="color: #B69D57; font-size: 24px; margin: 0; font-weight: bold;">PROPOSAL</h1>
         </div>
         <div style="text-align: right; flex: 1;">
@@ -61,7 +61,6 @@ export function generateProposalHtml(proposal: Proposal, tenant: Tenant, imageBa
       <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
         <div>
           <h3 style="margin: 0 0 10px 0; color: #333;">Proposal Details</h3>
-          <p style="margin: 5px 0;"><strong>Proposal #:</strong> ${proposal._id}</p>
           <p style="margin: 5px 0;"><strong>Date:</strong> ${formatDate(proposal.date)}</p>
           <p style="margin: 5px 0;"><strong>Status:</strong> ${proposal.status || 'Draft'}</p>
         </div>
@@ -117,7 +116,7 @@ export function generateEmailHtml(proposal: Proposal, tenant: Tenant, imageBaseU
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Proposal #${proposal._id}</title>
+      <title>Proposal</title>
       <style>
         @media print {
           body { margin: 0.5in; }

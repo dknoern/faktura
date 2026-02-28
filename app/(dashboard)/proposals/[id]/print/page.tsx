@@ -10,7 +10,7 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
   
-  const proposal = await fetchProposalById(parseInt(id));
+  const proposal = await fetchProposalById(id);
   
   if (!proposal) {
     notFound();

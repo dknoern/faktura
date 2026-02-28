@@ -3,6 +3,7 @@ import dbConnect from "@/lib/dbConnect"
 import { Repair } from "@/lib/models/repair"
 import { fetchDefaultTenant } from "@/lib/data"
 import { getImageHost } from "@/lib/utils/imageHost"
+import { getTenantObjectId } from "@/lib/tenant-utils"
 
 export async function POST(
   request: NextRequest,
@@ -32,8 +33,9 @@ export async function POST(
       message: message.trim()
     }
 
+    const tenantObjectId = await getTenantObjectId()
     // Find the repair and add the message
-    const repair = await Repair.findById(id)
+    const repair = await Repair.findOne({ _id: id, tenantId: tenantObjectId })
     
     if (!repair) {
       return NextResponse.json(

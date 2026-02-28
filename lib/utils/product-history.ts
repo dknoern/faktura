@@ -1,4 +1,5 @@
 import { productModel } from "../models/product";
+import { getTenantObjectId } from "../tenant-utils";
 
 export async function updateProductHistory(lineItems: any[], status: string, action: string, user: string, refDoc: string) {
 
@@ -18,9 +19,11 @@ export async function updateProductHistory(lineItems: any[], status: string, act
                 historyEntry.refDoc = refDoc;
             }
 
+            const tenantObjectId = await getTenantObjectId();
             await productModel.findOneAndUpdate({
                 _id: lineItem.productId,
-                status: { $ne: status }
+                status: { $ne: status },
+                tenantId: tenantObjectId
 
             }, {
                 "$push": {

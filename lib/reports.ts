@@ -5,12 +5,14 @@ import { productModel } from "./models/product";
 import { Repair } from "./models/repair";
 import { Return } from "./models/return";
 import { Invoice } from "./models/invoice";
+import { getTenantObjectId } from "./tenant-utils";
 
 export async function getBySellerType(sellerType: string) {
     try {
 
         await dbConnect();
-        const products = await productModel.find({ "sellerType": sellerType }).sort({
+        const tenantObjectId = await getTenantObjectId();
+        const products = await productModel.find({ "sellerType": sellerType, tenantId: tenantObjectId }).sort({
             lastUpdated: -1
         }).select({
             seller: 1,
@@ -35,8 +37,9 @@ export async function getVendorsWithOutstandingRepairs() {
     try {
         await dbConnect();
 
+        const tenantObjectId = await getTenantObjectId();
         const repairs = await Repair.find({
-            'returnDate': null
+            'returnDate': null, tenantId: tenantObjectId
         }).sort({
             vendor: 1
         }).select({
@@ -61,10 +64,12 @@ export async function getOutstandingRepairs(vendor: string) {
         if (vendor == "all") vendor = "";
 
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const repairs = await Repair.find({
             'returnDate': null,
-            'search': new RegExp(vendor, 'i')
+            'search': new RegExp(vendor, 'i'),
+            tenantId: tenantObjectId
 
         }).sort({
             dateOut: -1
@@ -91,9 +96,10 @@ export async function getItemsOnMemo() {
     try {
 
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const products = await productModel.find({
-            'status': 'Memo'
+            'status': 'Memo', tenantId: tenantObjectId
         }).sort({
             lastUpdated: -1
         }).select({
@@ -116,6 +122,7 @@ export async function getDailySales(year: number, month: number, day: number) {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         // Create start and end dates for the day in local timezone
         const startDate = new Date(year, month - 1, day, 0, 0, 0, 0);
@@ -126,7 +133,8 @@ export async function getDailySales(year: number, month: number, day: number) {
                 $gte: startDate,
                 $lte: endDate
             },
-            "invoiceType": { $nin: ["Partner", "Consignment"] }
+            "invoiceType": { $nin: ["Partner", "Consignment"] },
+            tenantId: tenantObjectId
         }).sort({
             date: -1
         }).select({
@@ -150,12 +158,14 @@ export async function getLogItems(year: number, month: number, day: number) {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const products = await productModel.find({
             "received": {
                 $gte: new Date(year, month - 1, day),
                 $lt: new Date(year, month - 1, day + 1)
-            }
+            },
+            tenantId: tenantObjectId
         }).sort({
             date: -1
         }).select({
@@ -180,12 +190,14 @@ export async function getReturnsSummary(year: number, month: number) {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const returns = await Return.find({
             "returnDate": {
                 $gte: new Date(year, month - 1, 1),
                 $lte: new Date(year, month, 1)
-            }
+            },
+            tenantId: tenantObjectId
         }).sort({
             returnDate: -1
         }).select({
@@ -207,9 +219,10 @@ export async function getProductsForSellerType(sellerType: string) {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const products = await productModel.find({
-            "sellerType": sellerType
+            "sellerType": sellerType, tenantId: tenantObjectId
         }).sort({
             lastUpdated: -1
         }).select({
@@ -235,13 +248,15 @@ export async function getMonthlySales(year: number, month: number) {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const invoices = await Invoice.find({
             //"invoiceType": "Invoice",
             "date": {
                 $gte: new Date(year, month - 1, 1),
                 $lte: new Date(year, month, 1)
-            }
+            },
+            tenantId: tenantObjectId
 
         }).sort({
             date: -1
@@ -270,9 +285,10 @@ export async function getOutAtShow() {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const products = await productModel.find({
-            'status': 'At Show'
+            'status': 'At Show', tenantId: tenantObjectId
         }).sort({
             lastUpdated: -1
         }).select({
@@ -295,12 +311,14 @@ export async function getInStock() {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const products = await productModel.find({
             $and: [{
                 status: { $in: ["In Stock", "Partnership", "Consignment"] }
             },
-            { itemNumber: { $ne: null } }
+            { itemNumber: { $ne: null } },
+            { tenantId: tenantObjectId }
             ]
         }).sort({
             lastUpdated: -1
@@ -326,12 +344,14 @@ export async function getAllStock() {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const products = await productModel.find({
             $and: [{
                 status: { $in: ["In Stock", "Memo", "Repair"] }
             },
-            { itemNumber: { $ne: null } }
+            { itemNumber: { $ne: null } },
+            { tenantId: tenantObjectId }
             ]
         }).sort({
             lastUpdated: -1
@@ -357,8 +377,9 @@ export async function getShowReport() {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
         const products = await productModel.find({
-            'status': 'At Show'
+            'status': 'At Show', tenantId: tenantObjectId
         }).sort({
             lastUpdated: -1
         }).select({
@@ -386,7 +407,8 @@ export async function getFirstSaleDate() {
 
     try {
         await dbConnect();
-        const invoice = await Invoice.findOne({}).sort({
+        const tenantObjectId = await getTenantObjectId();
+        const invoice = await Invoice.findOne({ tenantId: tenantObjectId }).sort({
             date: 1
         }).select({
             date: 1
@@ -406,7 +428,8 @@ export async function getLastSaleDate() {
 
     try {
         await dbConnect();
-        const invoice = await Invoice.findOne({}).sort({
+        const tenantObjectId = await getTenantObjectId();
+        const invoice = await Invoice.findOne({ tenantId: tenantObjectId }).sort({
             date: -1
         }).select({
             date: 1
@@ -427,8 +450,10 @@ export async function getCustomers() {
 
     try {
         await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
 
         const customers = await customerModel.find({
+            tenantId: tenantObjectId
         }).sort({
             customerNumber: -1
         }).select({

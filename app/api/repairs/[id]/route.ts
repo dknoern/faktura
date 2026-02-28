@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { Repair } from '@/lib/models/repair';
 import { getShortUser } from '@/lib/auth-utils';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function GET(
   request: Request,
@@ -19,8 +20,9 @@ export async function GET(
     
     await dbConnect();
     
+    const tenantObjectId = await getTenantObjectId();
     // Fetch repair by _id
-    const repair: any = await Repair.findById(id).lean();
+    const repair: any = await Repair.findOne({ _id: id, tenantId: tenantObjectId }).lean();
     
     if (!repair) {
       return NextResponse.json(
@@ -67,9 +69,10 @@ export async function DELETE(
     // Get current user for tracking
     const user = await getShortUser();
     
+    const tenantObjectId = await getTenantObjectId();
     // Perform soft delete by updating status to "Deleted" and setting lastUpdated
-    const updatedRepair = await Repair.findByIdAndUpdate(
-      id,
+    const updatedRepair = await Repair.findOneAndUpdate(
+      { _id: id, tenantId: tenantObjectId },
       { 
         status: 'Deleted',
         lastUpdated: new Date()

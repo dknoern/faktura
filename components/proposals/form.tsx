@@ -12,6 +12,7 @@ import { toast } from "react-hot-toast"
 
 interface Customer {
   _id: string
+  customerNumber?: number
   firstName: string
   lastName: string
   email?: string
@@ -19,7 +20,7 @@ interface Customer {
 }
 
 interface Proposal {
-  _id?: number
+  _id?: string
   customerId: string
   customerFirstName: string
   customerLastName: string
@@ -40,6 +41,7 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
   
   const [formData, setFormData] = useState({
     customerId: customer._id,
+    customerNumber: customer.customerNumber,
     customerFirstName: customer.firstName,
     customerLastName: customer.lastName,
     date: proposal?.date || new Date().toISOString().split('T')[0],

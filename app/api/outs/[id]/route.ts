@@ -3,6 +3,7 @@ import dbConnect from '@/lib/dbConnect';
 import { Out } from '@/lib/models/out';
 import { getShortUser } from '@/lib/auth-utils';
 import mongoose from 'mongoose';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function GET(
   request: NextRequest,
@@ -13,7 +14,8 @@ export async function GET(
     const id = (await params).id;
     const _id = new mongoose.Types.ObjectId(id);
     
-    const out = await Out.findOne({ _id });
+    const tenantObjectId = await getTenantObjectId();
+    const out = await Out.findOne({ _id, tenantId: tenantObjectId });
     
     if (!out) {
       return NextResponse.json(
@@ -50,8 +52,9 @@ export async function PUT(
       data.user
     ].filter(Boolean).join(' ').toLowerCase();
     
+    const tenantObjectId = await getTenantObjectId();
     const updatedOut = await Out.findOneAndUpdate(
-      { _id },
+      { _id, tenantId: tenantObjectId },
       data,
       { new: true, runValidators: true }
     );
@@ -85,9 +88,10 @@ export async function DELETE(
     // Get current user for tracking
     const user = await getShortUser();
     
+    const tenantObjectId = await getTenantObjectId();
     // Perform soft delete by updating status to "Deleted" and setting lastUpdated
     const updatedOut = await Out.findOneAndUpdate(
-      { _id },
+      { _id, tenantId: tenantObjectId },
       { 
         status: 'Deleted',
         lastUpdated: new Date()

@@ -42,3 +42,4 @@ export async function getTenantName() {
     return defaultTenantName;
   }
 }
+

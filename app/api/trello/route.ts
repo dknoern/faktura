@@ -538,7 +538,7 @@ async function handleUpdateCard(actionData: any) {
 
                 // rebuild search field
                 const fullRepairDetails = {
-                    ...originalRepairRecord,
+                    ...originalRepairRecord.toObject(),
                     vendor: vendor
                 }
                 const searchField = buildRepairSearchField(fullRepairDetails);

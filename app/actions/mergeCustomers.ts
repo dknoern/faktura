@@ -6,6 +6,7 @@ import { Invoice } from "@/lib/models/invoice";
 import { Repair } from "@/lib/models/repair";
 import { Return } from "@/lib/models/return";
 import { revalidatePath } from "next/cache";
+import { getTenantObjectId } from "@/lib/tenant-utils";
 
 type MergeCustomersResult = {
   success: boolean;
@@ -23,9 +24,10 @@ export async function mergeCustomers(customerIds: string[]): Promise<MergeCustom
     }
 
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     
     // Find all customers and pick the one with the lowest customerNumber as canonical
-    const allCustomerDocs = await customerModel.find({ _id: { $in: customerIds } }).sort({ customerNumber: 1 });
+    const allCustomerDocs = await customerModel.find({ _id: { $in: customerIds }, tenantId: tenantObjectId }).sort({ customerNumber: 1 });
     if (allCustomerDocs.length === 0) {
       return {
         success: false,
@@ -40,7 +42,7 @@ export async function mergeCustomers(customerIds: string[]): Promise<MergeCustom
     // Process each customer ID
     for (const id of customerIds) {
       // Update invoices to point to the canonical customer
-      const invoices = await Invoice.find({ customerId: id });
+      const invoices = await Invoice.find({ customerId: id, tenantId: tenantObjectId });
       for (const invoice of invoices) {
         if (id !== canonicalId) {
           console.log(`Moving invoice ${invoice._id} from customer ${invoice.customerId} to ${canonicalId}`);
@@ -51,7 +53,7 @@ export async function mergeCustomers(customerIds: string[]): Promise<MergeCustom
       }
       
       // Update returns to point to the canonical customer
-      const returns = await Return.find({ customerId: id });
+      const returns = await Return.find({ customerId: id, tenantId: tenantObjectId });
       for (const returnDoc of returns) {
         if (id !== canonicalId) {
           console.log(`Moving return ${returnDoc._id} from customer ${returnDoc.customerId} to ${canonicalId}`);
@@ -62,7 +64,7 @@ export async function mergeCustomers(customerIds: string[]): Promise<MergeCustom
       }
 
       // Update repairs to point to the canonical customer
-      const repairs = await Repair.find({ customerId: id });
+      const repairs = await Repair.find({ customerId: id, tenantId: tenantObjectId });
       for (const repair of repairs) {
         if (id !== canonicalId) {
           console.log(`Moving repair ${repair._id} from customer ${repair.customerId} to ${canonicalId}`);
@@ -85,7 +87,7 @@ export async function mergeCustomers(customerIds: string[]): Promise<MergeCustom
 
         // Delete the merged customer
         console.log(`Deleting merged customer ${customer._id}`);
-        await customerModel.deleteOne({ _id: customer._id });
+        await customerModel.deleteOne({ _id: customer._id, tenantId: tenantObjectId });
       }
     }
 

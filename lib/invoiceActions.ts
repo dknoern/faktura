@@ -3,13 +3,12 @@
 import { revalidatePath } from "next/cache";
 import dbConnect from "./dbConnect";
 import { Invoice } from "./models/invoice";
-import { Counter } from "./models/counter";
 import { calcTax } from "./utils/tax";
 import { updateProductHistory } from "./utils/product-history";
-import { getShortUser, getTenantId } from "./auth-utils";
+import { getShortUser } from "./auth-utils";
 import { format } from "date-fns";
-import mongoose from "mongoose";
 import { productModel } from "./models/product";
+import { getNextCounter, getTenantObjectId } from "./tenant-utils";
 
 export interface LineItem {
   productId?: string;
@@ -81,8 +80,9 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
         .filter((pid): pid is string => typeof pid === 'string' && pid.trim() !== '');
 
       if (productIds.length > 0) {
+        const tenantObjId = await getTenantObjectId();
         const products = await productModel
-          .find({ _id: { $in: productIds } })
+          .find({ _id: { $in: productIds }, tenantId: tenantObjId })
           .select({ status: 1, itemNumber: 1, title: 1 })
           .lean();
 
@@ -112,8 +112,9 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
     }
     
     if (isUpdate) {
+      const tenantObjectId = await getTenantObjectId();
       // Update existing invoice - fetch existing invoiceNumber
-      const existing = await Invoice.findById(id).select('invoiceNumber').lean();
+      const existing = await Invoice.findOne({ _id: id, tenantId: tenantObjectId }).select('invoiceNumber').lean();
       invoiceNumber = (existing as any)?.invoiceNumber || data.invoiceNumber || 0;
       invoiceData = {
         ...data,
@@ -121,19 +122,15 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
       };
     } else {
       // Create new invoice
-      // Generate a new invoice number using Counter
-      const newInvoiceNumber = await Counter.findByIdAndUpdate(
-        { _id: 'invoiceNumber' },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      );
+      // Generate a new invoice number using getNextCounter
+      const newInvoiceNumber = await getNextCounter('invoiceNumber');
       
-      invoiceNumber = newInvoiceNumber.seq;
-      const tenantId = await getTenantId();
+      invoiceNumber = newInvoiceNumber;
+      const tenantObjectId = await getTenantObjectId();
       invoiceData = {
         ...data,
         invoiceNumber: invoiceNumber,
-        tenantId: new mongoose.Types.ObjectId(tenantId),
+        tenantId: tenantObjectId,
         date: new Date(data.date)
       };
     }
@@ -173,7 +170,8 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
     
     if (isUpdate) {
       // Update existing invoice
-      await Invoice.findByIdAndUpdate(id, invoiceData);
+      const tenantObjForUpdate = await getTenantObjectId();
+      await Invoice.findOneAndUpdate({ _id: id, tenantId: tenantObjForUpdate }, invoiceData);
     } else {
       // Create new invoice
       const invoice = new Invoice(invoiceData);

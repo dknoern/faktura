@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { Wanted } from '@/lib/models/wanted';
-import mongoose from 'mongoose';
-import { getShortUser, getTenantId } from '@/lib/auth-utils';
+import { getShortUser } from '@/lib/auth-utils';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,12 +10,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const currentUser = await getShortUser();
     
-    const tenantId = await getTenantId();
+    const tenantObjectId = await getTenantObjectId();
     const wanted = new Wanted({
       ...body,
       createdDate: new Date(),
       createdBy: currentUser,
-      tenantId: new mongoose.Types.ObjectId(tenantId),
+      tenantId: tenantObjectId,
     });
     
     await wanted.save();
@@ -36,14 +36,20 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     
     const skip = (page - 1) * limit;
-    let query: any = {};
+    const tenantObjectId = await getTenantObjectId();
+    let query: any = { tenantId: tenantObjectId };
     
     if (search) {
       query = {
-        $or: [
-          { title: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { customerName: { $regex: search, $options: 'i' } }
+        $and: [
+          { tenantId: tenantObjectId },
+          {
+            $or: [
+              { title: { $regex: search, $options: 'i' } },
+              { description: { $regex: search, $options: 'i' } },
+              { customerName: { $regex: search, $options: 'i' } }
+            ]
+          }
         ]
       };
     }

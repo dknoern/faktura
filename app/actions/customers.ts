@@ -1,13 +1,11 @@
 'use server'
 
-import mongoose from "mongoose";
 import dbConnect from "@/lib/dbConnect";
 import { customerModel } from "@/lib/models/customer";
-import { Counter } from "@/lib/models/counter";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { customerSchema } from "@/lib/models/customer";
-import { getTenantId } from "@/lib/auth-utils";
+import { getNextCounter, getTenantObjectId } from "@/lib/tenant-utils";
 
 type CustomerData = z.infer<typeof customerSchema>;
 type CustomerFormData = Omit<CustomerData, '_id' | 'lastUpdated' | 'search'>;
@@ -22,13 +20,8 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
   try {
     await dbConnect();
 
-    const newCustomerNumber = await Counter.findByIdAndUpdate({
-      _id: 'customerNumber'
-    }, {
-      $inc: {
-        seq: 1
-      }
-    });
+    const newCustomerNumber = await getNextCounter('customerNumber');
+    const tenantObjectId = await getTenantObjectId();
 
     const emailsString = data.emails
       ? data.emails.map((item: any) => typeof item === 'string' ? item : item.email).join(' ')
@@ -37,13 +30,12 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
       ? data.phones.map((item: any) => typeof item === 'string' ? item : item.phone).join(' ')
       : '';
 
-    const tenantId = await getTenantId();
     const customer = await customerModel.create({
       ...data,
-      customerNumber: newCustomerNumber.seq,
+      customerNumber: newCustomerNumber,
       lastUpdated: new Date(),
-      tenantId: new mongoose.Types.ObjectId(tenantId),
-      search: `${newCustomerNumber.seq} ${data.firstName} ${data.lastName} ${data.company} ${emailsString} ${phonesString}`.toLowerCase(),
+      tenantId: tenantObjectId,
+      search: `${newCustomerNumber} ${data.firstName} ${data.lastName} ${data.company} ${emailsString} ${phonesString}`.toLowerCase(),
     });
 
     revalidatePath('/customers');
@@ -83,12 +75,13 @@ export async function updateCustomer(id: string, data: CustomerFormData): Promis
       ? data.phones.map((item: any) => typeof item === 'string' ? item : item.phone).join(' ')
       : '';
 
+    const tenantObjectId = await getTenantObjectId();
     // Fetch existing customer to get customerNumber for search field
-    const existingCustomer = await customerModel.findById(id).select('customerNumber');
+    const existingCustomer = await customerModel.findOne({ _id: id, tenantId: tenantObjectId }).select('customerNumber');
     const customerNumber = existingCustomer?.customerNumber || '';
 
-    const customer = await customerModel.findByIdAndUpdate(
-      id,
+    const customer = await customerModel.findOneAndUpdate(
+      { _id: id, tenantId: tenantObjectId },
       {
         ...data,
         lastUpdated: new Date(),

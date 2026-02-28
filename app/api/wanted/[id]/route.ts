@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { Wanted } from '@/lib/models/wanted';
 import { getShortUser } from '@/lib/auth-utils';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function GET(
   request: NextRequest,
@@ -10,7 +11,8 @@ export async function GET(
   try {
     await dbConnect();
     const { id } = await params;
-    const wanted = await Wanted.findById(id);
+    const tenantObjectId = await getTenantObjectId();
+    const wanted = await Wanted.findOne({ _id: id, tenantId: tenantObjectId });
     
     if (!wanted) {
       return NextResponse.json({ error: 'Wanted item not found' }, { status: 404 });
@@ -33,14 +35,15 @@ export async function PUT(
     const body = await request.json();
     const currentUser = await getShortUser();
     
+    const tenantObjectId = await getTenantObjectId();
     // If foundDate is being set and wasn't set before, add foundBy
-    const existingWanted = await Wanted.findById(id);
+    const existingWanted = await Wanted.findOne({ _id: id, tenantId: tenantObjectId });
     if (body.foundDate && !existingWanted?.foundDate) {
       body.foundBy = currentUser;
     }
     
-    const wanted = await Wanted.findByIdAndUpdate(
-      id,
+    const wanted = await Wanted.findOneAndUpdate(
+      { _id: id, tenantId: tenantObjectId },
       body,
       { new: true, runValidators: true }
     );
@@ -63,7 +66,8 @@ export async function DELETE(
   try {
     await dbConnect();
     const { id } = await params;
-    const wanted = await Wanted.findByIdAndDelete(id);
+    const tenantObjectId = await getTenantObjectId();
+    const wanted = await Wanted.findOneAndDelete({ _id: id, tenantId: tenantObjectId });
     
     if (!wanted) {
       return NextResponse.json({ error: 'Wanted item not found' }, { status: 404 });

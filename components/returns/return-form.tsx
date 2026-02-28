@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +59,7 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
 
   const [formData, setFormData] = useState<ReturnData>(initialData || defaultData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   // Calculate totals whenever relevant form fields change
   useEffect(() => {
@@ -129,6 +130,8 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -148,11 +151,10 @@ export default function ReturnForm({ initialData }: ReturnFormProps) {
 
       toast.success(`Return ${isEditing ? 'updated' : 'created'} successfully`);
       router.push('/returns');
-      router.refresh();
     } catch (error) {
       console.error('Error saving return:', error);
       toast.error('Failed to save return');
-    } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };

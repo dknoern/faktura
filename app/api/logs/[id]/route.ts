@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { logModel } from '@/lib/models/log';
 import { getShortUser } from '@/lib/auth-utils';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function GET(
   request: Request,
@@ -19,8 +20,9 @@ export async function GET(
     
     await dbConnect();
     
+    const tenantObjectId = await getTenantObjectId();
     // Fetch log by _id
-    const log: any = await logModel.findById(id).lean();
+    const log: any = await logModel.findOne({ _id: id, tenantId: tenantObjectId }).lean();
     
     if (!log) {
       return NextResponse.json(
@@ -70,9 +72,10 @@ export async function PUT(
     const body = await request.json();
     const { signature, signatureDate } = body;
     
+    const tenantObjectId = await getTenantObjectId();
     // Update log with signature data
-    const updatedLog = await logModel.findByIdAndUpdate(
-      id,
+    const updatedLog = await logModel.findOneAndUpdate(
+      { _id: id, tenantId: tenantObjectId },
       { 
         signature,
         signatureDate: signatureDate ? new Date(signatureDate) : new Date(),
@@ -121,9 +124,10 @@ export async function DELETE(
     // Get current user for tracking
     const user = await getShortUser();
     
+    const tenantObjectId = await getTenantObjectId();
     // Perform soft delete by updating status to "Deleted" and setting lastUpdated
-    const updatedLog = await logModel.findByIdAndUpdate(
-      id,
+    const updatedLog = await logModel.findOneAndUpdate(
+      { _id: id, tenantId: tenantObjectId },
       { 
         status: 'Deleted',
         lastUpdated: new Date()

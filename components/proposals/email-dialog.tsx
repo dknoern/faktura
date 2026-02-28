@@ -21,7 +21,7 @@ interface ProposalLineItem {
 }
 
 interface Proposal {
-  _id: number
+  _id: string
   customerId: string
   customerFirstName: string
   customerLastName: string
@@ -126,7 +126,7 @@ export function EmailDialog({ isOpen, onClose, proposal }: EmailDialogProps) {
         <DialogHeader>
           <DialogTitle>Email Proposal</DialogTitle>
           <DialogDescription>
-            Send Proposal #{proposal._id} to one or more email addresses. 
+            Send this proposal to one or more email addresses. 
             Separate multiple addresses with commas.
           </DialogDescription>
         </DialogHeader>

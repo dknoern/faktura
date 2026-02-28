@@ -1,12 +1,10 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import mongoose from "mongoose";
 import dbConnect from "./dbConnect";
 import { Proposal } from "./models/proposal";
-import { Counter } from "./models/counter";
 import { format } from "date-fns";
-import { getTenantId } from "./auth-utils";
+import { getTenantObjectId } from "./tenant-utils";
 
 export interface ProposalLineItem {
   name: string;
@@ -15,7 +13,7 @@ export interface ProposalLineItem {
 }
 
 export interface ProposalData {
-  _id?: number;
+  _id?: string;
   customerId?: string;
   customerNumber?: number;
   customerFirstName: string;
@@ -26,11 +24,11 @@ export interface ProposalData {
   status?: string;
 }
 
-export async function upsertProposal(data: ProposalData, id?: number) {
+export async function upsertProposal(data: ProposalData, id?: string) {
   try {
     await dbConnect();
     
-    let proposalId: number;
+    let proposalId: string;
     let proposalData: any;
     
     // Check if we're updating an existing proposal or creating a new one
@@ -44,20 +42,11 @@ export async function upsertProposal(data: ProposalData, id?: number) {
         date: new Date(data.date)
       };
     } else {
-      // Create new proposal
-      // Generate a new proposal number using Counter
-      const newProposalNumber = await Counter.findByIdAndUpdate(
-        { _id: 'proposalNumber' },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      );
-      
-      proposalId = newProposalNumber.seq;
-      const tenantId = await getTenantId();
+      // Create new proposal — let MongoDB generate the ObjectId
+      const tenantObjectId = await getTenantObjectId();
       proposalData = {
         ...data,
-        _id: proposalId,
-        tenantId: new mongoose.Types.ObjectId(tenantId),
+        tenantId: tenantObjectId,
         date: new Date(data.date)
       };
     }
@@ -70,11 +59,14 @@ export async function upsertProposal(data: ProposalData, id?: number) {
     
     if (isUpdate) {
       // Update existing proposal
-      await Proposal.findByIdAndUpdate(id, proposalData);
+      const tenantObjectId = await getTenantObjectId();
+      await Proposal.findOneAndUpdate({ _id: id, tenantId: tenantObjectId }, proposalData);
+      proposalId = id;
     } else {
       // Create new proposal
       const proposal = new Proposal(proposalData);
       await proposal.save();
+      proposalId = proposal._id.toString();
     }
     
     revalidatePath('/proposals');

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/dbConnect';
 import { Repair } from '@/lib/models/repair';
 import { getShortUser } from '@/lib/auth-utils';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function PUT(
   request: NextRequest,
@@ -20,9 +21,11 @@ export async function PUT(
     // Get current user for history tracking
     const user = await getShortUser();
 
+    const tenantObjectId = await getTenantObjectId();
+
     // Find and update the repair by _id
-    const repair = await Repair.findByIdAndUpdate(
-      id,
+    const repair = await Repair.findOneAndUpdate(
+      { _id: id, tenantId: tenantObjectId },
       { 
         vendor: vendor || '', // Set to empty string if vendor is null/undefined
         lastUpdated: new Date()
@@ -43,8 +46,8 @@ export async function PUT(
     };
 
     // Update repair with history entry
-    await Repair.findByIdAndUpdate(
-      id,
+    await Repair.findOneAndUpdate(
+      { _id: id, tenantId: tenantObjectId },
       { 
         $push: { history: historyEntry }
       }

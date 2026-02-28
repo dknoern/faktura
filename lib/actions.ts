@@ -5,23 +5,19 @@ import { Repair } from "./models/repair";
 import { Return } from "./models/return";
 import { productModel } from "./models/product";
 import dbConnect from "./dbConnect";
-import { getShortUser, getTenantId } from "./auth-utils";
+import { getShortUser } from "./auth-utils";
 import { format } from "date-fns";
-import { Counter } from "./models/counter";
 import { updateProductHistory } from "./utils/product-history";
 import { createTrelloRepairCard } from "./trello-api";
 import { revalidatePath } from "next/cache";
 import { buildRepairSearchField } from "./utils/repair-search";
+import { getNextCounter, getCurrentCounter, setCounter, getTenantObjectId } from "./tenant-utils";
 
-// Helper function to get next repair number
+// Helper function to get next repair number (tenant-scoped)
 async function getNextRepairNumber(): Promise<string> {
   try {
-    const counter = await Counter.findByIdAndUpdate(
-      'repairNumber',
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true }
-    );
-    return counter.seq.toString();
+    const seq = await getNextCounter('repairNumber');
+    return seq.toString();
   } catch (error) {
     console.error("Error getting next repair number:", error);
     throw error;
@@ -68,9 +64,8 @@ export async function createRepair(formData: FormData) {
       console.log('new repairNumber', repairNumber)
     } else {
       console.log('repairNumber is not blank, checking if it is a valid number')
-      // get current value of repairNumber seq from Counter
-      const counter = await Counter.findOne({ _id: 'repairNumber' });
-      const counterValue = counter?.seq;
+      // get current value of repairNumber seq from Counter (tenant-scoped)
+      const counterValue = await getCurrentCounter('repairNumber');
       console.log('current counter value', counterValue)
 
       // also check if entered repairNumber is already used
@@ -85,15 +80,14 @@ export async function createRepair(formData: FormData) {
       }
 
       // if repairNumber is a number and less than 50000 but more than the counter value, set the counter value to repairNumber
-      // check that repaiarNumber can be parsed as a number
       console.log('checking if repairNumber is a number and less than 50000 but more than the counter value')
       if (Number(repairNumber) < 50000 && Number(repairNumber) > counterValue) {
         console.log('repairNumber is a number and less than 50000 but more than the counter value, updating counter')
-        await Counter.findOneAndUpdate({ _id: 'repairNumber' }, { seq: repairNumber });
+        await setCounter('repairNumber', Number(repairNumber));
       }
     }
 
-    const tenantId = await getTenantId();
+    const tenantObjectId = await getTenantObjectId();
     const repair = new Repair({
       repairNumber: repairNumber,
       itemNumber: formData.get("itemNumber"),
@@ -113,7 +107,7 @@ export async function createRepair(formData: FormData) {
       itemId: productId,
       customerId: customerId,
       customerNumber: customerNumber,
-      tenantId: new mongoose.Types.ObjectId(tenantId),
+      tenantId: tenantObjectId,
     });
 
     console.log('dateOut', repair.dateOut);
@@ -131,9 +125,11 @@ export async function createRepair(formData: FormData) {
     const user = await getShortUser();
 
     if (productId != null && productId != '') {
+      const tenantObjId = await getTenantObjectId();
       await productModel.findOneAndUpdate({
         _id: productId,
-        status: { $ne: "Repair" }
+        status: { $ne: "Repair" },
+        tenantId: tenantObjId
       }, {
         "$push": {
           "history": {
@@ -209,7 +205,8 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
 
     // Get the current repair to access repairNumber for search field
     const repairId = formData.get("repairId");
-    const currentRepair = await Repair.findById(repairId);
+    const tenantObjectId = await getTenantObjectId();
+    const currentRepair = await Repair.findOne({ _id: repairId, tenantId: tenantObjectId });
 
     const updateData: any = {
       itemNumber: formData.get("itemNumber") as string,
@@ -242,7 +239,7 @@ export async function updateRepair(repairNumber: string, formData: FormData) {
       });
     }
 
-    await Repair.findByIdAndUpdate(repairId, updateData);
+    await Repair.findOneAndUpdate({ _id: repairId, tenantId: tenantObjectId }, updateData);
     revalidatePath('/repairs');
     return { success: true };
   } catch (error) {
@@ -281,16 +278,10 @@ export async function createReturn(data: ReturnData) {
   try {
     await dbConnect();
 
-    // Get the next return number from the counter collection
-    const newReturnNumber = await Counter.findByIdAndUpdate(
-      { _id: 'returnNumber' },
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true }
-    );
+    // Get the next return number from the counter collection (tenant-scoped)
+    const returnNumber = await getNextCounter('returnNumber');
 
-    const returnNumber = newReturnNumber.seq;
-
-    const tenantId = await getTenantId();
+    const tenantObjectId = await getTenantObjectId();
     // Clean the data to avoid any potential circular references or undefined values
     const cleanData = {
       returnNumber: returnNumber,
@@ -299,7 +290,7 @@ export async function createReturn(data: ReturnData) {
       customerNumber: data.customerNumber || undefined,
       invoiceId: data.invoiceId ? new mongoose.Types.ObjectId(data.invoiceId) : undefined,
       invoiceNumber: data.invoiceNumber || undefined,
-      tenantId: new mongoose.Types.ObjectId(tenantId),
+      tenantId: tenantObjectId,
       returnDate: new Date(),
       subTotal: Number(data.subTotal) || 0,
       taxable: Boolean(data.taxable),
@@ -345,8 +336,9 @@ export async function updateReturn(returnId: string, data: ReturnData) {
 
     // Create a clean data object without _id to prevent schema conflicts
     const updateData = { ...data };
-    const updatedReturn = await Return.findByIdAndUpdate(
-      returnId,
+    const tenantObjectId = await getTenantObjectId();
+    const updatedReturn = await Return.findOneAndUpdate(
+      { _id: returnId, tenantId: tenantObjectId },
       updateData,
       { new: true, runValidators: true }
     );
@@ -379,7 +371,8 @@ export async function checkReturnByInvoiceId(invoiceId: string) {
   try {
     await dbConnect();
 
-    const returnItem = await Return.findOne({ invoiceId: new mongoose.Types.ObjectId(invoiceId) });
+    const tenantObjectId = await getTenantObjectId();
+    const returnItem = await Return.findOne({ invoiceId: new mongoose.Types.ObjectId(invoiceId), tenantId: tenantObjectId });
 
     if (returnItem) {
       return { returnId: returnItem._id };

@@ -3,8 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { logModel, logSchema } from '@/lib/models/log';
 import dbConnect from '@/lib/dbConnect';
-import mongoose, { Types } from 'mongoose';
-import { getTenantId } from '@/lib/auth-utils';
+import { Types } from 'mongoose';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { productModel } from '@/lib/models/product';
@@ -29,8 +29,7 @@ export async function createLog(data: LogData) {
     await dbConnect();
 
     data.search = buildSearchString(data);
-    const tenantId = await getTenantId();
-    (data as any).tenantId = new mongoose.Types.ObjectId(tenantId);
+    (data as any).tenantId = await getTenantObjectId();
    
     const log = await logModel.create(data);
 
@@ -67,7 +66,8 @@ export async function updateLog(id: string, data: LogData) {
 
     data.search = buildSearchString(data);
 
-    const log = await collection.findOneAndUpdate({_id}, {$set: data});
+    const tenantObjectId = await getTenantObjectId();
+    const log = await collection.findOneAndUpdate({_id, tenantId: tenantObjectId}, {$set: data});
     
     if (!log) {
       return { success: false, error: 'Log item not found' };
@@ -94,7 +94,8 @@ async function receiveProduct(log: any, lineItem: any) {
   try {
 
     // don't try if productId is not def
-    const product = await productModel.findById(lineItem.productId).select('status history');
+    const tenantObjectId = await getTenantObjectId();
+    const product = await productModel.findOne({ _id: lineItem.productId, tenantId: tenantObjectId }).select('status history');
     
     if (!product) {
       console.log('Product not found:', lineItem.productId);
@@ -155,7 +156,7 @@ async function receiveProduct(log: any, lineItem: any) {
 
     // create new history item and update product status
     await productModel.findOneAndUpdate(
-      { _id: lineItem.productId },
+      { _id: lineItem.productId, tenantId: tenantObjectId },
       {
         $push: {
           history: {
@@ -185,9 +186,11 @@ async function updateRepairDetails(lineItem: any, comments: string) {
   try {
     console.log('updating repair details for repairId', lineItem.repairId, 'or productId', lineItem.productId);
 
+    const tenantObjectId = await getTenantObjectId();
     const result = await Repair.updateMany(
       {
-        _id: lineItem.repairId
+        _id: lineItem.repairId,
+        tenantId: tenantObjectId
       },
       {
         repairCost: lineItem.repairCost,
@@ -205,9 +208,11 @@ async function closeRepair(lineItem: any, comments: string) {
   try {
     console.log('closing repair for repairId', lineItem.repairId);
 
+    const tenantObjectId = await getTenantObjectId();
     const result = await Repair.updateOne(
       {
-        _id: lineItem.repairId
+        _id: lineItem.repairId,
+        tenantId: tenantObjectId
       },
       {
         returnDate: new Date(),

@@ -1,28 +1,15 @@
 "use server"
 
-import mongoose from "mongoose"
 import dbConnect from "@/lib/dbConnect"
 import { Repair } from "@/lib/models/repair"
-import { Counter } from "@/lib/models/counter"
 import { fetchDefaultTenant } from "./data"
-import { getTenantId } from "@/lib/auth-utils"
+import { getNextCounter, getTenantObjectId } from "@/lib/tenant-utils"
 
 export async function getNextRepairNumber(): Promise<string> {
   try {
     await dbConnect()
-    
-    // Use findOneAndUpdate to atomically increment the counter
-    const counter = await Counter.findOneAndUpdate(
-      { _id: 'repairNumber' },
-      { $inc: { seq: 1 } },
-      { 
-        new: true, 
-        upsert: true, // Create if doesn't exist
-        setDefaultsOnInsert: true 
-      }
-    )
-    
-    return counter.seq.toString()
+    const seq = await getNextCounter('repairNumber')
+    return seq.toString()
   } catch (error) {
     console.error('Error getting next repair number:', error)
     // Fallback to timestamp-based number
@@ -50,10 +37,10 @@ export async function createRepairRecord(repairData: {
     const tenant = await fetchDefaultTenant();
     const repairConfirmMessage = tenant.repairConfirmationText || "Thank you for your repair request. We will contact you soon.";
     
-    const tenantId = await getTenantId();
+    const tenantObjectId = await getTenantObjectId();
     const repair = new Repair({
       repairNumber: repairData.repairNumber,
-      tenantId: new mongoose.Types.ObjectId(tenantId),
+      tenantId: tenantObjectId,
       itemNumber: null, // No item number for trello repairs
       description: repairData.description || '',
       dateOut: new Date(),

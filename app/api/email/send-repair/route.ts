@@ -3,6 +3,7 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { fetchRepairById, fetchDefaultTenant } from '@/lib/data';
 import { Repair, Tenant, generateEmailHtml } from '@/lib/repair-renderer';
 import { getImageHost } from '@/lib/utils/imageHost';
+import { getRepairImages } from '@/lib/utils/storage';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
@@ -46,11 +47,14 @@ export async function POST(request: Request) {
       );
     }
     
-    // Get image host for logo URLs
-    const imageHost = await getImageHost();
+    // Get image host for logo URLs and repair images
+    const [imageHost, images] = await Promise.all([
+      getImageHost(),
+      getRepairImages(repairId)
+    ]);
     
     // Generate email HTML content using the shared utility
-    const emailHtml = generateEmailHtml(repair as Repair, tenant as Tenant, imageHost);
+    const emailHtml = generateEmailHtml(repair as Repair, tenant as Tenant, imageHost, false, images);
     
     // Send email using AWS SES
     const params = {
@@ -60,7 +64,7 @@ export async function POST(request: Request) {
       },
       Message: {
         Subject: {
-          Data: `Repair #${repair._id} from ${tenant.nameLong || 'DeMesy'}`,
+          Data: `Repair #${repair.repairNumber} from ${tenant.nameLong || 'DeMesy'}`,
         },
         Body: {
           Html: {

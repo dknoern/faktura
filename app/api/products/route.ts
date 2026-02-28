@@ -3,7 +3,8 @@ import { fetchProducts } from '@/lib/data';
 import dbConnect from '@/lib/dbConnect';
 import { productModel } from '@/lib/models/product';
 import mongoose from 'mongoose';
-import { getShortUser, getTenantId } from '@/lib/auth-utils';
+import { getShortUser } from '@/lib/auth-utils';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,9 +43,10 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Check if a product with the same itemNumber already exists
+    // Check if a product with the same itemNumber already exists for this tenant
     if (data.itemNumber) {
-      const existingProduct = await productModel.findOne({ itemNumber: data.itemNumber });
+      const tenantObjectId = await getTenantObjectId();
+      const existingProduct = await productModel.findOne({ itemNumber: data.itemNumber, tenantId: tenantObjectId });
       if (existingProduct) {
         return NextResponse.json(
           { error: `A product with item number '${data.itemNumber}' already exists` },
@@ -86,8 +88,7 @@ export async function POST(request: NextRequest) {
     });
     
     // Set tenantId
-    const tenantId = await getTenantId();
-    data.tenantId = new mongoose.Types.ObjectId(tenantId);
+    data.tenantId = await getTenantObjectId();
 
     // Create the new product
     const newProduct = await productModel.create(data);

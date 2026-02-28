@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       },
       Message: {
         Subject: {
-          Data: `Proposal #${proposal._id} from ${tenant.companyName}`,
+          Data: `Proposal from ${tenant.companyName}`,
           Charset: 'UTF-8',
         },
         Body: {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
             Charset: 'UTF-8',
           },
           Text: {
-            Data: `Please find attached Proposal #${proposal._id} from ${tenant.companyName}. Total: $${proposal.total.toFixed(2)}`,
+            Data: `Please find attached Proposal from ${tenant.companyName}. Total: $${proposal.total.toFixed(2)}`,
             Charset: 'UTF-8',
           },
         },

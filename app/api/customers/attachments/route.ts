@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { customerModel } from '@/lib/models/customer';
 import dbConnect from '@/lib/dbConnect';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function POST(request: NextRequest) {
     try {
@@ -38,8 +39,9 @@ export async function POST(request: NextRequest) {
         };
 
         // Update customer with new attachment
-        await customerModel.findByIdAndUpdate(
-            customerId,
+        const tenantObjectId = await getTenantObjectId();
+        await customerModel.findOneAndUpdate(
+            { _id: customerId, tenantId: tenantObjectId },
             {
                 $push: { attachments: attachmentData },
                 $set: { lastUpdated: new Date() }
@@ -71,8 +73,9 @@ export async function DELETE(request: NextRequest) {
         await dbConnect();
 
         // Remove attachment from customer record
-        await customerModel.findByIdAndUpdate(
-            customerId,
+        const tenantObjectId = await getTenantObjectId();
+        await customerModel.findOneAndUpdate(
+            { _id: customerId, tenantId: tenantObjectId },
             {
                 $pull: { attachments: { fileName: fileName } },
                 $set: { lastUpdated: new Date() }

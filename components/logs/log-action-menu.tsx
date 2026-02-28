@@ -18,7 +18,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Printer, Edit, ImagePlus, PenLine} from "lucide-react";
+import { ChevronDown, Printer, Edit, ImagePlus, PenLine, Mail } from "lucide-react";
+import { LogEmailDialog } from "./log-email-dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { handleDeviceAwarePrint } from "@/lib/utils/printing";
@@ -36,6 +37,7 @@ interface LogActionMenuProps {
 export function LogActionMenu({ log, onSignatureClick }: LogActionMenuProps) {
   const router = useRouter();
   const [isEmailSending] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -158,6 +160,10 @@ export function LogActionMenu({ log, onSignatureClick }: LogActionMenuProps) {
             <PenLine className="mr-2 h-4 w-4" />
             e-Sign
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowEmailDialog(true)}>
+            <Mail className="mr-2 h-4 w-4" />
+            Email
+          </DropdownMenuItem>
 
           {/*<DropdownMenuSeparator />
 
@@ -186,6 +192,13 @@ export function LogActionMenu({ log, onSignatureClick }: LogActionMenuProps) {
           e.target.value = "";
         }}
         disabled={isUploading}
+      />
+
+      {/* Email dialog */}
+      <LogEmailDialog
+        open={showEmailDialog}
+        onOpenChange={setShowEmailDialog}
+        logId={log.id || log._id || ''}
       />
 
       {/* Delete confirmation dialog */}

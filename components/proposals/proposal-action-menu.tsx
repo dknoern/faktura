@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Printer, Mail } from "lucide-react"
+import { ChevronDown, Edit, Printer, Mail } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { EmailDialog } from "./email-dialog"
 
@@ -20,7 +20,7 @@ interface ProposalLineItem {
 }
 
 interface Proposal {
-  _id: number
+  _id: string
   customerId: string
   customerFirstName: string
   customerLastName: string
@@ -78,8 +78,9 @@ export function ProposalActionMenu({ proposal }: ProposalActionMenuProps) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
-            <MoreHorizontal className="h-4 w-4" />
+          <Button variant="outline">
+            Action
+            <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

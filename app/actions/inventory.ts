@@ -4,17 +4,19 @@ import { productModel } from '@/lib/models/product';
 import { Repair } from '@/lib/models/repair';
 import dbConnect from '@/lib/dbConnect';
 import { getShortUser } from '@/lib/auth-utils';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 
 // Function to search repair items
 export async function searchOutstandingRepairs(search: string = '') {
   try {
     await dbConnect();
-
+    const tenantObjectId = await getTenantObjectId();
 
     const query = { $and: [
       {'search': new RegExp(search, 'i')},
-      {'returnDate':{$eq:null}}
+      {'returnDate':{$eq:null}},
+      { tenantId: tenantObjectId }
     ] };
 
     const repairs = await Repair.find(query)
@@ -35,8 +37,9 @@ export async function searchOutstandingRepairs(search: string = '') {
 export async function getInventoryItemById(id: string) {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     
-    const product = await productModel.findById(id);
+    const product = await productModel.findOne({ _id: id, tenantId: tenantObjectId });
     
     if (!product) {
       return { success: false, error: 'Inventory item not found' };
@@ -56,8 +59,9 @@ export async function getInventoryItemById(id: string) {
 export async function getRepairItemById(id: string) {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     
-    const repair = await Repair.findById(id);
+    const repair = await Repair.findOne({ _id: id, tenantId: tenantObjectId });
     
     if (!repair) {
       return { success: false, error: 'Repair item not found' };
@@ -85,8 +89,9 @@ export async function updateProductHistoryNote(productId: string, historyIndex: 
       return { success: false, error: 'User not authenticated' };
     }
     
+    const tenantObjectId = await getTenantObjectId();
     // Get the product first to validate the history index
-    const product = await productModel.findById(productId);
+    const product = await productModel.findOne({ _id: productId, tenantId: tenantObjectId });
     
     if (!product) {
       return { success: false, error: 'Product not found' };
@@ -101,8 +106,8 @@ export async function updateProductHistoryNote(productId: string, historyIndex: 
     updateQuery[`history.${historyIndex}.action`] = newNote;
     updateQuery[`history.${historyIndex}.date`] = new Date(); // Update timestamp
     
-    const updatedProduct = await productModel.findByIdAndUpdate(
-      productId,
+    const updatedProduct = await productModel.findOneAndUpdate(
+      { _id: productId, tenantId: tenantObjectId },
       { $set: updateQuery },
       { 
         new: true,
@@ -150,9 +155,10 @@ export async function addProductHistoryNote(productId: string, note: string) {
       action: note
     };
     
-    // Use findByIdAndUpdate to add the history entry without triggering full validation
-    const updatedProduct = await productModel.findByIdAndUpdate(
-      productId,
+    const tenantObjectId = await getTenantObjectId();
+    // Use findOneAndUpdate to add the history entry without triggering full validation
+    const updatedProduct = await productModel.findOneAndUpdate(
+      { _id: productId, tenantId: tenantObjectId },
       { 
         $push: { 
           history: newHistoryEntry 
@@ -194,6 +200,7 @@ export async function searchFilteredInventoryItems(
 ) {
   try {
     await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
     
     // Build the query to find products with specific statuses
     const query: any = {
@@ -202,7 +209,8 @@ export async function searchFilteredInventoryItems(
         // someday we should delete all the bad records
         { itemNumber: { $ne: null } }, // Exclude items with null itemNumber
         { itemNumber: { $ne: '' } }, // Exclude items with empty itemNumber
-        { title: { $ne: null } } // Exclude items with null title
+        { title: { $ne: null } }, // Exclude items with null title
+        { tenantId: tenantObjectId }
     ]
     };
     

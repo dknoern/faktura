@@ -30,7 +30,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
     // Disable problematic features that can cause server action issues
     ppr: false,
-    cacheComponents: false,
   },
   // Simplified webpack configuration to avoid server action conflicts
   webpack: (config, { isServer }) => {

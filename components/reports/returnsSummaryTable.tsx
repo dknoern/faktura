@@ -24,7 +24,8 @@ export async function ReturnsSummaryTable() {
             <TableBody>
                 {returns.map((ret) => (
                     <TableRow key={ret._id}>
-                        <TableCell>{ret._id}</TableCell>
+                        {/* show all line items, not just first one */}
+                        <TableCell>{ret.lineItems[0].itemNumber}</TableCell>
                         <TableCell style={{ whiteSpace: 'nowrap' }}>{ret.returnDate ? new Date(ret.returnDate).toISOString().split('T')[0] : ''}</TableCell>
                         <TableCell>{ret.customerName}</TableCell>
                      </TableRow>

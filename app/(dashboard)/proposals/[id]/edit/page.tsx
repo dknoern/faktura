@@ -9,7 +9,7 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const { id } = await params;
   
-  const proposal = await fetchProposalById(parseInt(id));
+  const proposal = await fetchProposalById(id);
   
   if (!proposal) {
     notFound();
@@ -21,9 +21,18 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
+  const serializedCustomer = {
+    _id: customer._id.toString(),
+    customerNumber: customer.customerNumber,
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    email: customer.emails?.[0]?.email || '',
+    phone: customer.phones?.[0]?.phone || ''
+  };
+
   return (
     <div className="container mx-auto py-6">
-      <ProposalForm customer={customer} proposal={proposal} />
+      <ProposalForm customer={serializedCustomer} proposal={proposal} />
     </div>
   );
 }

@@ -3,16 +3,15 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { LinkTableCell } from "@/components/LinkTableCell"
 import { CustomerSelectModalWrapper } from "@/components/customers/select-modal-wrapper"
 import { customerSchema } from "@/lib/models/customer"
 import { z } from "zod"
 
 interface Proposal {
-  _id: number
+  _id: string
   customerFirstName: string
   customerLastName: string
   date: string
@@ -75,6 +74,9 @@ export function ProposalsTable({ proposals, pagination }: ProposalsTableProps) {
 
   // Search as user types with debouncing
   useEffect(() => {
+    const currentSearch = searchParams.get('search') || ''
+    if (searchTerm === currentSearch) return
+
     const timeoutId = setTimeout(() => {
       const params = new URLSearchParams(searchParams)
       if (searchTerm) {
@@ -106,6 +108,17 @@ export function ProposalsTable({ proposals, pagination }: ProposalsTableProps) {
     return new Date(dateString).toLocaleDateString()
   }
 
+  const handleRowClick = (proposalId: string, e: React.MouseEvent) => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TD' || target.closest('td')) {
+      router.push(`/proposals/${proposalId}/view`);
+    }
+  }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -130,7 +143,6 @@ export function ProposalsTable({ proposals, pagination }: ProposalsTableProps) {
       <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Proposal #</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Total</TableHead>
@@ -139,22 +151,21 @@ export function ProposalsTable({ proposals, pagination }: ProposalsTableProps) {
           </TableHeader>
           <TableBody>
             {proposals.map((proposal) => (
-              <TableRow key={proposal._id} className="cursor-pointer hover:bg-muted/50">
-                <LinkTableCell href={`/proposals/${proposal._id}/view`}>
-                  {proposal._id}
-                </LinkTableCell>
-                <LinkTableCell href={`/proposals/${proposal._id}/view`}>
-                  {proposal.customerFirstName} {proposal.customerLastName}
-                </LinkTableCell>
-                <LinkTableCell href={`/proposals/${proposal._id}/view`}>
-                  {formatDate(proposal.date)}
-                </LinkTableCell>
-                <LinkTableCell href={`/proposals/${proposal._id}/view`}>
-                  {formatCurrency(proposal.total)}
-                </LinkTableCell>
-                <LinkTableCell href={`/proposals/${proposal._id}/view`}>
-                  {proposal.status || 'Draft'}
-                </LinkTableCell>
+              <TableRow 
+                key={proposal._id} 
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={(e) => handleRowClick(proposal._id, e)}
+                onMouseDown={(e) => {
+                  if (e.detail > 1) {
+                    e.preventDefault();
+                  }
+                }}
+                style={{ userSelect: 'text' }}
+              >
+                <TableCell>{proposal.customerFirstName} {proposal.customerLastName}</TableCell>
+                <TableCell>{formatDate(proposal.date)}</TableCell>
+                <TableCell>{formatCurrency(proposal.total)}</TableCell>
+                <TableCell>{proposal.status || 'Draft'}</TableCell>
               </TableRow>
             ))}
           </TableBody>

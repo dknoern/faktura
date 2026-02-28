@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import localFont from "next/font/local";
 import "../globals.css";
 
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/sidebar"
 import UserButton from "@/components/user-button";
 import { fetchTenantById } from "@/lib/data";
+import { getTenantId } from "@/lib/auth-utils";
 
 // Force dynamic rendering since we fetch tenant data
 export const dynamic = 'force-dynamic';
@@ -36,7 +38,8 @@ export default async function Layout({
   try {
     // Only attempt to fetch tenant if we have a valid MongoDB URI
     if (process.env.MONGODB_URI && process.env.MONGODB_URI.startsWith('mongodb')) {
-      tenant = await fetchTenantById("67f48a2050abe41246b22a87");
+      const tenantId = await getTenantId();
+      tenant = await fetchTenantById(tenantId);
     }
   } catch (error) {
     console.warn('Could not fetch tenant during build:', error instanceof Error ? error.message : 'Unknown error');
@@ -59,7 +62,9 @@ export default async function Layout({
 
               </div>
               <div className="px-2 sm:px-4 shrink-0">
-              <UserButton/>
+                <Suspense fallback={<div className="h-8 w-8" />}>
+                  <UserButton />
+                </Suspense>
               </div>
 
             </header>

@@ -1,7 +1,8 @@
-import { fetchInvoiceById, fetchDefaultTenant } from "@/lib/data";
+import { fetchInvoiceById, fetchDefaultTenant, fetchTenantById } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { ViewInvoice } from "@/components/invoices/view";
 import { getImageHost } from "@/lib/utils/imageHost";
+import { getTenantId } from "@/lib/auth-utils";
 
 export default async function ViewInvoicePage(props: { params: Promise<{ id: string }> }) {
 
@@ -9,9 +10,11 @@ export default async function ViewInvoicePage(props: { params: Promise<{ id: str
     const id = params.id;
     const imageHost = await getImageHost();
 
-    const [invoice, tenant] = await Promise.all([
+    const tenantId = await getTenantId();
+    const tenant = await fetchTenantById(tenantId);
+
+    const [invoice] = await Promise.all([
         fetchInvoiceById(id),
-        fetchDefaultTenant()
     ]);
 
     if (!invoice) {

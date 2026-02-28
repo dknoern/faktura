@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { Out } from '@/lib/models/out';
-import mongoose from 'mongoose';
-import { getTenantId } from '@/lib/auth-utils';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,14 +14,20 @@ export async function GET(request: NextRequest) {
     
     const skip = (page - 1) * limit;
     
-    let query = {};
+    const tenantObjectId = await getTenantObjectId();
+    let query: any = { tenantId: tenantObjectId };
     if (search) {
       query = {
-        $or: [
-          { sentTo: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { comments: { $regex: search, $options: 'i' } },
-          { user: { $regex: search, $options: 'i' } }
+        $and: [
+          { tenantId: tenantObjectId },
+          {
+            $or: [
+              { sentTo: { $regex: search, $options: 'i' } },
+              { description: { $regex: search, $options: 'i' } },
+              { comments: { $regex: search, $options: 'i' } },
+              { user: { $regex: search, $options: 'i' } }
+            ]
+          }
         ]
       };
     }
@@ -74,8 +79,7 @@ export async function POST(request: NextRequest) {
       data.user
     ].filter(Boolean).join(' ').toLowerCase();
     
-    const tenantId = await getTenantId();
-    data.tenantId = new mongoose.Types.ObjectId(tenantId);
+    data.tenantId = await getTenantObjectId();
     const newOut = new Out(data);
     const savedOut = await newOut.save();
     

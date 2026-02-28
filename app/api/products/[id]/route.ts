@@ -3,6 +3,7 @@ import dbConnect from '@/lib/dbConnect';
 import { productModel } from '@/lib/models/product';
 import mongoose from 'mongoose';
 import { getShortUser } from '@/lib/auth-utils';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export async function GET(
   request: NextRequest,
@@ -14,7 +15,8 @@ export async function GET(
     const id = (await params).id;
     const _id = new mongoose.Types.ObjectId(id);
     
-    const product = await productModel.findOne({ _id });
+    const tenantObjectId = await getTenantObjectId();
+    const product = await productModel.findOne({ _id, tenantId: tenantObjectId });
     
     if (!product) {
       return NextResponse.json(
@@ -23,7 +25,7 @@ export async function GET(
       );
     }
     
-    return NextResponse.json(product);
+    return NextResponse.json(JSON.parse(JSON.stringify(product)));
   } catch (error) {
     console.error('Error fetching product:', error);
     return NextResponse.json(
@@ -43,8 +45,9 @@ export async function PUT(
     const _id = new mongoose.Types.ObjectId(id);
     const data = await request.json();
     
+    const tenantObjectId = await getTenantObjectId();
     // Get the current product to check if status is changing
-    const currentProduct = await productModel.findById(_id);
+    const currentProduct = await productModel.findOne({ _id, tenantId: tenantObjectId });
     if (!currentProduct) {
       return NextResponse.json(
         { error: 'Product not found' },
@@ -104,7 +107,7 @@ export async function PUT(
     }
     
     const updatedProduct = await productModel.findOneAndUpdate(
-      { _id },
+      { _id, tenantId: tenantObjectId },
       data,
       { new: true, runValidators: true }
     );
@@ -116,7 +119,7 @@ export async function PUT(
       );
     }
     
-    return NextResponse.json(updatedProduct);
+    return NextResponse.json(JSON.parse(JSON.stringify(updatedProduct)));
   } catch (error) {
     console.error('Error updating product:', error);
     return NextResponse.json(
@@ -135,9 +138,10 @@ export async function DELETE(
     const id = (await params).id;
     const _id = new mongoose.Types.ObjectId(id);
     
+    const tenantObjectId = await getTenantObjectId();
     // Instead of deleting, update the status to "Deleted"
     const updatedProduct = await productModel.findOneAndUpdate(
-      { _id },
+      { _id, tenantId: tenantObjectId },
       { 
         status: 'Deleted',
         lastUpdated: new Date()
