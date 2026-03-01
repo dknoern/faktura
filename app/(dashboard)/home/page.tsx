@@ -1,6 +1,6 @@
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { SkeletonTable } from "@/components/skeletons";
-import { getDashboardStats, getMonthlySalesData, getRecentTransactions, getInventoryByProductType, getInventoryByStatus } from "@/lib/dashboard-actions";
+import { getDashboardStats, getMonthlySalesData, getRecentTransactions, getInventoryByProductType, getInventoryByStatus } from "@/lib/actions/dashboard-actions";
 import { Suspense } from "react";
 
 // Force dynamic rendering since we fetch dashboard data

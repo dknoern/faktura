@@ -1,10 +1,10 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import dbConnect from "./dbConnect";
-import { Proposal } from "./models/proposal";
+import dbConnect from "@/lib/dbConnect";
+import { Proposal } from "@/lib/models/proposal";
 import { format } from "date-fns";
-import { getTenantObjectId } from "./tenant-utils";
+import { getTenantObjectId } from "@/lib/tenant-utils";
 
 export interface ProposalLineItem {
   name: string;

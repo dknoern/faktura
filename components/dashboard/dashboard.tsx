@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip} from "@/components/ui/chart";
-import {  type DashboardStats, type MonthlySalesData, type RecentTransaction, type InventoryBreakdown } from "@/lib/dashboard-actions";
+import {  type DashboardStats, type MonthlySalesData, type RecentTransaction, type InventoryBreakdown } from "@/lib/actions/dashboard-actions";
 import { Package, Wrench, Plane, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight, Gift } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { BRAND_CONFIG } from "@/lib/constants";

@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "react-hot-toast";
-import { updateProductHistoryNote, addProductHistoryNote } from "@/app/actions/inventory";
+import { updateProductHistoryNote, addProductHistoryNote } from "@/lib/actions/inventory-actions";
 
 interface EditNoteDialogProps {
   isOpen: boolean;

@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createCustomer, updateCustomer } from "@/app/actions/customers";
+import { createCustomer, updateCustomer } from "@/lib/actions/customer-actions";
 
 const customerFormSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),

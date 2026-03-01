@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { searchCustomers } from '@/lib/customer-utils';
-import { createCustomer } from '@/app/actions/customers';
+import { createCustomer } from '@/lib/actions/customer-actions';
 import { getNextRepairNumber, createRepairRecord } from '@/lib/repair-utils';
-import { createLog } from '@/app/actions/logs';
+import { createLog } from '@/lib/actions/log-actions';
 import { z } from 'zod';
 import { logSchema, lineItemSchema } from '@/lib/models/log';
 import console from 'console';

@@ -1,14 +1,14 @@
 "use server"
 
 import { revalidatePath } from "next/cache";
-import dbConnect from "./dbConnect";
-import { Invoice } from "./models/invoice";
-import { calcTax } from "./utils/tax";
-import { updateProductHistory } from "./utils/product-history";
-import { getShortUser } from "./auth-utils";
+import dbConnect from "@/lib/dbConnect";
+import { Invoice } from "@/lib/models/invoice";
+import { calcTax } from "@/lib/utils/tax";
+import { updateProductHistory } from "@/lib/utils/product-history";
+import { getShortUser } from "@/lib/auth-utils";
 import { format } from "date-fns";
-import { productModel } from "./models/product";
-import { getNextCounter, getTenantObjectId } from "./tenant-utils";
+import { productModel } from "@/lib/models/product";
+import { getNextCounter, getTenantObjectId } from "@/lib/tenant-utils";
 
 export interface LineItem {
   productId?: string;

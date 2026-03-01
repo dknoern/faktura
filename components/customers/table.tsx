@@ -12,7 +12,7 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { mergeCustomers } from "@/app/actions/mergeCustomers";
+import { mergeCustomers } from "@/lib/actions/customer-actions";
 import { toast } from "react-hot-toast";
 import {
     Dialog,

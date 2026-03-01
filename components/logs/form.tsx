@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea} from "@/components/ui/textarea";
-import { createLog, updateLog } from "@/app/actions/logs";
+import { createLog, updateLog } from "@/lib/actions/log-actions";
 import {
   Select,
   SelectContent,

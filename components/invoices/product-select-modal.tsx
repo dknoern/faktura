@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Loader2 } from "lucide-react"
-import { searchFilteredInventoryItems } from "@/app/actions/inventory"
+import { searchFilteredInventoryItems } from "@/lib/actions/inventory-actions"
 import { Badge } from "../ui/badge"
 
 interface Product {

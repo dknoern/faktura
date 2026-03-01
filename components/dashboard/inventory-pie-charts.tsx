@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { type InventoryBreakdown } from "@/lib/dashboard-actions";
+import { type InventoryBreakdown } from "@/lib/actions/dashboard-actions";
 import { Pie, PieChart, Cell, Label } from "recharts";
 import { Package2, Tag } from "lucide-react";
 

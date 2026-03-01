@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProposalLineItems, ProposalLineItem } from "./line-items"
-import { upsertProposal } from "@/lib/proposalActions"
+import { upsertProposal } from "@/lib/actions/proposal-actions"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast"
 

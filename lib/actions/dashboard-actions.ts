@@ -1,13 +1,13 @@
 'use server'
 
-import dbConnect from './dbConnect';
-import { productModel } from './models/product';
-import { Repair } from './models/repair';
-import { Invoice } from './models/invoice';
-import { logModel } from './models/log';
-import { fetchOuts } from './data';
-import { Wanted } from './models/wanted';
-import { getTenantObjectId } from './tenant-utils';
+import dbConnect from '@/lib/dbConnect';
+import { productModel } from '@/lib/models/product';
+import { Repair } from '@/lib/models/repair';
+import { Invoice } from '@/lib/models/invoice';
+import { logModel } from '@/lib/models/log';
+import { fetchOuts } from '@/lib/data';
+import { Wanted } from '@/lib/models/wanted';
+import { getTenantObjectId } from '@/lib/tenant-utils';
 
 export interface DashboardStats {
   totalInventory: number;

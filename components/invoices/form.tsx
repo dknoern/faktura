@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { LineItems, LineItem } from "./line-items"
-import { upsertInvoice } from "@/lib/invoiceActions"
+import { upsertInvoice } from "@/lib/actions/invoice-actions"
 import { toast } from "react-hot-toast"
 
 const formatDateTime = (input: string) => {
