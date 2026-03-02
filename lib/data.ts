@@ -309,62 +309,38 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
         const twoYearsAgo = new Date();
         twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
 
-        let query: any = {
-            $and: [
-                // Exclude records with dateOut more than 2 years ago
-                {
-                    $or: [
-                        { dateOut: { $exists: false } },
-                        { dateOut: null },
-                        { dateOut: { $gte: twoYearsAgo } }
-                    ]
-                },
-                // Exclude deleted repairs
-                {
-                    $or: [
-                        { status: { $exists: false } },
-                        { status: { $ne: 'Deleted' } }
-                    ]
-                }
-            ]
-        };
-        
-        // Apply filter
-        if (filter === 'outstanding') {
-            query = {
-                $and: [
-                    {
-                        $or: [
-                            { dateOut: { $exists: false } },
-                            { dateOut: null },
-                            { dateOut: { $gte: twoYearsAgo } }
-                        ]
-                    },
-                    // Exclude deleted repairs
-                    {
-                        $or: [
-                            { status: { $exists: false } },
-                            { status: { $ne: 'Deleted' } }
-                        ]
-                    },
-                    { returnDate: { $eq: null } }
+        // Build base conditions
+        const conditions: any[] = [
+            // Exclude records with dateOut more than 2 years ago
+            {
+                $or: [
+                    { dateOut: { $exists: false } },
+                    { dateOut: null },
+                    { dateOut: { $gte: twoYearsAgo } }
                 ]
-            };
+            },
+            // Exclude deleted repairs
+            {
+                $or: [
+                    { status: { $exists: false } },
+                    { status: { $ne: 'Deleted' } }
+                ]
+            }
+        ];
+
+        // Apply outstanding filter
+        if (filter === 'outstanding') {
+            conditions.push({ returnDate: { $eq: null } });
         }
-        // If filter is 'all', we keep the base query with date filtering
-        
+
         // If search parameter is provided, add search condition
-        if (search) {
-            // Split search into tokens (words)
+        if (search && search.trim() !== '') {
             const searchTokens = search.trim().split(/\s+/);
-            
-            // Create a regex condition for each token, matching against search field OR repairNumber
-            // also match token to dateOut but as a string formatted as 02/24/2026, note dateOut in db is a date field
-            
 
             const tokenConditions = searchTokens.map(token => ({
                 $or: [
                     { repairNumber: { $regex: token, $options: 'i' } },
+                    { itemNumber: { $regex: token, $options: 'i' } },
                     { description: { $regex: token, $options: 'i' } },
                     { customerFirstName: { $regex: token, $options: 'i' } },
                     { customerLastName: { $regex: token, $options: 'i' } },
@@ -374,55 +350,11 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
                     { $expr: { $regexMatch: { input: { $toString: '$repairCost' }, regex: token, options: 'i' } } }
                 ]
             }));
-            
-            // Combine token conditions with $and to ensure ALL tokens must be found (in any order)
-            const searchConditions = { $and: tokenConditions };
-            
-            // Combine filter and search conditions
-            if (filter === 'outstanding') {
-                query = {
-                    $and: [
-                        {
-                            $or: [
-                                { dateOut: { $exists: false } },
-                                { dateOut: null },
-                                { dateOut: { $gte: twoYearsAgo } }
-                            ]
-                        },
-                        // Exclude deleted repairs
-                        {
-                            $or: [
-                                { status: { $exists: false } },
-                                { status: { $ne: 'Deleted' } }
-                            ]
-                        },
-                        { returnDate: { $eq: null } },
-                        searchConditions
-                    ]
-                };
-            } else {
-                query = {
-                    $and: [
-                        {
-                            $or: [
-                                { dateOut: { $exists: false } },
-                                { dateOut: null },
-                                { dateOut: { $gte: twoYearsAgo } }
-                            ]
-                        },
-                        // Exclude deleted repairs
-                        {
-                            $or: [
-                                { status: { $exists: false } },
-                                { status: { $ne: 'Deleted' } }
-                            ]
-                        },
-                        searchConditions
-                    ]
-                };
-            }
+
+            conditions.push({ $and: tokenConditions });
         }
 
+        let query: any = { $and: conditions };
         query = addTenantFilter(query, tenantObjectId);
 
         const repairs = await Repair.find(query)
@@ -442,47 +374,6 @@ export async function fetchRepairs(page = 1, limit = 10, search = '', filter = '
         };
     } catch (error) {
         console.error('Error fetching repairs:', error);
-        throw error;
-    }
-}
-
-export async function fetchOutstandingRepairs(page = 1, limit = 10, search = '') {
-    try {
-        await dbConnect();
-        const tenantObjectId = await getTenantObjectId();
-        const skip = (page - 1) * limit;
-
-        // Build query to find repairs that don't have a return date (outstanding repairs)
-        let query: any = { $and: [{ returnDate: { $eq: null } }, { dateOut: { $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 2)) } }] };
-
-
-        if (search && search.trim() !== '') {
-            query = {
-                $and: [
-                    { returnDate: { $eq: null } },
-                    { dateOut: { $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 2)) } },
-                    { search: { $regex: search, $options: 'i' } }
-                ]
-            };
-        }
-
-        query = addTenantFilter(query, tenantObjectId);
-
-        const repairs = await Repair.find(query)
-            .sort({ dateOut: -1 })
-            .skip(skip)
-            .limit(limit);
-
-        const totalCount = await Repair.countDocuments(query);
-        return {
-            data: JSON.parse(JSON.stringify(repairs)),
-            totalItems: totalCount,
-            totalPages: Math.ceil(totalCount / limit),
-            currentPage: page,
-            limit
-        };
-    } catch (error) {
-        console.error('Error fetching outstanding repairs:', error);
         throw error;
     }
 }

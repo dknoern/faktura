@@ -7,9 +7,26 @@ export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
 }
 
+const PUBLIC_TENANT_PATTERNS = ['faktur', 'popdesign']
+
+function isPublicTenant(req: NextRequest): boolean {
+  const hostname = req.headers.get('host') || req.nextUrl.hostname
+  return PUBLIC_TENANT_PATTERNS.some(pattern => hostname.includes(pattern))
+}
+
 export default auth((req: NextRequest & { auth: any }) => {
   const session = req.auth
   const { pathname } = req.nextUrl
+
+  // Route public tenants to the public landing page
+  if (isPublicTenant(req)) {
+    if (pathname === '/') {
+      if (session?.user) {
+        return NextResponse.redirect(new URL('/home', req.url))
+      }
+      return NextResponse.rewrite(new URL('/public', req.url))
+    }
+  }
   
   // Skip middleware for server actions to avoid clientReferenceManifest issues
   if (req.method === 'POST' && req.headers.get('content-type')?.includes('multipart/form-data')) {
