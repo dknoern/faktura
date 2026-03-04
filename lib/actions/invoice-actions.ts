@@ -160,9 +160,8 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
       }
 
       const user = await getShortUser();
-      // Use the invoice ID for product history
-      const invoiceIdString = invoiceData._id ? invoiceData._id.toString() : '';
-      updateProductHistory(invoiceData.lineItems, itemStatus, itemAction, user, invoiceIdString);
+      // Use invoiceNumber as refDoc (resolved to _id on display)
+      updateProductHistory(invoiceData.lineItems, itemStatus, itemAction, user, invoiceNumber.toString());
     }
     
     // Update search field
@@ -197,6 +196,18 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
   }
 }
 
+
+export async function getInvoiceIdByNumber(invoiceNumber: number): Promise<string | null> {
+  try {
+    await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
+    const invoice = await Invoice.findOne({ invoiceNumber, tenantId: tenantObjectId }).select('_id').lean();
+    return invoice ? (invoice as any)._id.toString() : null;
+  } catch (error) {
+    console.error('Error looking up invoice by number:', error);
+    return null;
+  }
+}
 
 function buildSearchField(doc: any){
 

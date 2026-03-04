@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getInvoiceIdByNumber } from "@/lib/actions/invoice-actions";
 import { Button } from "@/components/ui/button";
 import { EditNoteDialog } from "./edit-note-dialog";
 import { Edit, PlusCircle } from "lucide-react";
@@ -33,6 +34,33 @@ export function ProductHistory({ history, productId, onHistoryUpdate }: ProductH
   const [editingNote, setEditingNote] = useState('');
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('edit');
   const [localHistory, setLocalHistory] = useState<HistoryEvent[]>(history);
+  const [resolvedRefDocs, setResolvedRefDocs] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const numericRefDocs = new Set<string>();
+    localHistory.forEach((event) => {
+      if (
+        (event.action === "sold item" || event.action.startsWith("item memo")) &&
+        event.refDoc &&
+        /^\d+$/.test(event.refDoc)
+      ) {
+        numericRefDocs.add(event.refDoc);
+      }
+    });
+    if (numericRefDocs.size === 0) return;
+
+    const resolve = async () => {
+      const entries: Record<string, string> = {};
+      await Promise.all(
+        Array.from(numericRefDocs).map(async (num) => {
+          const objectId = await getInvoiceIdByNumber(Number(num));
+          if (objectId) entries[num] = objectId;
+        })
+      );
+      setResolvedRefDocs((prev) => ({ ...prev, ...entries }));
+    };
+    resolve();
+  }, [localHistory]);
 
   const handleAddNewNote = () => {
     setDialogMode('add');
@@ -120,8 +148,8 @@ export function ProductHistory({ history, productId, onHistoryUpdate }: ProductH
                   <div className="flex-1">
                     {historyEvent.action}
                     {historyEvent.action === "sold item" && historyEvent.refDoc ? (
-                      <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${historyEvent.refDoc}/view`}>
-                        {historyEvent.refDoc}
+                      <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${/^\d+$/.test(historyEvent.refDoc) ? (resolvedRefDocs[historyEvent.refDoc] || historyEvent.refDoc) : historyEvent.refDoc}/view`}>
+                        invoice
                       </Link></span>
                     ) : historyEvent.action === "received" && historyEvent.refDoc ? (
                       <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/loginitems/${historyEvent.refDoc}/view`}>
@@ -132,8 +160,8 @@ export function ProductHistory({ history, productId, onHistoryUpdate }: ProductH
                         repair
                       </Link></span>
                       ) : historyEvent.action.startsWith("item memo") && historyEvent.refDoc ? (
-                        <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${historyEvent.refDoc}/view`}>
-                          {historyEvent.refDoc}
+                        <span> - <Link style={{ color: 'blue', cursor: 'pointer' }} href={`/invoices/${/^\d+$/.test(historyEvent.refDoc) ? (resolvedRefDocs[historyEvent.refDoc] || historyEvent.refDoc) : historyEvent.refDoc}/view`}>
+                          memo
                         </Link></span>
                     ) : null}
                   </div>
