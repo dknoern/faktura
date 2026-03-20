@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import { fetchProposalById, fetchDefaultTenant } from '@/lib/data';
+import { fetchProposalById, fetchTenantById } from '@/lib/data';
+import { getTenantId } from '@/lib/auth-utils';
 import { generateProposalHtml } from '@/lib/proposal-renderer';
 import { getImageHost } from '@/lib/utils/imageHost';
 
@@ -26,7 +27,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
     }
 
-    const tenant = await fetchDefaultTenant();
+    const tenantId = await getTenantId();
+    const tenant = await fetchTenantById(tenantId);
     const imageHost = await getImageHost();
 
     // Parse email addresses
@@ -41,13 +43,13 @@ export async function POST(request: NextRequest) {
 
     // Prepare email
     const params = {
-      Source: process.env.FROM_EMAIL!,
+      Source: tenant.email,
       Destination: {
         ToAddresses: emailAddresses,
       },
       Message: {
         Subject: {
-          Data: `Proposal from ${tenant.companyName}`,
+          Data: `Proposal from ${tenant.nameLong}`,
           Charset: 'UTF-8',
         },
         Body: {
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest) {
             Charset: 'UTF-8',
           },
           Text: {
-            Data: `Please find attached Proposal from ${tenant.companyName}. Total: $${proposal.total.toFixed(2)}`,
+            Data: `Please find attached Proposal from ${tenant.nameLong}. Total: $${proposal.total.toFixed(2)}`,
             Charset: 'UTF-8',
           },
         },

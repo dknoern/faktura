@@ -18,6 +18,7 @@ const TenantSchema = new mongoose.Schema({
     warranty: String,
     returnPolicy: String,
     bankWireTransferInstructions: String,
+    proposalTerms: String,
     logo: String,
     email: String,
     features: {

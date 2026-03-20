@@ -1,4 +1,5 @@
-import { fetchProposalById, fetchDefaultTenant } from "@/lib/data";
+import { getTenantId } from "@/lib/auth-utils";
+import { fetchProposalById, fetchDefaultTenant, fetchTenantById } from "@/lib/data";
 import { generateEmailHtml } from "@/lib/proposal-renderer";
 import { getImageHost } from "@/lib/utils/imageHost";
 import { notFound } from "next/navigation";
@@ -16,7 +17,8 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  const tenant = await fetchDefaultTenant();
+  const tenantId = await getTenantId();
+  const tenant = await fetchTenantById(tenantId);
   const imageHost = await getImageHost();
   
   // Serialize the data to handle Date objects and ObjectIds

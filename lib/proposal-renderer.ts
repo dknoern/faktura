@@ -34,75 +34,83 @@ export function generateProposalHtml(proposal: Proposal, tenant: Tenant, imageBa
     return new Date(dateString).toLocaleDateString('en-US', {
       timeZone,
       year: 'numeric',
-      month: 'numeric',
+      month: 'long',
       day: 'numeric'
     });
   };
 
   const logoUrl = imageBaseUrl ? `${imageBaseUrl}/api/images/logo-${tenant._id}.png` : '';
+  const companyName = tenant.nameLong || 'Company';
+  const footerParts = [companyName, tenant.address, `${[tenant.city, tenant.state, tenant.zip].filter(Boolean).join(' ')}`, tenant.phone].filter(Boolean);
 
   return `
-    <div style="max-width: 800px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+    <div style="max-width: 780px; margin: 0 auto; padding: 40px 40px 20px 40px; font-family: Arial, sans-serif;">
       <!-- Header -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; border-bottom: 2px solid #B69D57; padding-bottom: 20px;">
-        <div style="flex: 1;">
-          ${logoUrl ? `<img src="${logoUrl}" alt="Logo" style="max-height: 76px; width: auto; margin-bottom: 10px;">` : ''}
-          <h1 style="color: #B69D57; font-size: 24px; margin: 0; font-weight: bold;">PROPOSAL</h1>
-        </div>
-        <div style="text-align: right; flex: 1;">
-          ${tenant.address ? `<p style="margin: 2px 0; color: #666;">${tenant.address}</p>` : ''}
-          ${tenant.city || tenant.state || tenant.zip ? `<p style="margin: 2px 0; color: #666;">${[tenant.city, tenant.state, tenant.zip].filter(Boolean).join(', ')}</p>` : ''}
-          ${tenant.phone ? `<p style="margin: 2px 0; color: #666;">Phone: ${tenant.phone}</p>` : ''}
-          ${tenant.email ? `<p style="margin: 2px 0; color: #666;">Email: ${tenant.email}</p>` : ''}
+      <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px;">
+        ${logoUrl ? `<img src="${logoUrl}" alt="Logo" style="max-height: 80px; width: auto;">` : ''}
+        <div>
+          <h1 style="color: #B69D57; font-size: 32px; margin: 0; font-weight: bold; font-family: Arial, sans-serif;">${companyName}</h1>
+          <p style="margin: 0; font-size: 18px; color: #555; font-weight: bold;">Proposal</p>
         </div>
       </div>
 
-      <!-- Proposal Info -->
-      <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-        <div>
-          <h3 style="margin: 0 0 10px 0; color: #333;">Proposal Details</h3>
-          <p style="margin: 5px 0;"><strong>Date:</strong> ${formatDate(proposal.date)}</p>
-          <p style="margin: 5px 0;"><strong>Status:</strong> ${proposal.status || 'Draft'}</p>
-        </div>
-        <div>
-          <h3 style="margin: 0 0 10px 0; color: #333;">Customer</h3>
-          <p style="margin: 5px 0;"><strong>${proposal.customerFirstName} ${proposal.customerLastName}</strong></p>
-        </div>
+      <!-- Date Badge -->
+      <div style="margin-bottom: 20px;">
+        <span style="background-color: #ffffff; padding: 0px 0x; font-size: 13px; font-weight: bold; display: inline-block;">${formatDate(proposal.date)}</span>
       </div>
 
-      <!-- Line Items -->
-      <div style="margin-bottom: 30px;">
-        <h3 style="margin: 0 0 15px 0; color: #333;">Line Items</h3>
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+      <!-- Client Info & Project -->
+      <div style="display: flex; justify-content: flex-start; gap: 200px; margin-bottom: 24px;">
+        <div>
+          <p style="margin: 0 0 4px 0; font-weight: bold; font-size: 14px;">Client Information</p>
+          <p style="margin: 0; font-size: 14px;">${proposal.customerFirstName} ${proposal.customerLastName}</p>
+        </div>
+        ${proposal.status ? `
+        <div>
+          <p style="margin: 0 0 4px 0; font-weight: bold; font-size: 14px;">Status</p>
+          <p style="margin: 0; font-size: 14px;">${proposal.status}</p>
+        </div>
+        ` : ''}
+      </div>
+
+      <!-- Line Items Table -->
+      <div style="margin-bottom: 24px;">
+        <table style="width: 100%; border-collapse: collapse;">
           <thead>
-            <tr style="background-color: #f5f5f5;">
-              <th style="border: 1px solid #ddd; padding: 12px; text-align: left; font-weight: bold;">Name</th>
-              <th style="border: 1px solid #ddd; padding: 12px; text-align: left; font-weight: bold;">Description</th>
-              <th style="border: 1px solid #ddd; padding: 12px; text-align: right; font-weight: bold; width: 120px;">Amount</th>
+            <tr style="background-color: #dddddd;">
+              <th style="border: 1px solid #aaa; padding: 8px 12px; text-align: left; font-weight: bold; color: #000; font-size: 13px;">Item</th>
+              <th style="border: 1px solid #aaa; padding: 8px 12px; text-align: right; font-weight: bold; color: #000; font-size: 13px; width: 100px;">Price</th>
             </tr>
           </thead>
           <tbody>
             ${proposal.lineItems.map(item => `
               <tr>
-                <td style="border: 1px solid #ddd; padding: 12px; vertical-align: top; font-weight: 500;">${item.name}</td>
-                <td style="border: 1px solid #ddd; padding: 12px; vertical-align: top; white-space: pre-wrap;">${item.longDesc}</td>
-                <td style="border: 1px solid #ddd; padding: 12px; text-align: right; vertical-align: top; font-weight: 500;">${formatCurrency(item.amount)}</td>
+                <td style="border: 1px solid #ccc; padding: 10px 12px; vertical-align: top; font-size: 13px;">
+                  ${item.longDesc ? `${item.longDesc}` : `${item.name}`}
+                </td>
+                <td style="border: 1px solid #ccc; padding: 10px 12px; text-align: right; vertical-align: top; font-size: 13px;">${formatCurrency(item.amount)}</td>
               </tr>
             `).join('')}
           </tbody>
-          <tfoot>
-            <tr style="background-color: #f9f9f9;">
-              <td colspan="2" style="border: 1px solid #ddd; padding: 12px; text-align: right; font-weight: bold;">Total:</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: right; font-weight: bold; font-size: 16px;">${formatCurrency(proposal.total)}</td>
-            </tr>
-          </tfoot>
         </table>
       </div>
 
+      <!-- Terms -->
+      <div style="margin-bottom: 30px; font-size: 13px; line-height: 1.6;">
+        <p style="margin: 0 0 14px 0;">${tenant.proposalTerms || ''}</p>
+      </div>
+
+      <!-- Signature Block -->
+      <div style="margin-bottom: 40px; font-size: 13px;">
+        <p style="margin: 0 0 20px 0; font-weight: bold;">The Contract, as stated above, is accepted by the owner (or realtor):</p>
+        <p style="margin: 0 0 16px 0;">Owners or Realtor&rsquo;s Signature: ________________________________________</p>
+        <p style="margin: 0 0 16px 0;">Mailing Address: ___________________________________________________</p>
+        <p style="margin: 0 0 16px 0;">Telephone Number: _________________________________________________</p>
+      </div>
+
       <!-- Footer -->
-      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 12px;">
-        <p>This proposal is valid for 30 days from the date above.</p>
-        <p>Thank you for your business!</p>
+      <div style="margin-top: 60px; padding-top: 12px; border-top: 1px solid #ccc; text-align: center; color: #666; font-size: 11px;">
+        <p style="margin: 0;">${footerParts.join(' &ndash; ')}</p>
       </div>
     </div>
   `;

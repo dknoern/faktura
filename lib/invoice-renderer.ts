@@ -65,6 +65,7 @@ export interface Tenant {
   warranty?: string;
   returnPolicy?: string;
   bankWireTransferInstructions?: string;
+  proposalTerms?: string;
 }
 
 // Format currency values
