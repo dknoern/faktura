@@ -8,11 +8,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit, ChevronDown, Printer, Mail, RotateCcw } from "lucide-react";
+import { Edit, ChevronDown, Printer, Mail, RotateCcw, Download } from "lucide-react";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Invoice } from "@/lib/invoice-renderer";
 import { EmailDialog } from "./email-dialog";
 import { handleDeviceAwarePrint } from "@/lib/utils/printing";
+import { downloadInvoicePdf } from "@/lib/utils/pdf";
 
 interface InvoiceActionMenuProps {
     invoice: Invoice;
@@ -39,6 +41,18 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
     // Function to open email dialog
     const handleEmail = () => {
         setEmailDialogOpen(true);
+    };
+
+    // Function to download invoice as PDF
+    const handleDownload = async () => {
+        try {
+            toast.loading('Generating PDF...', { id: 'pdf-download' });
+            await downloadInvoicePdf(invoice.invoiceNumber);
+            toast.success('PDF downloaded successfully', { id: 'pdf-download' });
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            toast.error('Failed to download PDF', { id: 'pdf-download' });
+        }
     };
 
 
@@ -70,6 +84,11 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
                     Email
                 </DropdownMenuItem>
 
+                <DropdownMenuItem onClick={handleDownload}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download PDF
+                </DropdownMenuItem>
+
 
                 <DropdownMenuItem onClick={handleReturn}>
                     <RotateCcw className="mr-2 h-4 w-4" />
@@ -83,6 +102,7 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
             open={emailDialogOpen}
             onOpenChange={setEmailDialogOpen}
             invoiceId={invoice._id.toString()}
+            invoiceNumber={invoice.invoiceNumber}
         />
         </>
     );

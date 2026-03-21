@@ -51,6 +51,8 @@
     "date-format": "^4.0.14",
     "dotenv": "^17.2.1",
     "format-currency": "^1.0.0",
+    "html2pdf.js": "^0.14.0",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.454.0",
     "moment": "^2.30.1",
     "mongoose": "^8.12.1",
