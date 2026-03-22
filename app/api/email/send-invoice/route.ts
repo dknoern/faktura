@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { SESClient, SendEmailCommand, SendRawEmailCommand } from '@aws-sdk/client-ses';
+import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses';
 import { fetchInvoiceById, fetchDefaultTenant } from '@/lib/data';
-import { generateEmailHtml } from '@/lib/invoice-renderer';
 import { getImageHost } from '@/lib/utils/imageHost';
+import { generateInvoicePdfBase64 } from '@/lib/pdf/generate-invoice-pdf';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
@@ -51,7 +51,7 @@ function buildRawEmail(
 
 export async function POST(request: Request) {
   try {
-    const { invoiceId, email, pdfBase64, invoiceNumber } = await request.json();
+    const { invoiceId, email } = await request.json();
     
     if (!invoiceId || !email) {
       return NextResponse.json(
@@ -66,7 +66,6 @@ export async function POST(request: Request) {
     // Fetch invoice and tenant data
     const invoice = await fetchInvoiceById(invoiceId);
     const tenant = await fetchDefaultTenant();
-    const imageHost = await getImageHost();
     
     if (!invoice) {
       return NextResponse.json(
@@ -82,42 +81,31 @@ export async function POST(request: Request) {
       );
     }
     
-    // Generate email HTML content using the shared utility
-    const emailHtml = generateEmailHtml(invoice, tenant, imageHost);
-    const subject = `Invoice #${invoice.invoiceNumber} from ${tenant.nameLong || 'DeMesy'}`;
+    const companyName = tenant.nameLong || 'DeMesy';
+    const customerName = `${invoice.customerFirstName} ${invoice.customerLastName}`.trim();
+    const subject = `Invoice #${invoice.invoiceNumber} from ${companyName}`;
+    const emailHtml = `<p>${customerName}:</p><p>Your invoice number ${invoice.invoiceNumber} from ${companyName} is attached.</p><p>Thank you.</p>`;
 
-    if (pdfBase64) {
-      // Send with PDF attachment using SendRawEmail
-      const pdfFilename = `Invoice-${invoiceNumber || invoice.invoiceNumber}.pdf`;
-      const rawEmail = buildRawEmail(
-        tenant.email,
-        emailAddresses,
-        subject,
-        emailHtml,
-        pdfBase64,
-        pdfFilename
-      );
+    // Generate PDF server-side
+    const imageHost = await getImageHost();
+    const logoUrl = `${imageHost}/api/images/logo-${tenant._id}.png`;
+    const pdfBase64 = await generateInvoicePdfBase64(invoice, tenant, logoUrl);
+    const pdfFilename = `Invoice-${invoice.invoiceNumber}.pdf`;
 
-      await sesClient.send(new SendRawEmailCommand({
-        RawMessage: {
-          Data: new TextEncoder().encode(rawEmail),
-        },
-      }));
-    } else {
-      // Fallback: send without attachment
-      await sesClient.send(new SendEmailCommand({
-        Source: tenant.email,
-        Destination: {
-          ToAddresses: emailAddresses,
-        },
-        Message: {
-          Subject: { Data: subject },
-          Body: {
-            Html: { Data: emailHtml },
-          },
-        },
-      }));
-    }
+    const rawEmail = buildRawEmail(
+      tenant.email,
+      emailAddresses,
+      subject,
+      emailHtml,
+      pdfBase64,
+      pdfFilename
+    );
+
+    await sesClient.send(new SendRawEmailCommand({
+      RawMessage: {
+        Data: new TextEncoder().encode(rawEmail),
+      },
+    }));
     
     return NextResponse.json({ 
       success: true, 

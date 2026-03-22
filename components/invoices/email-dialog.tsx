@@ -14,16 +14,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail } from "lucide-react";
 import toast from "react-hot-toast";
-import { generateInvoicePdfBase64 } from "@/lib/utils/pdf";
 
 interface EmailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   invoiceId: string;
-  invoiceNumber: number;
 }
 
-export function EmailDialog({ open, onOpenChange, invoiceId, invoiceNumber }: EmailDialogProps) {
+export function EmailDialog({ open, onOpenChange, invoiceId }: EmailDialogProps) {
   const [emailAddresses, setEmailAddresses] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -69,9 +67,6 @@ export function EmailDialog({ open, onOpenChange, invoiceId, invoiceNumber }: Em
     setIsLoading(true);
 
     try {
-      // Generate PDF from the visible invoice content on the page
-      const pdfBase64 = await generateInvoicePdfBase64(invoiceNumber);
-
       const response = await fetch('/api/email/send-invoice', {
         method: 'POST',
         headers: {
@@ -80,8 +75,6 @@ export function EmailDialog({ open, onOpenChange, invoiceId, invoiceNumber }: Em
         body: JSON.stringify({
           invoiceId: invoiceId,
           email: emailAddresses,
-          pdfBase64: pdfBase64,
-          invoiceNumber: invoiceNumber,
         }),
       });
 

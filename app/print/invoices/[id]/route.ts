@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchInvoiceById, fetchDefaultTenant } from "@/lib/data";
-import { generateEmailHtml } from "@/lib/invoice-renderer";
 import { getImageHost } from "@/lib/utils/imageHost";
-import { generateAutoPrintScript } from "@/lib/utils/printing";
+import { generateInvoicePdfBuffer } from "@/lib/pdf/generate-invoice-pdf";
 
 export async function GET(
   request: NextRequest,
@@ -22,56 +21,21 @@ export async function GET(
       return new NextResponse('Invoice not found', { status: 404 });
     }
 
-    const emailHtml = generateEmailHtml(invoice, tenant, imageHost);
+    if (!tenant) {
+      return new NextResponse('Tenant not found', { status: 404 });
+    }
 
-    const html = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Invoice #${invoice.invoiceNumber}</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-      }
+    const logoUrl = `${imageHost}/api/images/logo-${tenant._id}.png`;
+    const pdfBuffer = await generateInvoicePdfBuffer(invoice, tenant, logoUrl);
 
-      @media print {
-        body {
-          margin: 0 !important;
-          padding: 0 !important;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-
-        @page {
-          margin: 0.5in;
-          size: auto;
-        }
-      }
-
-      @media screen {
-        body {
-          padding: 20px;
-        }
-      }
-    </style>
-    <script>
-      ${generateAutoPrintScript()}
-    </script>
-  </head>
-  <body>
-    ${emailHtml}
-  </body>
-</html>`;
-
-    return new NextResponse(html, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
-        'Content-Type': 'text/html',
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `inline; filename="Invoice-${invoice.invoiceNumber}.pdf"`,
       },
     });
   } catch (error) {
-    console.error('Error fetching invoice:', error);
+    console.error('Error generating invoice PDF:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

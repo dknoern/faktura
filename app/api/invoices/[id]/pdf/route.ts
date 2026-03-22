@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchInvoiceById, fetchDefaultTenant } from '@/lib/data';
-import { generateInvoiceHtml } from '@/lib/invoice-renderer';
 import { getImageHost } from '@/lib/utils/imageHost';
+import { generateInvoicePdfBuffer } from '@/lib/pdf/generate-invoice-pdf';
 
 export async function GET(
   request: NextRequest,
@@ -25,14 +25,17 @@ export async function GET(
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
-    const invoiceHtml = generateInvoiceHtml(invoice, tenant, imageHost);
+    const logoUrl = `${imageHost}/api/images/logo-${tenant._id}.png`;
+    const pdfBuffer = await generateInvoicePdfBuffer(invoice, tenant, logoUrl);
 
-    return NextResponse.json({
-      html: invoiceHtml,
-      invoiceNumber: invoice.invoiceNumber,
+    return new NextResponse(new Uint8Array(pdfBuffer), {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `inline; filename="Invoice-${invoice.invoiceNumber}.pdf"`,
+      },
     });
   } catch (error) {
-    console.error('Error generating invoice PDF data:', error);
-    return NextResponse.json({ error: 'Failed to generate PDF data' }, { status: 500 });
+    console.error('Error generating invoice PDF:', error);
+    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
   }
 }
