@@ -103,6 +103,19 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
       // Set warranty service value
       formData.set('warrantyService', warrantyService ? 'true' : 'false');
 
+      // Explicitly set all controlled fields from React state to avoid
+      // race conditions where native form data hasn't flushed yet
+      formData.set('vendor', vendor);
+      formData.set('description', description);
+      formData.set('repairIssues', repairIssues);
+      formData.set('repairNotes', repairNotes);
+      formData.set('customerFirstName', customerFirstName);
+      formData.set('customerLastName', customerLastName);
+      formData.set('phone', phone);
+      formData.set('email', email);
+      formData.set('repairCost', repairCost);
+      formData.set('repairNumber', repairNumber);
+
       console.log('repair formData', formData);
 
       if (repair) {

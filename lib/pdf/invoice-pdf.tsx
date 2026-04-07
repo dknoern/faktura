@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, View, Text, Image, StyleSheet, Font, Svg, Path, Circle, Line } from '@react-pdf/renderer';
 import { Invoice, Tenant, formatCurrency, formatDate } from '@/lib/invoice-renderer';
 
 const gold = '#B69D57';
@@ -175,10 +175,18 @@ const styles = StyleSheet.create({
   },
   footerCol: {
     width: '30%',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  footerIcon: {
+    marginRight: 6,
+    marginTop: 1,
+  },
+  footerColText: {
+    flex: 1,
   },
   footerLabel: {
     fontFamily: 'Helvetica-Bold',
-    color: gold,
     marginBottom: 2,
     fontSize: 8,
   },
@@ -306,7 +314,7 @@ export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps
         <View style={styles.totalsContainer}>
           <View style={styles.totalsTable}>
             <View style={styles.totalsRow}>
-              <Text style={styles.totalsLabel}>XXXSUBTOTAL:</Text>
+              <Text style={styles.totalsLabel}>SUBTOTAL:</Text>
               <Text style={styles.totalsValue}>{formatCurrency(invoice.subtotal)}</Text>
             </View>
             <View style={styles.totalsRow}>
@@ -340,17 +348,41 @@ export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps
         {/* Footer */}
         <View style={styles.footer}>
           <View style={styles.footerCol}>
-            <Text style={styles.footerLabel}>PHONE</Text>
-            <Text style={styles.footerText}>{tenant.phone || 'N/A'}</Text>
+            <View style={styles.footerIcon}>
+              <Svg width="14" height="14" viewBox="0 0 24 24">
+                <Path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke={gold} strokeWidth="2" fill="none" />
+              </Svg>
+            </View>
+            <View style={styles.footerColText}>
+              <Text style={styles.footerLabel}>PHONE</Text>
+              <Text style={styles.footerText}>{tenant.phone || 'N/A'}</Text>
+            </View>
           </View>
           <View style={styles.footerCol}>
-            <Text style={styles.footerLabel}>ADDRESS</Text>
-            <Text style={styles.footerText}>{tenant.address || ''}</Text>
-            <Text style={styles.footerText}>{tenant.city || ''}, {tenant.state || ''} {tenant.zip || ''}</Text>
+            <View style={styles.footerIcon}>
+              <Svg width="14" height="14" viewBox="0 0 24 24">
+                <Path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" stroke={gold} strokeWidth="2" fill="none" />
+                <Circle cx="12" cy="10" r="3" stroke={gold} strokeWidth="2" fill="none" />
+              </Svg>
+            </View>
+            <View style={styles.footerColText}>
+              <Text style={styles.footerLabel}>ADDRESS</Text>
+              <Text style={styles.footerText}>{tenant.address || ''}</Text>
+              <Text style={styles.footerText}>{tenant.city || ''}, {tenant.state || ''} {tenant.zip || ''}</Text>
+            </View>
           </View>
           <View style={styles.footerCol}>
-            <Text style={styles.footerLabel}>WEB</Text>
-            <Text style={styles.footerText}>{tenant.website || 'N/A'}</Text>
+            <View style={styles.footerIcon}>
+              <Svg width="14" height="14" viewBox="0 0 24 24">
+                <Circle cx="12" cy="12" r="10" stroke={gold} strokeWidth="2" fill="none" />
+                <Line x1="2" y1="12" x2="22" y2="12" stroke={gold} strokeWidth="2" />
+                <Path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke={gold} strokeWidth="2" fill="none" />
+              </Svg>
+            </View>
+            <View style={styles.footerColText}>
+              <Text style={styles.footerLabel}>WEB</Text>
+              <Text style={styles.footerText}>{tenant.website || 'N/A'}</Text>
+            </View>
           </View>
         </View>
 

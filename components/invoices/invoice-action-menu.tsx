@@ -48,12 +48,16 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
             iframe.src = url;
             iframe.onload = () => {
                 toast.dismiss('pdf-print');
-                iframe.contentWindow?.print();
-                // Clean up after a short delay to allow print dialog to fully close
+                // Small delay to ensure the PDF is fully rendered in the iframe
+                setTimeout(() => {
+                    iframe.contentWindow?.focus();
+                    iframe.contentWindow?.print();
+                }, 500);
+                // Clean up after print dialog closes
                 setTimeout(() => {
                     document.body.removeChild(iframe);
                     URL.revokeObjectURL(url);
-                }, 1000);
+                }, 60000);
             };
         } catch (error) {
             console.error('Error printing PDF:', error);

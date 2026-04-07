@@ -18,14 +18,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChevronDown, Edit, Printer, Mail, ImagePlus, Trash2 } from "lucide-react";
+import { ChevronDown, Edit, Printer, Mail, ImagePlus, Trash2, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Repair } from "@/lib/repair-renderer";
 import { useState, useRef } from "react";
 import { EmailDialog } from "./email-dialog";
 import { UploadDialog } from "../upload-dialog";
-import { handleDeviceAwarePrint } from "@/lib/utils/printing";
 import { useDeviceDetection } from "@/hooks/use-device-detection";
+import { toast } from "react-hot-toast";
 
 interface RepairActionMenuProps {
     repair: Repair;
@@ -44,8 +44,64 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
         router.push(`/repairs/${repair._id}/edit`);
     };
 
-    const handlePrint = () => {
-        handleDeviceAwarePrint(`/print/repairs/${repair._id}`, undefined, repair);
+    const handlePrint = async () => {
+        try {
+            toast.loading('Preparing to print...', { id: 'pdf-print' });
+
+            const response = await fetch(`/api/repairs/${repair._id}/pdf`);
+            if (!response.ok) throw new Error('Failed to generate PDF');
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = 'none';
+            iframe.style.top = '-9999px';
+            document.body.appendChild(iframe);
+
+            iframe.src = url;
+            iframe.onload = () => {
+                toast.dismiss('pdf-print');
+                setTimeout(() => {
+                    iframe.contentWindow?.focus();
+                    iframe.contentWindow?.print();
+                }, 500);
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    URL.revokeObjectURL(url);
+                }, 60000);
+            };
+        } catch (error) {
+            console.error('Error printing PDF:', error);
+            toast.error('Failed to print PDF', { id: 'pdf-print' });
+        }
+    };
+
+    const handleDownload = async () => {
+        try {
+            toast.loading('Generating PDF...', { id: 'pdf-download' });
+
+            const response = await fetch(`/api/repairs/${repair._id}/pdf`);
+            if (!response.ok) throw new Error('Failed to generate PDF');
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Repair-${repair.repairNumber}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            toast.success('PDF downloaded successfully', { id: 'pdf-download' });
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            toast.error('Failed to download PDF', { id: 'pdf-download' });
+        }
     };
     
     const handleMobileFileUpload = async (file: File) => {
@@ -137,6 +193,11 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
                 <DropdownMenuItem onClick={handlePrint}>
                     <Printer className="mr-2 h-4 w-4" />
                     Print
+                </DropdownMenuItem>
+
+                <DropdownMenuItem onClick={handleDownload}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download PDF
                 </DropdownMenuItem>
 
                 <DropdownMenuItem onClick={handleEmail}>

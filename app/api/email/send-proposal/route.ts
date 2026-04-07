@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses';
 import { fetchProposalById, fetchTenantById } from '@/lib/data';
 import { getTenantId } from '@/lib/auth-utils';
-import { generateProposalHtml } from '@/lib/proposal-renderer';
 import { getImageHost } from '@/lib/utils/imageHost';
+import { generateProposalPdfBase64 } from '@/lib/pdf/generate-proposal-pdf';
 
 const sesClient = new SESClient({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -12,6 +12,42 @@ const sesClient = new SESClient({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   },
 });
+
+function buildRawEmail(
+  from: string,
+  to: string[],
+  subject: string,
+  htmlBody: string,
+  pdfBase64: string,
+  pdfFilename: string
+): string {
+  const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  const rawEmail = [
+    `From: ${from}`,
+    `To: ${to.join(', ')}`,
+    `Subject: ${subject}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    htmlBody,
+    '',
+    `--${boundary}`,
+    `Content-Type: application/pdf; name="${pdfFilename}"`,
+    'Content-Transfer-Encoding: base64',
+    `Content-Disposition: attachment; filename="${pdfFilename}"`,
+    '',
+    pdfBase64,
+    '',
+    `--${boundary}--`,
+  ].join('\r\n');
+
+  return rawEmail;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +65,6 @@ export async function POST(request: NextRequest) {
 
     const tenantId = await getTenantId();
     const tenant = await fetchTenantById(tenantId);
-    const imageHost = await getImageHost();
 
     // Parse email addresses
     const emailAddresses = emails.split(',').map((email: string) => email.trim()).filter((email: string) => email);
@@ -38,36 +73,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No valid email addresses provided' }, { status: 400 });
     }
 
-    // Generate HTML content
-    const htmlContent = generateProposalHtml(proposal, tenant, imageHost);
+    const companyName = tenant.nameLong || 'Company';
+    const customerName = `${proposal.customerFirstName} ${proposal.customerLastName}`.trim();
+    const subject = `Proposal from ${companyName}`;
+    const emailHtml = `<p>${customerName}:</p><p>Your proposal from ${companyName} is attached.</p><p>Thank you.</p>`;
 
-    // Prepare email
-    const params = {
-      Source: tenant.email,
-      Destination: {
-        ToAddresses: emailAddresses,
-      },
-      Message: {
-        Subject: {
-          Data: `Proposal from ${tenant.nameLong}`,
-          Charset: 'UTF-8',
-        },
-        Body: {
-          Html: {
-            Data: htmlContent,
-            Charset: 'UTF-8',
-          },
-          Text: {
-            Data: `Please find attached Proposal from ${tenant.nameLong}. Total: $${proposal.total.toFixed(2)}`,
-            Charset: 'UTF-8',
-          },
-        },
-      },
-    };
+    // Generate PDF server-side
+    const imageHost = await getImageHost();
+    const logoUrl = `${imageHost}/api/images/logo-${tenant._id}.png`;
+    const pdfBase64 = await generateProposalPdfBase64(proposal, tenant, logoUrl);
+    const pdfFilename = `Proposal-${proposal.customerLastName}.pdf`;
 
-    // Send email
-    const command = new SendEmailCommand(params);
-    await sesClient.send(command);
+    const rawEmail = buildRawEmail(
+      tenant.email,
+      emailAddresses,
+      subject,
+      emailHtml,
+      pdfBase64,
+      pdfFilename
+    );
+
+    await sesClient.send(new SendRawEmailCommand({
+      RawMessage: {
+        Data: new TextEncoder().encode(rawEmail),
+      },
+    }));
 
     return NextResponse.json({ 
       message: `Proposal sent successfully to ${emailAddresses.length} recipient${emailAddresses.length > 1 ? 's' : ''}` 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchRepairById, fetchDefaultTenant } from "@/lib/data";
-import { getImageHost } from "@/lib/utils/imageHost";
-import { getRepairImages } from "@/lib/utils/storage";
-import { generateRepairPdfBuffer } from "@/lib/pdf/generate-repair-pdf";
+import { fetchRepairById, fetchDefaultTenant } from '@/lib/data';
+import { getImageHost } from '@/lib/utils/imageHost';
+import { getRepairImages } from '@/lib/utils/storage';
+import { generateRepairPdfBuffer } from '@/lib/pdf/generate-repair-pdf';
 
 export async function GET(
   request: NextRequest,
@@ -10,31 +10,30 @@ export async function GET(
 ) {
   const resolvedParams = await params;
   const repairId = resolvedParams.id;
-  
-  if (!repairId) {
-    return new NextResponse('Repair not found', { status: 404 });
-  }
 
   try {
     const imageHost = await getImageHost();
+
     const [repair, tenant, images] = await Promise.all([
       fetchRepairById(repairId),
       fetchDefaultTenant(),
-      getRepairImages(repairId)
+      getRepairImages(repairId),
     ]);
 
     if (!repair) {
-      return new NextResponse('Repair not found', { status: 404 });
+      return NextResponse.json({ error: 'Repair not found' }, { status: 404 });
     }
 
     if (!tenant) {
-      return new NextResponse('Tenant not found', { status: 404 });
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
+    // Serialize the MongoDB document to handle Date objects and ObjectIds
     const serializedRepair = JSON.parse(JSON.stringify(repair));
 
     const logoUrl = `${imageHost}/api/images/logo-${tenant._id}.png`;
 
+    // Build full image URLs for the PDF renderer
     const imageUrls = images.map(image => {
       return image.startsWith('/')
         ? `${imageHost}/api/images${image}`
@@ -51,6 +50,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error generating repair PDF:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
   }
 }

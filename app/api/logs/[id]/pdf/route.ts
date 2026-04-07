@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchLogItemById, fetchDefaultTenant } from "@/lib/data";
-import { getImageHost } from "@/lib/utils/imageHost";
-import { getLogImages } from "@/lib/utils/storage";
-import { generateLogPdfBuffer } from "@/lib/pdf/generate-log-pdf";
+import { fetchLogItemById, fetchDefaultTenant } from '@/lib/data';
+import { getImageHost } from '@/lib/utils/imageHost';
+import { getLogImages } from '@/lib/utils/storage';
+import { generateLogPdfBuffer } from '@/lib/pdf/generate-log-pdf';
 
 export async function GET(
   request: NextRequest,
@@ -10,25 +10,22 @@ export async function GET(
 ) {
   const resolvedParams = await params;
   const logId = resolvedParams.id;
-  
-  if (!logId) {
-    return new NextResponse('Log not found', { status: 404 });
-  }
 
   try {
     const imageHost = await getImageHost();
+
     const [logitem, tenant, images] = await Promise.all([
       fetchLogItemById(logId),
       fetchDefaultTenant(),
-      getLogImages(logId)
+      getLogImages(logId),
     ]);
 
     if (!logitem) {
-      return new NextResponse('Log not found', { status: 404 });
+      return NextResponse.json({ error: 'Log not found' }, { status: 404 });
     }
 
     if (!tenant) {
-      return new NextResponse('Tenant not found', { status: 404 });
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
     // Serialize the MongoDB document to handle Date objects and ObjectIds
@@ -59,6 +56,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error generating log PDF:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
   }
 }

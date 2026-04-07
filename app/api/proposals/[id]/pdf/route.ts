@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchInvoiceById, fetchTenantById } from '@/lib/data';
+import { fetchProposalById, fetchTenantById } from '@/lib/data';
 import { getTenantId } from '@/lib/auth-utils';
 import { getImageHost } from '@/lib/utils/imageHost';
-import { generateInvoicePdfBuffer } from '@/lib/pdf/generate-invoice-pdf';
+import { generateProposalPdfBuffer } from '@/lib/pdf/generate-proposal-pdf';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const resolvedParams = await params;
-  const invoiceId = resolvedParams.id;
+  const proposalId = resolvedParams.id;
 
   try {
     const [tenantId, imageHost] = await Promise.all([
@@ -17,13 +17,13 @@ export async function GET(
       getImageHost(),
     ]);
 
-    const [invoice, tenant] = await Promise.all([
-      fetchInvoiceById(invoiceId),
+    const [proposal, tenant] = await Promise.all([
+      fetchProposalById(proposalId),
       fetchTenantById(tenantId),
     ]);
 
-    if (!invoice) {
-      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
+    if (!proposal) {
+      return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
     }
 
     if (!tenant) {
@@ -31,16 +31,16 @@ export async function GET(
     }
 
     const logoUrl = `${imageHost}/api/images/logo-${tenant._id}.png`;
-    const pdfBuffer = await generateInvoicePdfBuffer(invoice, tenant, logoUrl);
+    const pdfBuffer = await generateProposalPdfBuffer(proposal, tenant, logoUrl);
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="Invoice-${invoice.invoiceNumber}.pdf"`,
+        'Content-Disposition': `inline; filename="Proposal-${proposal.customerLastName}.pdf"`,
       },
     });
   } catch (error) {
-    console.error('Error generating invoice PDF:', error);
+    console.error('Error generating proposal PDF:', error);
     return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
   }
 }

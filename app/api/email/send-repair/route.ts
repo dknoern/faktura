@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses';
 import { fetchRepairById, fetchDefaultTenant } from '@/lib/data';
-import { Repair, Tenant, generateEmailHtml } from '@/lib/repair-renderer';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getRepairImages } from '@/lib/utils/storage';
+import { generateRepairPdfBase64 } from '@/lib/pdf/generate-repair-pdf';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
@@ -11,9 +11,44 @@ const sesClient = new SESClient({
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-
   },
 });
+
+function buildRawEmail(
+  from: string,
+  to: string[],
+  subject: string,
+  htmlBody: string,
+  pdfBase64: string,
+  pdfFilename: string
+): string {
+  const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  const rawEmail = [
+    `From: ${from}`,
+    `To: ${to.join(', ')}`,
+    `Subject: ${subject}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    htmlBody,
+    '',
+    `--${boundary}`,
+    `Content-Type: application/pdf; name="${pdfFilename}"`,
+    'Content-Transfer-Encoding: base64',
+    `Content-Disposition: attachment; filename="${pdfFilename}"`,
+    '',
+    pdfBase64,
+    '',
+    `--${boundary}--`,
+  ].join('\r\n');
+
+  return rawEmail;
+}
 
 export async function POST(request: Request) {
   try {
@@ -52,29 +87,38 @@ export async function POST(request: Request) {
       getImageHost(),
       getRepairImages(repairId)
     ]);
-    
-    // Generate email HTML content using the shared utility
-    const emailHtml = generateEmailHtml(repair as Repair, tenant as Tenant, imageHost, false, images);
-    
-    // Send email using AWS SES
-    const params = {
-      Source: tenant.email,
-      Destination: {
-        ToAddresses: emailAddresses,
+
+    const serializedRepair = JSON.parse(JSON.stringify(repair));
+    const companyName = tenant.nameLong || 'DeMesy';
+    const customerName = `${serializedRepair.customerFirstName} ${serializedRepair.customerLastName}`.trim();
+    const subject = `Repair #${serializedRepair.repairNumber} from ${companyName}`;
+    const emailHtml = `<p>${customerName}:</p><p>Your repair order #${serializedRepair.repairNumber} from ${companyName} is attached.</p><p>Thank you.</p>`;
+
+    // Generate PDF server-side
+    const logoUrl = `${imageHost}/api/images/logo-${tenant._id}.png`;
+    const imageUrls = images.map(image => {
+      return image.startsWith('/')
+        ? `${imageHost}/api/images${image}`
+        : `${imageHost}/api/images/${image}`;
+    });
+
+    const pdfBase64 = await generateRepairPdfBase64(serializedRepair, tenant, logoUrl, imageUrls, false);
+    const pdfFilename = `Repair-${serializedRepair.repairNumber}.pdf`;
+
+    const rawEmail = buildRawEmail(
+      tenant.email,
+      emailAddresses,
+      subject,
+      emailHtml,
+      pdfBase64,
+      pdfFilename
+    );
+
+    await sesClient.send(new SendRawEmailCommand({
+      RawMessage: {
+        Data: new TextEncoder().encode(rawEmail),
       },
-      Message: {
-        Subject: {
-          Data: `Repair #${repair.repairNumber} from ${tenant.nameLong || 'DeMesy'}`,
-        },
-        Body: {
-          Html: {
-            Data: emailHtml,
-          },
-        },
-      },
-    };
-    
-    await sesClient.send(new SendEmailCommand(params));
+    }));
     
     return NextResponse.json({ 
       success: true, 

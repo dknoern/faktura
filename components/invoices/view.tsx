@@ -87,8 +87,8 @@ export function ViewInvoice({ invoice }: { invoice: Invoice }) {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="font-bold" style={{ color: '#B69D57' }}>ITEM DESCRIPTION</TableHead>
-                                <TableHead className="text-right font-bold" style={{ color: '#B69D57' }}>TOTAL</TableHead>
+                                <TableHead className="font-bold">ITEM DESCRIPTION</TableHead>
+                                <TableHead className="text-right font-bold">TOTAL</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

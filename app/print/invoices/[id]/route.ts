@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchInvoiceById, fetchDefaultTenant } from "@/lib/data";
+import { fetchInvoiceById, fetchTenantById } from "@/lib/data";
+import { getTenantId } from "@/lib/auth-utils";
 import { getImageHost } from "@/lib/utils/imageHost";
 import { generateInvoicePdfBuffer } from "@/lib/pdf/generate-invoice-pdf";
 
@@ -11,10 +12,14 @@ export async function GET(
   const invoiceId = resolvedParams.id;
 
   try {
-    const imageHost = await getImageHost();
+    const [tenantId, imageHost] = await Promise.all([
+      getTenantId(),
+      getImageHost(),
+    ]);
+
     const [invoice, tenant] = await Promise.all([
       fetchInvoiceById(invoiceId),
-      fetchDefaultTenant()
+      fetchTenantById(tenantId),
     ]);
 
     if (!invoice) {

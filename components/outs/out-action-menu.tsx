@@ -18,11 +18,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Printer, Edit, ImagePlus, PenLine, Mail } from "lucide-react";
+import { ChevronDown, Printer, Edit, ImagePlus, PenLine, Mail, Download } from "lucide-react";
 import { OutEmailDialog } from "./out-email-dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { handleDeviceAwarePrint } from "@/lib/utils/printing";
 
 interface OutActionMenuProps {
   out: {
@@ -44,14 +43,73 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     const outId = out.id || out._id;
     if (!outId) {
       console.error('Out ID is required for printing');
       return;
     }
-    
-    handleDeviceAwarePrint(`/print/logoutitems/${outId}`, undefined, out);
+
+    try {
+      toast.loading('Preparing to print...', { id: 'pdf-print' });
+
+      const response = await fetch(`/api/outs/${outId}/pdf`);
+      if (!response.ok) throw new Error('Failed to generate PDF');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      iframe.style.top = '-9999px';
+      document.body.appendChild(iframe);
+
+      iframe.src = url;
+      iframe.onload = () => {
+        toast.dismiss('pdf-print');
+        setTimeout(() => {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        }, 500);
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          URL.revokeObjectURL(url);
+        }, 60000);
+      };
+    } catch (error) {
+      console.error('Error printing PDF:', error);
+      toast.error('Failed to print PDF', { id: 'pdf-print' });
+    }
+  };
+
+  const handleDownload = async () => {
+    const outId = out.id || out._id;
+    if (!outId) return;
+
+    try {
+      toast.loading('Generating PDF...', { id: 'pdf-download' });
+
+      const response = await fetch(`/api/outs/${outId}/pdf`);
+      if (!response.ok) throw new Error('Failed to generate PDF');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `LogOut-${outId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success('PDF downloaded successfully', { id: 'pdf-download' });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast.error('Failed to download PDF', { id: 'pdf-download' });
+    }
   };
 
   const handleEdit = () => {
@@ -154,6 +212,10 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
           <DropdownMenuItem onClick={onSignatureClick}>
             <PenLine className="mr-2 h-4 w-4" />
             e-Sign
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleDownload}>
+            <Download className="mr-2 h-4 w-4" />
+            Download PDF
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowEmailDialog(true)}>
             <Mail className="mr-2 h-4 w-4" />

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses';
-import { fetchInvoiceById, fetchDefaultTenant } from '@/lib/data';
+import { fetchInvoiceById, fetchTenantById } from '@/lib/data';
+import { getTenantId } from '@/lib/auth-utils';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { generateInvoicePdfBase64 } from '@/lib/pdf/generate-invoice-pdf';
 
@@ -65,7 +66,8 @@ export async function POST(request: Request) {
     
     // Fetch invoice and tenant data
     const invoice = await fetchInvoiceById(invoiceId);
-    const tenant = await fetchDefaultTenant();
+    const tenantId = await getTenantId();
+    const tenant = await fetchTenantById(tenantId);
     
     if (!invoice) {
       return NextResponse.json(
