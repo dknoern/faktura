@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 
 import { format } from "date-fns";
 import { Textarea } from "../ui/textarea";
+import { FormControl } from "../ui/form";
 
 interface OutItem {
     _id?: string;
@@ -118,11 +119,15 @@ export function OutForm({ out }: { out?: OutItem }) {
             <div className="grid ">
                 <div>
                     <label className="block text-sm font-medium mb-1">Sent To</label>
+
                     <Input
+                        name="sentTo"
+                        autoComplete="on"
                         value={formData.sentTo}
                         onChange={(e) => setFormData({ ...formData, sentTo: e.target.value })}
                         required
                     />
+
                 </div>
             </div>
 

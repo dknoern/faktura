@@ -12,7 +12,7 @@ export async function generateRepairPdfBuffer(
   tenant: Tenant,
   logoUrl: string,
   imageUrls: string[] = [],
-  showCustomerName: boolean = true
+  showCustomerName: boolean = false
 ): Promise<Buffer> {
   const element = React.createElement(RepairPdfDocument, {
     repair,
@@ -36,7 +36,7 @@ export async function generateRepairPdfBase64(
   tenant: Tenant,
   logoUrl: string,
   imageUrls: string[] = [],
-  showCustomerName: boolean = true
+  showCustomerName: boolean = false
 ): Promise<string> {
   const buffer = await generateRepairPdfBuffer(repair, tenant, logoUrl, imageUrls, showCustomerName);
   return buffer.toString('base64');
