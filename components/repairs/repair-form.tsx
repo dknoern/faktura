@@ -56,7 +56,7 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(initialSelectedProduct);
   const [customerApproved, setCustomerApproved] = useState(!!repair?.customerApprovedDate);
   const [customerApprovedDate, setCustomerApprovedDate] = useState(repair?.customerApprovedDate || '');
   const [warrantyService, setWarrantyService] = useState(repair?.warrantyService || false);
@@ -84,10 +84,6 @@ export function RepairForm({ repair, selectedCustomer, initialSelectedProduct }:
       setDescription(product.title);
     }
   };
-
-  if (initialSelectedProduct !== null && selectedProduct === null) {
-    setSelectedProduct(initialSelectedProduct);
-  }
 
   const handleSubmit = async (formData: FormData) => {
     console.log('repair form submitted');
