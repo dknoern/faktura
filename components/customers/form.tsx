@@ -130,8 +130,8 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
       const allPhones = phoneFields.filter(item => item.phone && item.phone.trim() !== '');
       const submitData = {
         ...data,
-        emails: allEmails.length > 0 ? allEmails : undefined,
-        phones: allPhones.length > 0 ? allPhones : undefined,
+        emails: allEmails.length > 0 ? allEmails : [],
+        phones: allPhones.length > 0 ? allPhones : [],
       };
 
       const result = customer?._id

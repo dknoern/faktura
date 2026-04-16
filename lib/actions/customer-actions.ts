@@ -5,7 +5,9 @@ import { customerModel } from "@/lib/models/customer";
 import { Invoice } from "@/lib/models/invoice";
 import { Repair } from "@/lib/models/repair";
 import { Return } from "@/lib/models/return";
+import { Wanted } from "@/lib/models/wanted";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { customerSchema } from "@/lib/models/customer";
 import { getNextCounter, getTenantObjectId } from "@/lib/tenant-utils";
@@ -292,6 +294,45 @@ export async function mergeCustomers(customerIds: string[]): Promise<MergeCustom
       success: false, 
       message: "Failed to merge customers: " + (error instanceof Error ? error.message : String(error))
     };
+  }
+}
+
+export async function deleteCustomer(id: string): Promise<ActionResult<null>> {
+  try {
+    await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
+
+    const [invoiceCount, repairCount, returnCount, wantedCount] = await Promise.all([
+      Invoice.countDocuments({ customerId: id, tenantId: tenantObjectId }),
+      Repair.countDocuments({ customerId: id, tenantId: tenantObjectId, status: { $ne: 'Deleted' } }),
+      Return.countDocuments({ customerId: id, tenantId: tenantObjectId }),
+      Wanted.countDocuments({ customerId: id, tenantId: tenantObjectId }),
+    ]);
+
+    if (invoiceCount + repairCount + returnCount + wantedCount > 0) {
+      const parts = [];
+      if (invoiceCount > 0) parts.push(`${invoiceCount} invoice${invoiceCount > 1 ? 's' : ''}`);
+      if (repairCount > 0) parts.push(`${repairCount} repair${repairCount > 1 ? 's' : ''}`);
+      if (returnCount > 0) parts.push(`${returnCount} return${returnCount > 1 ? 's' : ''}`);
+      if (wantedCount > 0) parts.push(`${wantedCount} wanted item${wantedCount > 1 ? 's' : ''}`);
+      return { success: false, error: `Cannot delete customer with ${parts.join(', ')}` };
+    }
+
+    const customer = await customerModel.findOneAndUpdate(
+      { _id: id, tenantId: tenantObjectId },
+      { status: "Deleted", lastUpdated: new Date() },
+      { new: true }
+    );
+
+    if (!customer) {
+      return { success: false, error: "Customer not found" };
+    }
+
+    revalidatePath('/customers');
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error deleting customer:", error);
+    return { success: false, error: "Failed to delete customer" };
   }
 }
 

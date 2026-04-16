@@ -32,6 +32,7 @@ export async function fetchCustomers(page = 1, limit = 10, search = '') {
         }
 
         query = addTenantFilter(query, tenantObjectId);
+        query.status = { $ne: 'Deleted' };
 
         const customers = await customerModel.find(query)
             .sort({ lastUpdated: -1 })
@@ -144,7 +145,7 @@ export async function fetchCustomerById(id: string) {
     try {
         await dbConnect();
         const tenantObjectId = await getTenantObjectId();
-        const customer = await customerModel.findOne({ _id: id, tenantId: tenantObjectId });
+        const customer = await customerModel.findOne({ _id: id, tenantId: tenantObjectId, status: { $ne: 'Deleted' } });
         return customer;
     } catch (error) {
         console.error('Error fetching customer:', error);

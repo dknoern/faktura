@@ -39,7 +39,7 @@ export async function fetchRepairsByCustomerId(customerId: string, page = 1, lim
     await dbConnect();
     const tenantObjectId = await getTenantObjectId();
     const skip = (page - 1) * limit;
-    const filter = { customerId: customerId, tenantId: tenantObjectId };
+    const filter = { customerId: customerId, tenantId: tenantObjectId, status: { $ne: 'Deleted' } };
 
     const repairs = await Repair.find(filter)
       .sort({ dateOut: -1 })
