@@ -2,7 +2,7 @@
 
 import dbConnect from "@/lib/dbConnect"
 import { Repair } from "@/lib/models/repair"
-import { fetchDefaultTenant } from "./data"
+import { fetchTenant } from "./data"
 import { getNextCounter, getTenantObjectId } from "@/lib/tenant-utils"
 
 export async function getNextRepairNumber(): Promise<string> {
@@ -34,7 +34,7 @@ export async function createRepairRecord(repairData: {
   try {
     await dbConnect()
 
-    const tenant = await fetchDefaultTenant();
+    const tenant = await fetchTenant();
     const repairConfirmMessage = tenant.repairConfirmationText || "Thank you for your repair request. We will contact you soon.";
     
     const tenantObjectId = await getTenantObjectId();

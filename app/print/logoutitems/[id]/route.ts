@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchOutById, fetchDefaultTenant } from "@/lib/data";
+import { fetchOutById, fetchTenant } from "@/lib/data";
 import { getImageHost } from "@/lib/utils/imageHost";
 import { getOutImages } from "@/lib/utils/storage";
 import { generateOutPdfBuffer } from "@/lib/pdf/generate-out-pdf";
@@ -19,7 +19,7 @@ export async function GET(
     const imageHost = await getImageHost();
     const [outitem, tenant, images] = await Promise.all([
       fetchOutById(outId),
-      fetchDefaultTenant(),
+      fetchTenant(),
       getOutImages(outId)
     ]);
 

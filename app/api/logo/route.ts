@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { fetchDefaultTenant } from '@/lib/data';
+import { fetchTenant } from '@/lib/data';
 
 export async function GET() {
   try {
-    const tenant = await fetchDefaultTenant();
+    const tenant = await fetchTenant();
     
     if (!tenant || !tenant.logo) {
       return new Response('Logo not found', { status: 404 });

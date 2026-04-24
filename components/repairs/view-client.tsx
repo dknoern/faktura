@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useCallback } from "react";
 import { RepairActionMenu } from "./repair-action-menu";
 import { RepairImagesClient } from "./repair-images-client";
 import { Repair, formatCurrency, formatDate } from "@/lib/repair-renderer";
+import { toast } from "react-hot-toast";
 import {
   Table,
   TableBody,
@@ -22,6 +24,54 @@ interface ViewRepairClientProps {
 
 export function ViewRepairClient({ repair, tenant, imageBaseUrl, images }: ViewRepairClientProps) {
   const customerName = `${repair.customerFirstName} ${repair.customerLastName}`.trim();
+
+  const handlePdfPrint = useCallback(async () => {
+    try {
+      toast.loading('Preparing to print...', { id: 'pdf-print' });
+
+      const response = await fetch(`/api/repairs/${repair._id}/pdf`);
+      if (!response.ok) throw new Error('Failed to generate PDF');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      iframe.style.top = '-9999px';
+      document.body.appendChild(iframe);
+
+      iframe.src = url;
+      iframe.onload = () => {
+        toast.dismiss('pdf-print');
+        setTimeout(() => {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        }, 500);
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          URL.revokeObjectURL(url);
+        }, 60000);
+      };
+    } catch (error) {
+      console.error('Error printing PDF:', error);
+      toast.error('Failed to print PDF', { id: 'pdf-print' });
+    }
+  }, [repair._id]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+        e.preventDefault();
+        handlePdfPrint();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handlePdfPrint]);
 
   return (
     <div className="container mx-auto py-1 px-4 max-w-4xl">

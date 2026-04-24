@@ -200,9 +200,16 @@ export function ProposalPdfDocument({ proposal, tenant, logoUrl }: ProposalPdfPr
             </View>
             {proposal.lineItems.map((item, idx) => (
               <View key={idx} style={styles.tableRow}>
-                <Text style={styles.tableCellItem}>
-                  {item.longDesc || item.name}
-                </Text>
+                <View style={styles.tableCellItem}>
+                  <Text style={{ fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', fontSize: 10 }}>
+                    {item.name}
+                  </Text>
+                  {item.longDesc ? (
+                    <Text style={{ fontSize: 9, color: '#666', marginTop: 2, lineHeight: 1.4 }}>
+                      {item.longDesc}
+                    </Text>
+                  ) : null}
+                </View>
                 <Text style={styles.tableCellPrice}>{formatCurrency(item.amount)}</Text>
               </View>
             ))}

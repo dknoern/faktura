@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchLogItemById, fetchDefaultTenant } from "@/lib/data";
+import { fetchLogItemById, fetchTenant } from "@/lib/data";
 import { getImageHost } from "@/lib/utils/imageHost";
 import { getLogImages } from "@/lib/utils/storage";
 import { generateLogPdfBuffer } from "@/lib/pdf/generate-log-pdf";
@@ -19,7 +19,7 @@ export async function GET(
     const imageHost = await getImageHost();
     const [logitem, tenant, images] = await Promise.all([
       fetchLogItemById(logId),
-      fetchDefaultTenant(),
+      fetchTenant(),
       getLogImages(logId)
     ]);
 

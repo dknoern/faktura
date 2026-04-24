@@ -1,4 +1,4 @@
-import { fetchDefaultTenant, fetchReturnById } from "@/lib/data";
+import { fetchReturnById, fetchTenant } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { ViewReturn } from "@/components/returns/view";
 
@@ -8,7 +8,7 @@ export default async function ViewReturnPage(props: { params: Promise<{ id: stri
 
     const [returnData, tenant] = await Promise.all([
         fetchReturnById(id),
-        fetchDefaultTenant()
+        fetchTenant()
     ]);
 
     if (!returnData) {

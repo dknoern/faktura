@@ -18,8 +18,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Printer, Edit, ImagePlus, PenLine, Mail, Download } from "lucide-react";
+import { ChevronDown, Printer, Edit, ImagePlus, PenLine, Mail, Download, Send } from "lucide-react";
 import { OutEmailDialog } from "./out-email-dialog";
+import { EsignRequestDialog } from "@/components/esign/esign-request-dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
@@ -38,6 +39,7 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
   const router = useRouter();
   const [isEmailSending] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showEsignDialog, setShowEsignDialog] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -221,6 +223,10 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
             <Mail className="mr-2 h-4 w-4" />
             Email
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowEsignDialog(true)}>
+            <Send className="mr-2 h-4 w-4" />
+            Request e-Sign
+          </DropdownMenuItem>
 
           {/*<DropdownMenuSeparator />
 
@@ -256,6 +262,14 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
         open={showEmailDialog}
         onOpenChange={setShowEmailDialog}
         outId={out.id || out._id || ''}
+      />
+
+      {/* E-sign request dialog */}
+      <EsignRequestDialog
+        open={showEsignDialog}
+        onOpenChange={setShowEsignDialog}
+        type="out"
+        id={out.id || out._id || ''}
       />
 
       {/* Delete confirmation dialog */}

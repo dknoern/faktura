@@ -10,6 +10,7 @@ import { Out } from './models/out';
 import { customerModel } from './models/customer'; import { logModel } from './models/log';
 import { Wanted } from './models/wanted';
 import { addTenantFilter, getTenantObjectId, getNextCounter } from './tenant-utils';
+import { getTenantId } from './auth-utils';
 
 export async function fetchCustomers(page = 1, limit = 10, search = '') {
     try {
@@ -564,16 +565,12 @@ export async function fetchRepairById(id: string) {
     }
 }
 
-export async function fetchDefaultTenant() {
-    try {
-        await dbConnect();
-        const tenant = await Tenant.findOne({ isDefault: true });
-        return tenant ? JSON.parse(JSON.stringify(tenant)) : null;
-    } catch (error) {
-        console.error("Error fetching default tenant:", error);
-        throw error;
-    }
+export async function fetchTenant() {
+    const tenantId = await getTenantId();
+    return await fetchTenantById(tenantId);
 }
+
+
 
 export async function fetchTenantById(id: string) {
     try {

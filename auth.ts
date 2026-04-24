@@ -20,6 +20,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     authorized({ auth, request: { nextUrl } }) {
 
       const isLoggedIn = !!auth?.user;
+      // Allow public esign routes without auth
+      if (nextUrl.pathname.startsWith('/esign') || nextUrl.pathname.startsWith('/api/esign')) {
+        return true;
+      }
+
       const isOnProtectedRoute = nextUrl.pathname.startsWith('/products') || 
                                  nextUrl.pathname.startsWith('/customers') ||
                                  nextUrl.pathname.startsWith('/invoices') ||

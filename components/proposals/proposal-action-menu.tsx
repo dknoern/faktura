@@ -8,9 +8,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, Edit, Printer, Mail, Download } from "lucide-react"
+import { ChevronDown, Edit, Printer, Mail, Download, Send } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { EmailDialog } from "./email-dialog"
+import { EsignRequestDialog } from "@/components/esign/esign-request-dialog"
 import { toast } from "react-hot-toast"
 
 interface ProposalLineItem {
@@ -37,6 +38,7 @@ interface ProposalActionMenuProps {
 export function ProposalActionMenu({ proposal }: ProposalActionMenuProps) {
   const router = useRouter()
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
+  const [isEsignDialogOpen, setIsEsignDialogOpen] = useState(false)
 
   const handleEdit = () => {
     router.push(`/proposals/${proposal._id}/edit`)
@@ -135,6 +137,10 @@ export function ProposalActionMenu({ proposal }: ProposalActionMenuProps) {
             <Mail className="mr-2 h-4 w-4" />
             Email
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsEsignDialogOpen(true)}>
+            <Send className="mr-2 h-4 w-4" />
+            Request e-Sign
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -142,6 +148,13 @@ export function ProposalActionMenu({ proposal }: ProposalActionMenuProps) {
         isOpen={isEmailDialogOpen}
         onClose={() => setIsEmailDialogOpen(false)}
         proposal={proposal}
+      />
+
+      <EsignRequestDialog
+        open={isEsignDialogOpen}
+        onOpenChange={setIsEsignDialogOpen}
+        type="proposal"
+        id={proposal._id}
       />
     </>
   )

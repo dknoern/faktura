@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchRepairById, fetchDefaultTenant } from '@/lib/data';
+import { fetchRepairById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getRepairImages } from '@/lib/utils/storage';
 import { generateRepairPdfBuffer } from '@/lib/pdf/generate-repair-pdf';
@@ -16,7 +16,7 @@ export async function GET(
 
     const [repair, tenant, images] = await Promise.all([
       fetchRepairById(repairId),
-      fetchDefaultTenant(),
+      fetchTenant(),
       getRepairImages(repairId),
     ]);
 

@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useCallback } from "react";
 import { Invoice, formatCurrency } from "@/lib/invoice-renderer";
 import { InvoiceActionMenu } from "./invoice-action-menu";
+import { toast } from "react-hot-toast";
 import {
     Table,
     TableBody,
@@ -31,6 +33,54 @@ const invoiceTypeLabel = (type: string) => {
 
 export function ViewInvoice({ invoice }: { invoice: Invoice }) {
     const fullName = `${invoice.customerFirstName} ${invoice.customerLastName}`.trim();
+
+    const handlePdfPrint = useCallback(async () => {
+        try {
+            toast.loading('Preparing to print...', { id: 'pdf-print' });
+
+            const response = await fetch(`/api/invoices/${invoice._id}/pdf`);
+            if (!response.ok) throw new Error('Failed to generate PDF');
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = 'none';
+            iframe.style.top = '-9999px';
+            document.body.appendChild(iframe);
+
+            iframe.src = url;
+            iframe.onload = () => {
+                toast.dismiss('pdf-print');
+                setTimeout(() => {
+                    iframe.contentWindow?.focus();
+                    iframe.contentWindow?.print();
+                }, 500);
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    URL.revokeObjectURL(url);
+                }, 60000);
+            };
+        } catch (error) {
+            console.error('Error printing PDF:', error);
+            toast.error('Failed to print PDF', { id: 'pdf-print' });
+        }
+    }, [invoice._id]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+                e.preventDefault();
+                handlePdfPrint();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handlePdfPrint]);
     const addressLines = [
         invoice.shipAddress1,
         invoice.shipAddress2,

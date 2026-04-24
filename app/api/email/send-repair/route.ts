@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SESClient, SendRawEmailCommand } from '@aws-sdk/client-ses';
-import { fetchRepairById, fetchDefaultTenant } from '@/lib/data';
+import { fetchRepairById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getRepairImages } from '@/lib/utils/storage';
 import { generateRepairPdfBase64 } from '@/lib/pdf/generate-repair-pdf';
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     
     // Fetch repair and tenant data
     const repair = await fetchRepairById(repairId);
-    const tenant = await fetchDefaultTenant();
+    const tenant = await fetchTenant();
     
     if (!repair) {
       return NextResponse.json(

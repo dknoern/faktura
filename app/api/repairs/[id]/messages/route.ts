@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/dbConnect"
 import { Repair } from "@/lib/models/repair"
-import { fetchDefaultTenant } from "@/lib/data"
+import { fetchTenant } from "@/lib/data"
 import { getImageHost } from "@/lib/utils/imageHost"
 import { getTenantObjectId } from "@/lib/tenant-utils"
 
@@ -23,7 +23,7 @@ export async function POST(
     }
 
     // Get the current user
-    const tenant = await fetchDefaultTenant()
+    const tenant = await fetchTenant()
     const fromName = tenant?.nameLong || "System"
     
     // Create the new message object
@@ -61,7 +61,7 @@ export async function POST(
       
       try {
         // Get tenant info for company details
-        const tenant = await fetchDefaultTenant()
+        const tenant = await fetchTenant()
         const imageHost = getImageHost()
         
         // Create email HTML with the message

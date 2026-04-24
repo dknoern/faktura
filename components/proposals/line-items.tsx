@@ -57,7 +57,6 @@ export function ProposalLineItems({ items, onChange }: ProposalLineItemsProps) {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100">
-              <th className="text-left p-2 border">Name</th>
               <th className="text-left p-2 border">Description</th>
               <th className="text-left p-2 border w-[110px]">Amount</th>
               <th className="w-[80px]"></th>
@@ -67,20 +66,20 @@ export function ProposalLineItems({ items, onChange }: ProposalLineItemsProps) {
             {items.map((item, index) => (
               <tr key={index} className="border-b">
                 <td className="p-2 border">
-                  <Input
-                    value={item.name}
-                    onChange={(e) => handleLineItemChange(index, "name", e.target.value)}
-                    placeholder="Item name"
-                  />
-                </td>
-                <td className="p-2 border">
-                  <Textarea
-                    value={item.longDesc}
-                    onChange={(e) => handleLineItemChange(index, "longDesc", e.target.value)}
-                    placeholder="Item description"
-                    className="min-h-[72px] resize-none"
-                    rows={3}
-                  />
+                  <div className="space-y-2">
+                    <Input
+                      value={item.name}
+                      onChange={(e) => handleLineItemChange(index, "name", e.target.value)}
+                      placeholder="Item name"
+                    />
+                    <Textarea
+                      value={item.longDesc}
+                      onChange={(e) => handleLineItemChange(index, "longDesc", e.target.value)}
+                      placeholder="Description"
+                      className="min-h-[72px] resize-none"
+                      rows={3}
+                    />
+                  </div>
                 </td>
                 <td className="p-2 border">
                   <div className="flex items-center">

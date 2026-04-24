@@ -13,4 +13,6 @@ export interface Proposal {
   total: number;
   lineItems: ProposalLineItem[];
   status?: string;
+  signature?: string;
+  signatureDate?: string | null;
 }

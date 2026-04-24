@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchInvoiceById, fetchDefaultTenant } from '@/lib/data';
+import { fetchInvoiceById, fetchTenant } from '@/lib/data';
 
 export async function GET(
   request: Request,
@@ -18,7 +18,7 @@ export async function GET(
     }
     
     const invoice = await fetchInvoiceById(id);
-    const tenant = await fetchDefaultTenant();
+    const tenant = await fetchTenant();
     
     if (!invoice) {
       return NextResponse.json(

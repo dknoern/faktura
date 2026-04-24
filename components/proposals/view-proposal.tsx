@@ -11,6 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -70,8 +71,11 @@ export function ViewProposal({ proposal }: { proposal: Proposal }) {
                             {proposal.lineItems.length > 0 ? (
                                 proposal.lineItems.map((item, index) => (
                                     <TableRow key={index}>
-                                        <TableCell className="py-3 text-sm">
-                                            {item.longDesc || item.name}
+                                        <TableCell className="py-3">
+                                            <div className="font-bold uppercase text-sm">{item.name}</div>
+                                            {item.longDesc && (
+                                                <div className="text-xs text-muted-foreground mt-1 leading-relaxed">{item.longDesc}</div>
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-right py-3 font-medium text-sm">
                                             {formatCurrency(item.amount)}
@@ -96,6 +100,27 @@ export function ViewProposal({ proposal }: { proposal: Proposal }) {
                         <span>{formatCurrency(proposal.total)}</span>
                     </div>
                 </div>
+
+                {/* Signature */}
+                {proposal.signature && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Signature</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="border rounded-md p-4 bg-gray-50">
+                                <div className="bg-white border rounded-md p-2 inline-block">
+                                    <img src={proposal.signature} alt="Signature" className="h-16 object-contain" />
+                                </div>
+                                {proposal.signatureDate && (
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        Signed on {formatDate(proposal.signatureDate)}
+                                    </p>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
             </div>
         </div>

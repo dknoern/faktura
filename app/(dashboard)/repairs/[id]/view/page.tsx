@@ -1,4 +1,4 @@
-import { fetchDefaultTenant, fetchRepairById } from "@/lib/data";
+import { fetchTenant, fetchRepairById } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { getImageHost } from "@/lib/utils/imageHost";
 import { getRepairImages } from "@/lib/utils/storage";
@@ -12,7 +12,7 @@ export default async function ViewRepairPage(props: { params: Promise<{ id: stri
 
     const [repair, tenant] = await Promise.all([
         fetchRepairById(repairId),
-        fetchDefaultTenant()
+        fetchTenant()
     ]);
 
     if (!repair) {

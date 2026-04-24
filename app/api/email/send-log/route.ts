@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import { fetchLogItemById, fetchDefaultTenant } from '@/lib/data';
+import { fetchLogItemById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getLogImages } from '@/lib/utils/storage';
 
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
 
     // Fetch log and tenant data
     const log = await fetchLogItemById(logId);
-    const tenant = await fetchDefaultTenant();
+    const tenant = await fetchTenant();
 
     if (!log) {
       return NextResponse.json(

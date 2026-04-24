@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import { fetchOutById, fetchDefaultTenant } from '@/lib/data';
+import { fetchOutById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getOutImages } from '@/lib/utils/storage';
 
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
 
     // Fetch out item and tenant data
     const out = await fetchOutById(outId);
-    const tenant = await fetchDefaultTenant();
+    const tenant = await fetchTenant();
 
     if (!out) {
       return NextResponse.json(
