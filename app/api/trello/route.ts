@@ -527,7 +527,13 @@ async function handleUpdateCard(actionData: any) {
             console.log('Found existing repair:', existingRepair._id);
 
             const vendor = (actionData.list.name !== "New Customer Repairs" && actionData.list.name !== "Incoming Repair") ? actionData.list.name : '';
-             console.log('Updaging vendor to:', vendor);
+
+            if(vendor == null || vendor == "") {
+                console.log('Vendor is empty, skipping update');
+                return;
+            }
+
+            console.log('Updaging vendor to:', vendor);
             
             try {
                 const connectToDatabase = (await import('../../../lib/dbConnect')).default;
