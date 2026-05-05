@@ -60,7 +60,7 @@ export async function calcTax(invoice: Invoice): Promise<number> {
     }));
 
     const transactionModel = {
-      code: (invoice._id || '0').toString(),
+      code: invoice.invoiceNumber.toString(),
       customerCode: (invoice.customerId || '0').toString(),
       type: Enums.DocumentType.SalesInvoice,
       date: new Date(invoice.date || Date.now()),
