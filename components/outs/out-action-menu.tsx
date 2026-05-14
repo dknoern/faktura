@@ -45,46 +45,10 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePrint = async () => {
+  const handlePrint = () => {
     const outId = out.id || out._id;
-    if (!outId) {
-      console.error('Out ID is required for printing');
-      return;
-    }
-
-    try {
-      toast.loading('Preparing to print...', { id: 'pdf-print' });
-
-      const response = await fetch(`/api/outs/${outId}/pdf`);
-      if (!response.ok) throw new Error('Failed to generate PDF');
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = 'none';
-      iframe.style.top = '-9999px';
-      document.body.appendChild(iframe);
-
-      iframe.src = url;
-      iframe.onload = () => {
-        toast.dismiss('pdf-print');
-        setTimeout(() => {
-          iframe.contentWindow?.focus();
-          iframe.contentWindow?.print();
-        }, 500);
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-          URL.revokeObjectURL(url);
-        }, 60000);
-      };
-    } catch (error) {
-      console.error('Error printing PDF:', error);
-      toast.error('Failed to print PDF', { id: 'pdf-print' });
-    }
+    if (!outId) return;
+    window.open(`/api/outs/${outId}/pdf`, '_blank');
   };
 
   const handleDownload = async () => {

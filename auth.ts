@@ -72,6 +72,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (fullName && typeof fullName === 'string') {
           token.fullName = fullName
         }
+
+        const role = profileAny['https://fakturian.com/role'] || profileAny.role
+        if (role && typeof role === 'string') {
+          token.role = role
+        }
       }
       
       return token
@@ -115,6 +120,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
 
+      // Pass role to the session
+      if (token?.role) {
+        if (session.user) {
+          (session.user as any).role = token.role
+        }
+      }
+
       return session
     },
   },
@@ -132,6 +144,7 @@ declare module "next-auth" {
     tenantId?: string
     tenantName?: string
     fullName?: string
+    role?: string
   }
 }
 
@@ -141,5 +154,6 @@ declare module "next-auth/jwt" {
     tenantId?: string
     fullName?: string
     tenantName?: string
+    role?: string
   }
 }

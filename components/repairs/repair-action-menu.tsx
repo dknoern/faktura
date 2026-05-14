@@ -44,40 +44,8 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
         router.push(`/repairs/${repair._id}/edit`);
     };
 
-    const handlePrint = async () => {
-        try {
-            toast.loading('Preparing to print...', { id: 'pdf-print' });
-
-            const response = await fetch(`/api/repairs/${repair._id}/pdf`);
-            if (!response.ok) throw new Error('Failed to generate PDF');
-
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'fixed';
-            iframe.style.width = '0';
-            iframe.style.height = '0';
-            iframe.style.border = 'none';
-            iframe.style.top = '-9999px';
-            document.body.appendChild(iframe);
-
-            iframe.src = url;
-            iframe.onload = () => {
-                toast.dismiss('pdf-print');
-                setTimeout(() => {
-                    iframe.contentWindow?.focus();
-                    iframe.contentWindow?.print();
-                }, 500);
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    URL.revokeObjectURL(url);
-                }, 60000);
-            };
-        } catch (error) {
-            console.error('Error printing PDF:', error);
-            toast.error('Failed to print PDF', { id: 'pdf-print' });
-        }
+    const handlePrint = () => {
+        window.open(`/api/repairs/${repair._id}/pdf`, '_blank');
     };
 
     const handleDownload = async () => {

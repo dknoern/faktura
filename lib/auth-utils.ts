@@ -1,7 +1,11 @@
+import { AsyncLocalStorage } from "async_hooks";
 import { headers } from "next/headers";
 
 const defaultTenantId = "67f48a2050abe41246b22a87"
 const defaultTenantName = "lager"
+
+// Allows API routes to set tenant context without mutating incoming headers
+export const tenantContextStorage = new AsyncLocalStorage<{ tenantId: string }>();
 
 export async function getShortUser() {
   try {
@@ -24,6 +28,8 @@ export async function getFullName() {
 }
 
 export async function getTenantId() {
+  const ctx = tenantContextStorage.getStore();
+  if (ctx?.tenantId) return ctx.tenantId;
   try {
     const headersList = await headers();
     return headersList.get('x-tenant-id') || defaultTenantId;

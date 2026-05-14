@@ -161,18 +161,18 @@ export async function fetchInvoices(page = 1, limit = 10, search = '') {
         const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
-        let query: any = {};
+        let query: any = { status: { $ne: 'Deleted' } };
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Use $and to ensure ALL tokens must be found (in any order)
-            query = { $and: searchConditions };
+            query = { $and: [...searchConditions, { status: { $ne: 'Deleted' } }] };
         }
 
         query = addTenantFilter(query, tenantObjectId);
@@ -263,18 +263,18 @@ export async function fetchReturns(page = 1, limit = 10, search = '') {
         const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
-        let query: any = {};
+        let query: any = { status: { $ne: 'Deleted' } };
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Use $and to ensure ALL tokens must be found (in any order)
-            query = { $and: searchConditions };
+            query = { $and: [...searchConditions, { status: { $ne: 'Deleted' } }] };
         }
 
         query = addTenantFilter(query, tenantObjectId);
@@ -709,8 +709,8 @@ export async function fetchWanted(page = 1, limit = 10, search = '') {
         const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
-        let query: any = {};
-        
+        let query: any = { status: { $ne: 'Deleted' } };
+
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
@@ -724,8 +724,8 @@ export async function fetchWanted(page = 1, limit = 10, search = '') {
                 ]
             }));
             
-            // Use $and to ensure ALL tokens must be found (in any order)
-            query = { $and: tokenConditions };
+            // Use $and to ensure ALL tokens must be found (in any order), preserving deleted filter
+            query = { $and: [...tokenConditions, { status: { $ne: 'Deleted' } }] };
         }
 
         query = addTenantFilter(query, tenantObjectId);
