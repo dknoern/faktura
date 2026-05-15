@@ -132,7 +132,7 @@ export function OutsTable({ outs, pagination }: { outs: Out[], pagination: Pagin
                             <TableRow 
                                 key={out._id} 
                                 onClick={(e) => handleRowClick(out._id, e)}
-                                className="cursor-pointer hover:bg-gray-100"
+                                className="cursor-pointer hover:bg-muted/50"
                                 onMouseDown={(e) => {
                                     // Prevent text selection from interfering with click detection
                                     if (e.detail > 1) {

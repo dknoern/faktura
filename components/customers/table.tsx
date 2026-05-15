@@ -270,7 +270,7 @@ export function CustomersTable({
                     {customersList.map((customer: Customer) => (
                         <TableRow 
                             key={customer._id} 
-                            className="cursor-pointer hover:bg-gray-100" 
+                            className="cursor-pointer hover:bg-muted/50" 
                             onClick={(e) => handleRowClick(customer, e)}
                             onMouseDown={(e) => {
                                 // Prevent text selection from interfering with click detection

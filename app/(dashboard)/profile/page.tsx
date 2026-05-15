@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ApiKeysSection } from "@/components/api-keys/api-keys-section";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -35,6 +36,15 @@ export default async function ProfilePage() {
             </p>
           )}
         </div>
+      </div>
+
+      <Separator />
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold">Theme</h2>
+          <p className="text-sm text-muted-foreground">Choose your preferred color scheme.</p>
+        </div>
+        <ThemeToggle />
       </div>
 
       {isAdmin && (

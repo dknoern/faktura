@@ -176,7 +176,7 @@ export function RepairSelectModal({ isOpen, onClose, onRepairSelect }: RepairSel
                 repairs.map((repair) => (
                   <TableRow 
                     key={repair._id} 
-                    className="cursor-pointer hover:bg-gray-50"
+                    className="cursor-pointer hover:bg-muted/50"
                     onClick={() => handleRowClick(repair)}
                   >
                     <TableCell>{repair.repairNumber}</TableCell>

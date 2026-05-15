@@ -235,7 +235,7 @@ export function ProductSelectModal({ isOpen, onClose, onProductSelect, statuses 
                 products.map((product) => (
                   <TableRow 
                     key={product._id} 
-                    className="cursor-pointer hover:bg-gray-50"
+                    className="cursor-pointer hover:bg-muted/50"
                     onClick={() => handleRowClick(product)}
                   >
                     <TableCell>{product.itemNumber}</TableCell>

@@ -209,7 +209,6 @@ export function OutActionMenu({ out, onSignatureClick }: OutActionMenuProps) {
         ref={imageInputRef}
         className="hidden"
         accept="image/*"
-        capture="environment"
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) {

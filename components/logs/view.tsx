@@ -431,7 +431,7 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
             <div className="flex justify-between gap-3">
               <button
                 onClick={clearCanvas}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
                 disabled={isSaving}
               >
                 Clear
@@ -440,7 +440,7 @@ export function ViewLog({ log, initialImages = [] }: ViewLogProps) {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowSignaturePad(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
                   disabled={isSaving}
                 >
                   Cancel

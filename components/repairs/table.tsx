@@ -191,7 +191,7 @@ export function RepairsTable({ repairs, pagination }: { repairs: Repair[], pagin
                     {filteredRepairs.map((repair: Repair) => (
                         <TableRow 
                             key={repair._id}
-                            className="cursor-pointer hover:bg-gray-50"
+                            className="cursor-pointer hover:bg-muted/50"
                             onClick={(e) => handleRowClickWithTextCheck(repair._id, e)}
                             onMouseDown={(e) => {
                                 // Prevent text selection from interfering with click detection

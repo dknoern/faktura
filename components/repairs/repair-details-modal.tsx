@@ -303,7 +303,7 @@ export function RepairDetailsModal({ repairId, isOpen, onClose }: RepairDetailsM
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setExpandedCorrespondence(!expandedCorrespondence)}
-                          className="hover:bg-gray-100 rounded p-1"
+                          className="hover:bg-muted/50 rounded p-1"
                         >
                           {expandedCorrespondence ? (
                             <ChevronUp className="h-4 w-4 text-muted-foreground" />

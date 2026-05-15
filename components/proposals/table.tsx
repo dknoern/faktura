@@ -153,7 +153,7 @@ export function ProposalsTable({ proposals, pagination }: ProposalsTableProps) {
             {proposals.map((proposal) => (
               <TableRow 
                 key={proposal._id} 
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted/50"
                 onClick={(e) => handleRowClick(proposal._id, e)}
                 onMouseDown={(e) => {
                   if (e.detail > 1) {

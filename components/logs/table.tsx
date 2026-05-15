@@ -152,7 +152,7 @@ export function LogsTable({ logs, pagination }: { logs: Log[], pagination: Pagin
                             <TableRow
                                 key={log._id}
                                 onClick={(e) => handleRowClick(log._id, e)}
-                                className="cursor-pointer hover:bg-gray-100"
+                                className="cursor-pointer hover:bg-muted/50"
                                 onMouseDown={(e) => {
                                     // Prevent text selection from interfering with click detection
                                     if (e.detail > 1) {

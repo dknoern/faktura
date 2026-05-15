@@ -238,7 +238,7 @@ export function Dashboard({ stats, salesData, transactions, productTypeData, sta
                 <TableRow 
                   key={transaction.id} 
                   onClick={(e) => handleTransactionRowClick(transaction, e)}
-                  className="cursor-pointer hover:bg-gray-50"
+                  className="cursor-pointer hover:bg-muted/50"
                   onMouseDown={(e) => {
                     // Prevent text selection from interfering with click detection
                     if (e.detail > 1) {

@@ -155,7 +155,7 @@ export function WantedTable({ wanted, pagination }: { wanted: Wanted[], paginati
                     {wantedList.map((item: Wanted) => (
                         <TableRow 
                             key={item._id}
-                            className="cursor-pointer hover:bg-gray-50"
+                            className="cursor-pointer hover:bg-muted/50"
                             onClick={(e) => handleRowClickWithTextCheck(item._id, e)}
                             onMouseDown={(e) => {
                                 // Prevent text selection from interfering with click detection

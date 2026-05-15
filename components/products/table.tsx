@@ -144,14 +144,14 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                         <TableHead>Price</TableHead>
                         <TableHead>Model No</TableHead>
                         <TableHead 
-                            className="cursor-pointer hover:bg-gray-100 select-none"
+                            className="cursor-pointer hover:bg-muted/50 select-none"
                             onClick={() => handleSort('status')}
                             style={{ whiteSpace: 'nowrap' }}
                         >
                             Status{getSortIcon('status')}
                         </TableHead>
                         <TableHead 
-                            className="cursor-pointer hover:bg-gray-100 select-none"
+                            className="cursor-pointer hover:bg-muted/50 select-none"
                             onClick={() => handleSort('lastUpdated')}
                             style={{ whiteSpace: 'nowrap' }}
                         >
@@ -164,7 +164,7 @@ export function ProductsTable({ products, pagination }: { products: (z.infer<typ
                         <TableRow 
                             key={product._id} 
                             onClick={() => handleRowClick(product._id)}
-                            className="cursor-pointer hover:bg-gray-50"
+                            className="cursor-pointer hover:bg-muted/50"
                             onMouseDown={(e) => {
                                 // Prevent text selection from interfering with click detection
                                 if (e.detail > 1) {
