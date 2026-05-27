@@ -515,6 +515,21 @@ async function handleUpdateCard(actionData: any) {
     console.log('List ID (after):', actionData.listAfter?.id);
     console.log('---------------------');
 
+    // Ignore archive/unarchive events. Trello sends updateCard with `closed`
+    // transitions when a card is archived or restored from the archive. We do
+    // not want to create or modify repairs in response to these events.
+    if (actionData.old && Object.prototype.hasOwnProperty.call(actionData.old, 'closed')) {
+        console.log('Ignoring updateCard for archive/unarchive (closed changed from',
+            actionData.old.closed, 'to', actionData.card.closed, ')');
+        return;
+    }
+
+    // Also ignore any updateCard event where the card is currently archived.
+    if (actionData.card?.closed === true) {
+        console.log('Ignoring updateCard for archived card');
+        return;
+    }
+
     // Get card details to extract repair information
     const repairDetails = await getTrelloCardDetails(actionData.card.id);
 
