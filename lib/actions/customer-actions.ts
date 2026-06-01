@@ -19,7 +19,15 @@ type ActionResult<T> = {
   success: boolean;
   data?: T;
   error?: string;
+  fieldErrors?: Record<string, string[] | undefined>;
 };
+
+const customerInputSchema = customerSchema.omit({
+  _id: true,
+  lastUpdated: true,
+  search: true,
+  customerNumber: true,
+});
 
 type MergeCustomersResult = {
   success: boolean;
@@ -28,6 +36,15 @@ type MergeCustomersResult = {
 };
 
 export async function createCustomer(data: CustomerFormData): Promise<ActionResult<CustomerData>> {
+  const parsed = customerInputSchema.safeParse(data);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     await dbConnect();
 
@@ -76,6 +93,15 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
 }
 
 export async function updateCustomer(id: string, data: CustomerFormData): Promise<ActionResult<CustomerData>> {
+  const parsed = customerInputSchema.safeParse(data);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     await dbConnect();
 

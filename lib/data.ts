@@ -12,7 +12,7 @@ import { Wanted } from './models/wanted';
 import { addTenantFilter, getTenantObjectId, getNextCounter } from './tenant-utils';
 import { getTenantId } from './auth-utils';
 
-export async function fetchCustomers(page = 1, limit = 10, search = '') {
+export async function fetchCustomers(page = 1, limit = 10, search = '', { includeDeleted = false }: { includeDeleted?: boolean } = {}) {
     try {
         await dbConnect();
         const tenantObjectId = await getTenantObjectId();
@@ -22,18 +22,20 @@ export async function fetchCustomers(page = 1, limit = 10, search = '') {
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
+
             // Create a regex condition for each token
             const searchConditions = searchTokens.map(token => (
                 { search: { $regex: token, $options: 'i' } }
             ));
-            
+
             // Use $and to ensure ALL tokens must be found (in any order)
             query = { $and: searchConditions };
         }
 
         query = addTenantFilter(query, tenantObjectId);
-        query.status = { $ne: 'Deleted' };
+        if (!includeDeleted) {
+            query.status = { $ne: 'Deleted' };
+        }
 
         const customers = await customerModel.find(query)
             .sort({ lastUpdated: -1 })
@@ -142,11 +144,15 @@ export async function fetchProductById(id: string) {
 }
 
 
-export async function fetchCustomerById(id: string) {
+export async function fetchCustomerById(id: string, { includeDeleted = false }: { includeDeleted?: boolean } = {}) {
     try {
         await dbConnect();
         const tenantObjectId = await getTenantObjectId();
-        const customer = await customerModel.findOne({ _id: id, tenantId: tenantObjectId, status: { $ne: 'Deleted' } });
+        const query: any = { _id: id, tenantId: tenantObjectId };
+        if (!includeDeleted) {
+            query.status = { $ne: 'Deleted' };
+        }
+        const customer = await customerModel.findOne(query);
         return customer;
     } catch (error) {
         console.error('Error fetching customer:', error);
