@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
 import { ProposalLineItems, ProposalLineItem } from "./line-items"
 import { upsertProposal } from "@/lib/actions/proposal-actions"
 import { useRouter } from "next/navigation"
@@ -27,6 +28,7 @@ interface Proposal {
   date: string
   total: number
   lineItems: ProposalLineItem[]
+  conditions?: string
   status?: string
 }
 
@@ -45,7 +47,8 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
     customerFirstName: customer.firstName,
     customerLastName: customer.lastName,
     date: proposal?.date || new Date().toISOString().split('T')[0],
-    status: proposal?.status || 'Draft'
+    status: proposal?.status || 'Draft',
+    conditions: proposal?.conditions || ''
   })
 
   const [lineItems, setLineItems] = useState<ProposalLineItem[]>(
@@ -147,6 +150,21 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
       </Card>
 
       <ProposalLineItems items={lineItems} onChange={setLineItems} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Conditions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            id="conditions"
+            value={formData.conditions}
+            onChange={(e) => setFormData({ ...formData, conditions: e.target.value })}
+            rows={6}
+            placeholder="Enter any conditions for this proposal..."
+          />
+        </CardContent>
+      </Card>
 
       <div className="flex justify-end gap-2">
         <Button

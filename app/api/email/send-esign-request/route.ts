@@ -1,12 +1,49 @@
 import { NextResponse } from 'next/server';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { SESClient, SendEmailCommand, SendRawEmailCommand } from '@aws-sdk/client-ses';
 import { fetchRepairById, fetchProposalById, fetchOutById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
+import { getLogoDataUrl } from '@/lib/utils/logo';
+import { formatFromAddress } from '@/lib/utils/email-from';
+import { generateProposalPdfBase64 } from '@/lib/pdf/generate-proposal-pdf';
 import { Repair } from '@/lib/models/repair';
 import { Proposal } from '@/lib/models/proposal';
 import { Out } from '@/lib/models/out';
 import dbConnect from '@/lib/dbConnect';
 import { randomUUID } from 'crypto';
+
+function buildRawEmail(
+  from: string,
+  to: string[],
+  subject: string,
+  htmlBody: string,
+  pdfBase64: string,
+  pdfFilename: string
+): string {
+  const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  return [
+    `From: ${from}`,
+    `To: ${to.join(', ')}`,
+    `Subject: ${subject}`,
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: 7bit',
+    '',
+    htmlBody,
+    '',
+    `--${boundary}`,
+    `Content-Type: application/pdf; name="${pdfFilename}"`,
+    'Content-Transfer-Encoding: base64',
+    `Content-Disposition: attachment; filename="${pdfFilename}"`,
+    '',
+    pdfBase64,
+    '',
+    `--${boundary}--`,
+  ].join('\r\n');
+}
 
 const sesClient = new SESClient({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -30,6 +67,15 @@ function formatDate(dateString: string | Date | null): string {
 
 function formatCurrency(value: number = 0): string {
   return `$${value.toFixed(2)}`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function generateEsignEmailHtml(
@@ -115,6 +161,12 @@ function generateEsignEmailHtml(
           </tr>
         </tfoot>
       </table>
+      ${data.conditions ? `
+        <div style="margin-bottom: 20px;">
+          <div style="font-weight: bold; margin-bottom: 6px;">Conditions</div>
+          <div style="white-space: pre-wrap;">${escapeHtml(data.conditions)}</div>
+        </div>
+      ` : ''}
     `;
   } else if (type === 'out') {
     documentTitle = 'Log Out Item';
@@ -263,25 +315,41 @@ export async function POST(request: Request) {
     const esignUrl = `${baseUrl}/esign/${esignToken}`;
 
     const emailHtml = generateEsignEmailHtml(type, data, tenant, esignUrl, imageHost);
+    const subject = `${documentTitle} - Signature Required from ${tenant.nameLong || tenant.name || ''}`;
 
-    const params = {
-      Source: tenant.email,
-      Destination: {
-        ToAddresses: emailAddresses,
-      },
-      Message: {
-        Subject: {
-          Data: `${documentTitle} - Signature Required from ${tenant.nameLong || tenant.name || ''}`,
-        },
-        Body: {
-          Html: {
-            Data: emailHtml,
-          },
-        },
-      },
-    };
+    if (type === 'proposal') {
+      const logoDataUrl = await getLogoDataUrl(tenant._id.toString());
+      const pdfBase64 = await generateProposalPdfBase64(data, tenant, logoDataUrl);
+      const pdfFilename = `Proposal-${data.customerLastName || 'document'}.pdf`;
 
-    await sesClient.send(new SendEmailCommand(params));
+      const rawEmail = buildRawEmail(
+        formatFromAddress(tenant.name, tenant.email),
+        emailAddresses,
+        subject,
+        emailHtml,
+        pdfBase64,
+        pdfFilename
+      );
+
+      const destinations = [...emailAddresses];
+      if (tenant.email && !destinations.includes(tenant.email)) {
+        destinations.push(tenant.email);
+      }
+
+      await sesClient.send(new SendRawEmailCommand({
+        Destinations: destinations,
+        RawMessage: { Data: new TextEncoder().encode(rawEmail) },
+      }));
+    } else {
+      await sesClient.send(new SendEmailCommand({
+        Source: formatFromAddress(tenant.name, tenant.email),
+        Destination: { ToAddresses: emailAddresses },
+        Message: {
+          Subject: { Data: subject },
+          Body: { Html: { Data: emailHtml } },
+        },
+      }));
+    }
 
     return NextResponse.json({
       success: true,

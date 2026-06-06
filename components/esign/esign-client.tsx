@@ -4,6 +4,8 @@ import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -41,6 +43,8 @@ export function EsignClient({ token }: EsignClientProps) {
   const [alreadySigned, setAlreadySigned] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [hasSignature, setHasSignature] = useState(false);
+  const [signerName, setSignerName] = useState("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -133,6 +137,7 @@ export function EsignClient({ token }: EsignClientProps) {
       context.lineTo(x, y);
       context.stroke();
     }
+    if (!hasSignature) setHasSignature(true);
   };
 
   const stopDrawing = () => {
@@ -146,6 +151,7 @@ export function EsignClient({ token }: EsignClientProps) {
     if (context) {
       context.clearRect(0, 0, canvas.width, canvas.height);
     }
+    setHasSignature(false);
   };
 
   const handleSubmitSignature = async () => {
@@ -166,6 +172,12 @@ export function EsignClient({ token }: EsignClientProps) {
       return;
     }
 
+    const trimmedName = signerName.trim();
+    if (docType === "proposal" && !trimmedName) {
+      alert("Please type your full name before submitting.");
+      return;
+    }
+
     try {
       setIsSaving(true);
       const signatureData = canvas.toDataURL("image/png");
@@ -173,7 +185,7 @@ export function EsignClient({ token }: EsignClientProps) {
       const response = await fetch(`/api/esign/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signature: signatureData }),
+        body: JSON.stringify({ signature: signatureData, signerName: trimmedName }),
       });
 
       const result = await response.json();
@@ -285,6 +297,20 @@ export function EsignClient({ token }: EsignClientProps) {
               stylus to sign.
             </p>
 
+            {docType === "proposal" && (
+              <div className="mb-4">
+                <Label htmlFor="signerName">Full Name</Label>
+                <Input
+                  id="signerName"
+                  value={signerName}
+                  onChange={(e) => setSignerName(e.target.value)}
+                  placeholder="Type your full name"
+                  disabled={isSaving}
+                  autoComplete="name"
+                />
+              </div>
+            )}
+
             <div className="border-2 border-gray-300 rounded-lg mb-4 bg-white">
               <canvas
                 ref={canvasRef}
@@ -311,7 +337,11 @@ export function EsignClient({ token }: EsignClientProps) {
               </Button>
               <Button
                 onClick={handleSubmitSignature}
-                disabled={isSaving}
+                disabled={
+                  isSaving ||
+                  !hasSignature ||
+                  (docType === "proposal" && signerName.trim() === "")
+                }
                 className="bg-green-600 hover:bg-green-700"
               >
                 {isSaving ? "Submitting..." : "Sign & Submit"}
@@ -472,6 +502,13 @@ function ProposalContent({ data }: { data: any }) {
             <span>{formatCurrency(data.total)}</span>
           </div>
         </div>
+
+        {data.conditions && (
+          <div>
+            <label className="text-sm font-bold">Conditions</label>
+            <p className="text-sm whitespace-pre-wrap mt-1">{data.conditions}</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

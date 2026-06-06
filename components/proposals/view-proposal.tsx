@@ -28,7 +28,7 @@ const formatDate = (dateString: string) => {
     });
 };
 
-export function ViewProposal({ proposal }: { proposal: Proposal }) {
+export function ViewProposal({ proposal, customerEmail }: { proposal: Proposal; customerEmail?: string }) {
     const customerName = `${proposal.customerFirstName} ${proposal.customerLastName}`.trim();
 
     return (
@@ -41,7 +41,7 @@ export function ViewProposal({ proposal }: { proposal: Proposal }) {
                         <h1 className="text-2xl font-semibold" style={{ color: '#B69D57' }}>Proposal</h1>
                         <p className="text-sm font-bold mt-1">{formatDate(proposal.date)}</p>
                     </div>
-                    <ProposalActionMenu proposal={proposal} />
+                    <ProposalActionMenu proposal={proposal} customerEmail={customerEmail} />
                 </div>
 
                 {/* Client Info & Status */}
@@ -101,6 +101,13 @@ export function ViewProposal({ proposal }: { proposal: Proposal }) {
                     </div>
                 </div>
 
+                {/* Conditions */}
+                {proposal.conditions && (
+                    <div className="mb-6">
+                        <p className="text-sm whitespace-pre-wrap">{proposal.conditions}</p>
+                    </div>
+                )}
+
                 {/* Signature */}
                 {proposal.signature && (
                     <Card>
@@ -112,8 +119,11 @@ export function ViewProposal({ proposal }: { proposal: Proposal }) {
                                 <div className="bg-white border rounded-md p-2 inline-block">
                                     <img src={proposal.signature} alt="Signature" className="h-16 object-contain" />
                                 </div>
+                                {proposal.signerName && (
+                                    <p className="text-sm font-medium mt-2">{proposal.signerName}</p>
+                                )}
                                 {proposal.signatureDate && (
-                                    <p className="text-xs text-gray-500 mt-2">
+                                    <p className="text-xs text-gray-500 mt-1">
                                         Signed on {formatDate(proposal.signatureDate)}
                                     </p>
                                 )}

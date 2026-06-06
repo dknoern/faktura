@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchProposalById, fetchTenantById } from '@/lib/data';
 import { getTenantId } from '@/lib/auth-utils';
-import { getImageHost } from '@/lib/utils/imageHost';
+import { getLogoDataUrl } from '@/lib/utils/logo';
 import { generateProposalPdfBuffer } from '@/lib/pdf/generate-proposal-pdf';
 
 export async function GET(
@@ -12,10 +12,7 @@ export async function GET(
   const proposalId = resolvedParams.id;
 
   try {
-    const [tenantId, imageHost] = await Promise.all([
-      getTenantId(),
-      getImageHost(),
-    ]);
+    const tenantId = await getTenantId();
 
     const [proposal, tenant] = await Promise.all([
       fetchProposalById(proposalId),
@@ -30,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
-    const logoUrl = `${imageHost}/api/images/logo-${tenant._id}.png`;
+    const logoUrl = await getLogoDataUrl(tenant._id.toString());
     const pdfBuffer = await generateProposalPdfBuffer(proposal, tenant, logoUrl);
 
     return new NextResponse(new Uint8Array(pdfBuffer), {

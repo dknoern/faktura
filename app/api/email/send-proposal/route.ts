@@ -4,6 +4,7 @@ import { fetchProposalById, fetchTenantById } from '@/lib/data';
 import { getTenantId } from '@/lib/auth-utils';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { generateProposalPdfBase64 } from '@/lib/pdf/generate-proposal-pdf';
+import { formatFromAddress } from '@/lib/utils/email-from';
 
 const sesClient = new SESClient({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
     const pdfFilename = `Proposal-${proposal.customerLastName}.pdf`;
 
     const rawEmail = buildRawEmail(
-      tenant.email,
+      formatFromAddress(tenant.name, tenant.email),
       emailAddresses,
       subject,
       emailHtml,

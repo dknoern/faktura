@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
 import { fetchTenant } from "@/lib/data"
+import { formatFromAddress } from "@/lib/utils/email-from"
 
 
 // Configure AWS SES
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const tenant = await fetchTenant()
     const emailDomain = tenant!.repairEmail!.split('@')[1]
-    const sourceEmail = `${tenant!.nameLong} <repairs@${emailDomain}>`
+    const sourceEmail = formatFromAddress(tenant!.name, `repairs@${emailDomain}`)
     const replyToEmail = `repairs+${repairId}@${emailDomain}`
 
     const command = new SendEmailCommand({

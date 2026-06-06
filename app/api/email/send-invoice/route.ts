@@ -4,6 +4,7 @@ import { fetchInvoiceById, fetchTenantById } from '@/lib/data';
 import { getTenantId } from '@/lib/auth-utils';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { generateInvoicePdfBase64 } from '@/lib/pdf/generate-invoice-pdf';
+import { formatFromAddress } from '@/lib/utils/email-from';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
     const pdfFilename = `Invoice-${invoice.invoiceNumber}.pdf`;
 
     const rawEmail = buildRawEmail(
-      tenant.email,
+      formatFromAddress(tenant.name, tenant.email),
       emailAddresses,
       subject,
       emailHtml,

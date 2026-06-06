@@ -33,9 +33,10 @@ interface Proposal {
 
 interface ProposalActionMenuProps {
   proposal: Proposal
+  customerEmail?: string
 }
 
-export function ProposalActionMenu({ proposal }: ProposalActionMenuProps) {
+export function ProposalActionMenu({ proposal, customerEmail }: ProposalActionMenuProps) {
   const router = useRouter()
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
   const [isEsignDialogOpen, setIsEsignDialogOpen] = useState(false)
@@ -155,6 +156,7 @@ export function ProposalActionMenu({ proposal }: ProposalActionMenuProps) {
         onOpenChange={setIsEsignDialogOpen}
         type="proposal"
         id={proposal._id}
+        defaultEmail={customerEmail}
       />
     </>
   )

@@ -72,7 +72,7 @@ export async function POST(
   try {
     await dbConnect();
     const { token } = await params;
-    const { signature } = await request.json();
+    const { signature, signerName } = await request.json();
 
     if (!token || !signature) {
       return NextResponse.json(
@@ -121,10 +121,19 @@ export async function POST(
         );
       }
 
+      const trimmedName = typeof signerName === 'string' ? signerName.trim() : '';
+      if (!trimmedName) {
+        return NextResponse.json(
+          { error: 'Full name is required' },
+          { status: 400 }
+        );
+      }
+
       await Proposal.findOneAndUpdate(
         { esignToken: token },
         {
           signature,
+          signerName: trimmedName,
           signatureDate: new Date(),
           lastUpdated: new Date(),
         }

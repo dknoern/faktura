@@ -4,6 +4,7 @@ import { fetchRepairById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getRepairImages } from '@/lib/utils/storage';
 import { generateRepairPdfBase64 } from '@/lib/pdf/generate-repair-pdf';
+import { formatFromAddress } from '@/lib/utils/email-from';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
@@ -106,7 +107,7 @@ export async function POST(request: Request) {
     const pdfFilename = `Repair-${serializedRepair.repairNumber}.pdf`;
 
     const rawEmail = buildRawEmail(
-      tenant.email,
+      formatFromAddress(tenant.name, tenant.email),
       emailAddresses,
       subject,
       emailHtml,

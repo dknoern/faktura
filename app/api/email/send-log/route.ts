@@ -3,6 +3,7 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { fetchLogItemById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getLogImages } from '@/lib/utils/storage';
+import { formatFromAddress } from '@/lib/utils/email-from';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
@@ -241,7 +242,7 @@ export async function POST(request: Request) {
 
     // Send email using AWS SES
     const params = {
-      Source: tenant.email,
+      Source: formatFromAddress(tenant.name, tenant.email),
       Destination: {
         ToAddresses: emailAddresses,
       },

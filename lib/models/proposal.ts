@@ -17,8 +17,10 @@ var ProposalSchema = new mongoose.Schema({
     lineItems: {
         type: [ProposalLineItemSchema]
     },
+    conditions: String,
     esignToken: String,
     signature: String,
+    signerName: String,
     signatureDate: Date,
     status: String,
     tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' }

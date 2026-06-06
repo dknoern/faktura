@@ -243,7 +243,7 @@ export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Image src={logoUrl} style={styles.logo} />
+            {logoUrl ? <Image src={logoUrl} style={styles.logo} /> : null}
             <Text style={styles.invoiceLabel}>{invoiceLabel}</Text>
           </View>
           <View style={styles.headerRight}>

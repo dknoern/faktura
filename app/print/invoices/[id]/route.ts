@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchInvoiceById, fetchTenantById } from "@/lib/data";
 import { getTenantId } from "@/lib/auth-utils";
-import { getImageHost } from "@/lib/utils/imageHost";
+import { getLogoDataUrl } from "@/lib/utils/logo";
 import { generateInvoicePdfBuffer } from "@/lib/pdf/generate-invoice-pdf";
 
 export async function GET(
@@ -12,10 +12,7 @@ export async function GET(
   const invoiceId = resolvedParams.id;
 
   try {
-    const [tenantId, imageHost] = await Promise.all([
-      getTenantId(),
-      getImageHost(),
-    ]);
+    const tenantId = await getTenantId();
 
     const [invoice, tenant] = await Promise.all([
       fetchInvoiceById(invoiceId),
@@ -30,7 +27,7 @@ export async function GET(
       return new NextResponse('Tenant not found', { status: 404 });
     }
 
-    const logoUrl = `${imageHost}/api/images/logo-${tenant._id}.png`;
+    const logoUrl = await getLogoDataUrl(tenant._id.toString());
     const pdfBuffer = await generateInvoicePdfBuffer(invoice, tenant, logoUrl);
 
     return new NextResponse(new Uint8Array(pdfBuffer), {

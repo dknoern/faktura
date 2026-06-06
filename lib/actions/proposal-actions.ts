@@ -21,6 +21,7 @@ export interface ProposalData {
   date: string | Date;
   total: number;
   lineItems: ProposalLineItem[];
+  conditions?: string;
   status?: string;
 }
 

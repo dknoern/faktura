@@ -12,7 +12,9 @@ export interface Proposal {
   date: string;
   total: number;
   lineItems: ProposalLineItem[];
+  conditions?: string;
   status?: string;
   signature?: string;
+  signerName?: string;
   signatureDate?: string | null;
 }

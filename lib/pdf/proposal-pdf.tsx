@@ -26,16 +26,20 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flexDirection: 'column',
+    flex: 1,
   },
   companyName: {
     color: gold,
     fontSize: 26,
     fontFamily: 'Helvetica-Bold',
+    lineHeight: 1.2,
+    marginBottom: 4,
   },
   proposalLabel: {
     fontSize: 16,
     fontFamily: 'Helvetica-Bold',
     color: '#555',
+    lineHeight: 1.2,
   },
   // Date
   dateBadge: {
@@ -105,6 +109,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: 1.6,
   },
+  // Conditions
+  conditionsSection: {
+    marginBottom: 24,
+    fontSize: 10,
+    lineHeight: 1.6,
+  },
+  conditionsLabel: {
+    fontFamily: 'Helvetica-Bold',
+    fontSize: 11,
+    marginBottom: 6,
+  },
   // Signature block
   signatureSection: {
     marginBottom: 30,
@@ -168,7 +183,7 @@ export function ProposalPdfDocument({ proposal, tenant, logoUrl }: ProposalPdfPr
 
           {/* Header */}
           <View style={styles.header}>
-            <Image src={logoUrl} style={styles.logo} />
+            {logoUrl ? <Image src={logoUrl} style={styles.logo} /> : null}
             <View style={styles.headerText}>
               <Text style={styles.companyName}>{companyName}</Text>
               <Text style={styles.proposalLabel}>Proposal</Text>
@@ -214,6 +229,15 @@ export function ProposalPdfDocument({ proposal, tenant, logoUrl }: ProposalPdfPr
               </View>
             ))}
           </View>
+
+          {/* Conditions */}
+          {proposal.conditions ? (
+            <View style={styles.conditionsSection}>
+              {proposal.conditions.split(/\n\s*\n/).map((paragraph, idx) => (
+                <Text key={idx} style={{ marginBottom: 8 }}>{paragraph.trim()}</Text>
+              ))}
+            </View>
+          ) : null}
 
           {/* Terms */}
           {tenant.proposalTerms ? (
