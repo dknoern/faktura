@@ -135,6 +135,7 @@ export async function POST(
           signature,
           signerName: trimmedName,
           signatureDate: new Date(),
+          status: 'Accepted',
           lastUpdated: new Date(),
         }
       );

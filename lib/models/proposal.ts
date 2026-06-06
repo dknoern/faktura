@@ -22,6 +22,7 @@ var ProposalSchema = new mongoose.Schema({
     signature: String,
     signerName: String,
     signatureDate: Date,
+    sentDate: Date,
     status: String,
     tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' }
 });

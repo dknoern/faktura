@@ -279,7 +279,11 @@ export async function POST(request: Request) {
       data = await fetchRepairById(id);
       documentTitle = `Repair #${data?.repairNumber}`;
     } else if (type === 'proposal') {
-      await Proposal.findByIdAndUpdate(id, { esignToken });
+      await Proposal.findByIdAndUpdate(id, {
+        esignToken,
+        status: 'Sent',
+        sentDate: new Date(),
+      });
       data = await fetchProposalById(id);
       documentTitle = `Proposal for ${data?.customerFirstName} ${data?.customerLastName}`.trim();
     } else if (type === 'out') {
