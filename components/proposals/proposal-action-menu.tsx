@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, Edit, Printer, Mail, Download, Send } from "lucide-react"
+import { ChevronDown, Edit, Printer, Mail, Download, Send, FileText } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { EmailDialog } from "./email-dialog"
 import { EsignRequestDialog } from "@/components/esign/esign-request-dialog"
@@ -43,6 +43,14 @@ export function ProposalActionMenu({ proposal, customerEmail }: ProposalActionMe
 
   const handleEdit = () => {
     router.push(`/proposals/${proposal._id}/edit`)
+  }
+
+  const handleCreateInvoice = () => {
+    const params = new URLSearchParams({
+      customerId: proposal.customerId,
+      proposalId: proposal._id,
+    })
+    router.push(`/invoices/new?${params.toString()}`)
   }
 
   const handleDownload = async () => {
@@ -141,6 +149,10 @@ export function ProposalActionMenu({ proposal, customerEmail }: ProposalActionMe
           <DropdownMenuItem onClick={() => setIsEsignDialogOpen(true)}>
             <Send className="mr-2 h-4 w-4" />
             Request e-Sign
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleCreateInvoice}>
+            <FileText className="mr-2 h-4 w-4" />
+            Create Invoice
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

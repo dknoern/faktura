@@ -94,21 +94,29 @@ interface Product {
   longDesc?: string
 }
 
-export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesPerson }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, salesPerson?: string }) {
+export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, proposalLineItems, salesPerson }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, proposalLineItems?: { name: string; longDesc?: string; amount: number }[], salesPerson?: string }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const submissionRef = useRef(false)
-  // Create initial line items if a product is selected
-  const initialLineItems = selectedProduct ? [
-    {
-      productId: selectedProduct._id,
-      itemNumber: selectedProduct.itemNumber || '',
-      name: selectedProduct.title || '',
-      amount: selectedProduct.sellingPrice || 0,
-      serialNumber: selectedProduct.serialNo || '',
-      longDesc: selectedProduct.longDesc || ''
-    }
-  ] : [];
+  // Create initial line items: prefer proposal items, else single product, else empty
+  const initialLineItems = proposalLineItems && proposalLineItems.length > 0
+    ? proposalLineItems.map(li => ({
+        itemNumber: '',
+        name: li.name || '',
+        amount: li.amount || 0,
+        serialNumber: '',
+        longDesc: li.longDesc || ''
+      }))
+    : selectedProduct ? [
+        {
+          productId: selectedProduct._id,
+          itemNumber: selectedProduct.itemNumber || '',
+          name: selectedProduct.title || '',
+          amount: selectedProduct.sellingPrice || 0,
+          serialNumber: selectedProduct.serialNo || '',
+          longDesc: selectedProduct.longDesc || ''
+        }
+      ] : [];
 
   const [formData, setFormData] = useState<InvoiceFormData>(
     invoice
@@ -135,8 +143,8 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, salesP
           customerEmail: selectedCustomer?.email || "",
           customerPhone: selectedCustomer?.phone || "",
           date: new Date().toISOString(),
-          total: selectedProduct?.sellingPrice || 0,
-          subtotal: selectedProduct?.sellingPrice || 0,
+          total: initialLineItems.reduce((sum, li) => sum + (li.amount || 0), 0),
+          subtotal: initialLineItems.reduce((sum, li) => sum + (li.amount || 0), 0),
           tax: 0,
           shipping: 0,
           lineItems: initialLineItems,

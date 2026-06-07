@@ -7,9 +7,12 @@ const gold = '#B69D57';
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
-    fontSize: 9,
+    fontSize: 8,
     color: '#333',
-    padding: 40,
+    paddingTop: 40,
+    paddingLeft: 40,
+    paddingRight: 40,
+    paddingBottom: 80,
     lineHeight: 1.5,
   },
   // Header
@@ -45,13 +48,13 @@ const styles = StyleSheet.create({
   addressText: {
     textTransform: 'uppercase',
     fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
+    fontSize: 8,
     marginBottom: 0,
   },
   billingLabel: {
     textTransform: 'uppercase',
     fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
+    fontSize: 8,
     marginBottom: 2,
   },
   // Table
@@ -68,13 +71,13 @@ const styles = StyleSheet.create({
   tableHeaderDesc: {
     flex: 1,
     fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
+    fontSize: 8,
   },
   tableHeaderTotal: {
     width: 80,
     textAlign: 'right',
     fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
+    fontSize: 8,
   },
   tableRow: {
     flexDirection: 'row',
@@ -84,12 +87,12 @@ const styles = StyleSheet.create({
   },
   tableRowDesc: {
     flex: 1,
-    fontSize: 9,
+    fontSize: 8,
   },
   tableRowAmount: {
     width: 80,
     textAlign: 'right',
-    fontSize: 9,
+    fontSize: 8,
   },
   itemName: {
     textTransform: 'uppercase',
@@ -124,11 +127,11 @@ const styles = StyleSheet.create({
   },
   totalsLabel: {
     textAlign: 'right',
-    fontSize: 9,
+    fontSize: 8,
   },
   totalsValue: {
     textAlign: 'right',
-    fontSize: 9,
+    fontSize: 8,
     width: 80,
   },
   totalDueLabel: {
@@ -145,7 +148,7 @@ const styles = StyleSheet.create({
   thankYou: {
     textAlign: 'right',
     marginTop: 8,
-    fontSize: 9,
+    fontSize: 8,
   },
   // Warranty / Return
   policySection: {
@@ -172,6 +175,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 12,
     fontSize: 8,
+  },
+  footerBottom: {
+    position: 'absolute',
+    bottom: 24,
+    left: 40,
+    right: 40,
+    marginTop: 0,
   },
   footerCol: {
     width: '30%',
@@ -239,7 +249,6 @@ export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-       <View style={{ transform: 'scale(0.9)', transformOrigin: 'top left', width: '111%' }}>
         {/* Header */}
         <View style={styles.header}>
           <View>
@@ -251,7 +260,7 @@ export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps
             <Text style={styles.headerLine}>Date: {formattedDate}</Text>
             {invoice.shipVia ? <Text style={styles.headerLine}>Ship Via: {invoice.shipVia}</Text> : null}
             {invoice.trackingNumber ? <Text style={styles.headerLine}>Tracking Number: {invoice.trackingNumber}</Text> : null}
-            {invoice.salesPerson ? <Text style={styles.headerLine}>Sold By: {invoice.salesPerson}</Text> : null}
+            {tenant.warranty && invoice.salesPerson ? <Text style={styles.headerLine}>Sold By: {invoice.salesPerson}</Text> : null}
             {invoice.methodOfSale ? <Text style={styles.headerLine}>Method of Sale: {invoice.methodOfSale}</Text> : null}
             {invoice.paidBy ? <Text style={styles.headerLine}>Paid By: {invoice.paidBy}</Text> : null}
             {invoice.authNumber ? <Text style={styles.headerLine}>Auth #: {invoice.authNumber}</Text> : null}
@@ -334,19 +343,32 @@ export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps
         </View>
 
         {/* Warranty and Return Policy */}
-        <View style={styles.policySection}>
-          <View style={styles.policyBlock}>
-            <Text style={styles.policyLabel}>Warranty:</Text>
-            <Text style={styles.policyText}>{tenant.warranty || 'N/A'}</Text>
+        {(tenant.warranty || tenant.returnPolicy || tenant.bankWireTransferInstructions) ? (
+          <View style={styles.policySection}>
+            {tenant.warranty ? (
+              <View style={styles.policyBlock}>
+                <Text style={styles.policyLabel}>Warranty:</Text>
+                <Text style={styles.policyText}>{tenant.warranty}</Text>
+              </View>
+            ) : null}
+            {tenant.returnPolicy ? (
+              <View style={styles.policyBlock}>
+                <Text style={styles.policyLabel}>Return Privilege:</Text>
+                <Text style={styles.policyText}>{tenant.returnPolicy}</Text>
+              </View>
+            ) : null}
+            {tenant.bankWireTransferInstructions ? (
+              <View style={styles.policyBlock}>
+                <Text style={styles.policyLabel}>Bank Wire Transfer Instructions:</Text>
+                <Text style={styles.policyText}>{tenant.bankWireTransferInstructions}</Text>
+              </View>
+            ) : null}
           </View>
-          <View style={styles.policyBlock}>
-            <Text style={styles.policyLabel}>Return Privilege:</Text>
-            <Text style={styles.policyText}>{tenant.returnPolicy || 'N/A'}</Text>
-          </View>
-        </View>
+        ) : null}
 
-        {/* Footer */}
-        <View style={styles.footer}>
+
+        {/* Footer pinned to bottom of page */}
+        <View style={[styles.footer, styles.footerBottom]} fixed>
           <View style={styles.footerCol}>
             <View style={styles.footerIcon}>
               <Svg width="14" height="14" viewBox="0 0 24 24">
@@ -385,13 +407,6 @@ export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps
             </View>
           </View>
         </View>
-
-        {/* Bank Wire Transfer Instructions */}
-        <View style={styles.wireSection}>
-          <Text style={styles.wireLabel}>BANK WIRE TRANSFER INSTRUCTIONS</Text>
-          <Text style={styles.wireText}>{tenant.bankWireTransferInstructions || 'N/A'}</Text>
-        </View>
-       </View>
       </Page>
     </Document>
   );
