@@ -9,6 +9,8 @@ import { getShortUser } from "@/lib/auth-utils";
 import { format } from "date-fns";
 import { productModel } from "@/lib/models/product";
 import { getNextCounter, getTenantObjectId } from "@/lib/tenant-utils";
+import { getTenantId } from "@/lib/auth-utils";
+import { ensureInvoicePaymentLink } from "@/lib/stripe/payment-links";
 
 export interface LineItem {
   productId?: string;
@@ -137,7 +139,8 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
     
     // Calculate tax
     try {
-      const calculatedTax = await calcTax(invoiceData as any);
+      const tenantIdForTax = await getTenantId();
+      const calculatedTax = await calcTax(invoiceData as any, tenantIdForTax);
       invoiceData.tax = calculatedTax;
       invoiceData.total = (invoiceData.subtotal || 0) + (invoiceData.tax || 0) + (invoiceData.shipping || 0);
     } catch (taxError) {
@@ -177,15 +180,43 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
       await invoice.save();
     }
     
-    revalidatePath('/invoices');
-    
     // For new invoices, get the saved document's _id
     let savedId = id;
     if (!isUpdate) {
-      const saved = await Invoice.findOne({ invoiceNumber }).select('_id').lean();
+      const tenantObjForLookup = await getTenantObjectId();
+      const saved = await Invoice.findOne({ invoiceNumber, tenantId: tenantObjForLookup }).select('_id').lean();
       savedId = saved ? (saved as any)._id.toString() : undefined;
     }
-    
+
+    // Best-effort: create / refresh a Stripe Payment Link for this invoice.
+    // Wrapped in try/catch so Stripe outages can never block invoice save.
+    if (savedId) {
+      try {
+        const tenantId = await getTenantId();
+        const tenantObjectId = await getTenantObjectId();
+        const existing = await Invoice.findOne({ _id: savedId, tenantId: tenantObjectId })
+          .select('_id invoiceNumber total subtotal tax shipping lineItems stripePaymentLink')
+          .lean();
+        if (existing) {
+          const link = await ensureInvoicePaymentLink(existing as any, { _id: tenantObjectId }, tenantId);
+          if (link) {
+            await Invoice.updateOne(
+              { _id: savedId, tenantId: tenantObjectId },
+              { $set: { stripePaymentLink: link } }
+            );
+          }
+        }
+      } catch (stripeErr) {
+        console.error(
+          `[stripe] payment-link step failed for invoice ${savedId}: ${
+            stripeErr instanceof Error ? stripeErr.message : String(stripeErr)
+          }`
+        );
+      }
+    }
+
+    revalidatePath('/invoices');
+
     return { success: true, invoiceId: savedId, invoiceNumber };
   } catch (error) {
     console.error(`Error ${id ? 'updating' : 'creating'} invoice:`, error);

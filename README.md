@@ -14,6 +14,7 @@ A modern, multi-tenant inventory and sales management system designed for jewelr
 - **Email Automation**: Automated invoice, proposal, and repair notification emails via AWS SES
 - **Tax Integration**: Real-time tax calculation using Avalara AvaTax
 - **Image Management**: Product image upload and storage with AWS S3
+- **Stripe Payment Links**: Optional per-tenant Stripe integration that adds a credit-card / ACH payment link to each invoice PDF and customer email
 
 ## Tech Stack
 
@@ -69,18 +70,33 @@ AWS_SECRET_ACCESS_KEY=<your-secret-key>
 AWS_REGION=us-east-1
 S3_BUCKET_NAME=<your-bucket-name>
 
-# AvaTax (optional)
-AVATAX_ACCOUNT_ID=<your-account-id>
-AVATAX_LICENSE_KEY=<your-license-key>
-AVATAX_ENVIRONMENT=sandbox
+# Encryption key for tenant secrets stored at rest (Stripe, AvaTax, …); 32-byte base64
+# Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+CREDENTIALS_ENCRYPTION_KEY=<32-byte-base64>
 ```
 
-4. Start the development server:
+4. Generate the `CREDENTIALS_ENCRYPTION_KEY`:
+
+This must be a 32-byte value, base64-encoded. Generate one with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+Or, if you prefer `openssl`:
+
+```bash
+openssl rand -base64 32
+```
+
+Paste the output into `.env.local` as the `CREDENTIALS_ENCRYPTION_KEY` value. Keep this value somewhere safe (a password manager works) — losing it makes every stored tenant secret (Stripe, AvaTax, future integrations) unrecoverable, and admins would have to re-enter them. Rotating it requires the same re-entry, so don't rotate casually.
+
+5. Start the development server:
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Development Commands
 
@@ -152,6 +168,35 @@ Comprehensive audit trail for all product changes, tracking price updates, statu
 ### Inventory Status Management
 
 Track items across multiple states: In Stock, Out at Show, On Consignment, Sold, etc.
+
+### Stripe Payment Links (per-tenant)
+
+Tenants can opt in to Stripe by entering a Stripe restricted secret key on the Profile / Payments page (admins only). Once enabled:
+
+- Every new or updated invoice with a positive total triggers `ensureInvoicePaymentLink` after save, which creates a Stripe Payment Link for the invoice's total and persists the URL on the invoice document.
+- The invoice PDF renders a "Pay Online" block with a clickable link.
+- The "Send Invoice" email body adds: "You can pay by check, ACH, or credit card. For ACH or credit card you can use this payment link."
+
+Notes:
+
+- The Stripe restricted key needs scopes sufficient to `POST /v1/payment_links` (write access on Payment Links and the implied Products / Prices it creates inline), plus `balance:read` for the save-time probe.
+- Stripe credentials are stored AES-256-GCM-encrypted at rest using `CREDENTIALS_ENCRYPTION_KEY` (the same key now also protects AvaTax license keys). Losing that env var makes existing stored credentials unrecoverable — tenants would need to re-enter them.
+- Failures from Stripe never block invoice save. Look for `[stripe]` lines in server logs to diagnose missing/invalid keys.
+- Out of scope today: automatic paid-status webhooks, refunds, partial payments, Stripe Connect.
+
+### AvaTax (per-tenant)
+
+AvaTax credentials are configured per-tenant on the Profile → AvaTax section (admins only). When AvaTax is disabled for a tenant, all invoices save with `tax: 0` and the "Tax exempt" checkbox is hidden from the invoice form. When AvaTax is enabled:
+
+- Invoices with no `shipState`, `taxExempt: true`, or `methodOfSale === 'Ebay'` skip AvaTax and use `tax: 0`.
+- Invoices shipping to `TX` skip AvaTax and use a hardcoded 8.25% rate.
+- All other invoices go through AvaTax using the tenant's stored account id, license key, environment, and company code.
+
+Notes:
+
+- AvaTax license keys are stored AES-256-GCM-encrypted using `CREDENTIALS_ENCRYPTION_KEY`.
+- Save-time probe uses AvaTax's authenticated `ping` endpoint; bad credentials are rejected before persistence.
+- The `AVATAX_*` env vars are gone — they have no effect after this change.
 
 ## Deployment
 

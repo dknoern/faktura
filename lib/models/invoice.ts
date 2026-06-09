@@ -66,7 +66,14 @@ var InvoiceSchema = new mongoose.Schema({
     },
     status: String,
     trackingNumber: String,
-    tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' }
+    tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' },
+    stripePaymentLink: {
+        url: String,
+        id: String,
+        amount: Number,
+        currency: String,
+        createdAt: Date
+    }
 });
 
 // TODO: remove pre hook

@@ -50,6 +50,13 @@ export interface Invoice {
   authNumber: string;
   copyAddress: boolean;
   shipVia: string;
+  stripePaymentLink?: {
+    url: string;
+    id: string;
+    amount: number;
+    currency: string;
+    createdAt: string | Date;
+  };
 }
 
 export type { Tenant } from '@/lib/types/tenant';

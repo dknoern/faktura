@@ -91,10 +91,19 @@ Uses NextAuth.js with Auth0 provider. Session includes:
 
 ### Development Notes
 
-- Environment variables required: `MONGODB_URI`, Auth0 config, AWS credentials, AvaTax credentials
+- Environment variables required: `MONGODB_URI`, Auth0 config, AWS credentials, `CREDENTIALS_ENCRYPTION_KEY` (32-byte base64; AES-256-GCM key used to encrypt per-tenant secrets such as Stripe restricted keys and AvaTax license keys at rest)
+- AvaTax credentials are per-tenant (Profile → AvaTax). There are no `AVATAX_*` env vars.
 - Uses MongoDB connection caching to prevent connection exhaustion in development
 - Hardcoded tenant ID in layout.tsx for demo purposes
 - Mixed JS/TS files (legacy JavaScript models being gradually migrated to TypeScript)
+- Shared crypto for tenant secrets lives in `lib/crypto/secrets.ts` (`encryptSecret` / `decryptSecret`) and is keyed off `CREDENTIALS_ENCRYPTION_KEY`.
+- Per-tenant Stripe integration lives in `lib/stripe/`:
+  - `client.ts` — `getStripeForTenant(tenantId)` returns a Stripe SDK client or `null` if the tenant has not configured Stripe
+  - `payment-links.ts` — `ensureInvoicePaymentLink` is called from `upsertInvoice` after save; creates a Stripe Payment Link when needed and returns fields to persist on the invoice
+- Per-tenant AvaTax integration lives in `lib/avatax/`:
+  - `config.ts` — `loadTenantAvataxConfig(tenantId)` and `isFullyConfigured` helpers
+  - `client.ts` — `getAvataxForTenant(tenantId)` returns a client + config, or `null` if disabled / incomplete; also `buildProbeClient` for save-time credential probes
+  - Used by `lib/utils/tax.ts` `calcTax(invoice, tenantId)`
 
 ### Development Practices
 

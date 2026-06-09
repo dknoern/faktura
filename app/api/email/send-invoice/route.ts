@@ -6,6 +6,15 @@ import { getImageHost } from '@/lib/utils/imageHost';
 import { generateInvoicePdfBase64 } from '@/lib/pdf/generate-invoice-pdf';
 import { formatFromAddress } from '@/lib/utils/email-from';
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Initialize AWS SES client
 const sesClient = new SESClient({
   region: process.env.AWS_REGION || 'us-west-2',
@@ -87,7 +96,11 @@ export async function POST(request: Request) {
     const companyName = tenant.nameLong || 'DeMesy';
     const customerName = `${invoice.customerFirstName} ${invoice.customerLastName}`.trim();
     const subject = `Invoice #${invoice.invoiceNumber} from ${companyName}`;
-    const emailHtml = `<p>${customerName}:</p><p>Your invoice number ${invoice.invoiceNumber} from ${companyName} is attached.</p><p>Thank you.</p>`;
+    const paymentUrl = (invoice as any).stripePaymentLink?.url as string | undefined;
+    const paymentParagraph = paymentUrl
+      ? `<p>You can pay by check, ACH, or credit card. For ACH or credit card you can use this <a href="${escapeHtml(paymentUrl)}">payment link</a>.</p>`
+      : '';
+    const emailHtml = `<p>${customerName}:</p><p>Your invoice number ${invoice.invoiceNumber} from ${companyName} is attached.</p>${paymentParagraph}<p>Thank you.</p>`;
 
     // Generate PDF server-side
     const imageHost = await getImageHost();

@@ -2,6 +2,9 @@ import { auth } from "@/auth";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ApiKeysSection } from "@/components/api-keys/api-keys-section";
+import { StripeSettingsSection } from "@/components/stripe/stripe-settings-section";
+import { AvataxSettingsSection } from "@/components/avatax/avatax-settings-section";
+import { TenantLogoSection } from "@/components/tenant/tenant-logo-section";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function ProfilePage() {
@@ -49,6 +52,12 @@ export default async function ProfilePage() {
 
       {isAdmin && (
         <>
+          <Separator />
+          <TenantLogoSection />
+          <Separator />
+          <StripeSettingsSection />
+          <Separator />
+          <AvataxSettingsSection />
           <Separator />
           <ApiKeysSection />
         </>

@@ -31,7 +31,7 @@ const invoiceTypeLabel = (type: string) => {
     }
 };
 
-export function ViewInvoice({ invoice }: { invoice: Invoice }) {
+export function ViewInvoice({ invoice, avataxEnabled = false }: { invoice: Invoice; avataxEnabled?: boolean }) {
     const fullName = `${invoice.customerFirstName} ${invoice.customerLastName}`.trim();
 
     const handlePdfPrint = useCallback(async () => {
@@ -180,10 +180,12 @@ export function ViewInvoice({ invoice }: { invoice: Invoice }) {
                             <span className="text-right flex-1 mr-4">SUBTOTAL:</span>
                             <span className="w-24 text-right">{formatCurrency(invoice.subtotal)}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-right flex-1 mr-4">TAX:</span>
-                            <span className="w-24 text-right">{formatCurrency(invoice.tax)}</span>
-                        </div>
+                        {avataxEnabled && (
+                            <div className="flex justify-between text-sm">
+                                <span className="text-right flex-1 mr-4">TAX:</span>
+                                <span className="w-24 text-right">{formatCurrency(invoice.tax)}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between text-sm">
                             <span className="text-right flex-1 mr-4">SHIPPING:</span>
                             <span className="w-24 text-right">{formatCurrency(invoice.shipping)}</span>

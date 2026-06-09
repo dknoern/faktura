@@ -19,7 +19,6 @@ const TenantSchema = new mongoose.Schema({
     returnPolicy: String,
     bankWireTransferInstructions: String,
     proposalTerms: String,
-    logo: String,
     email: String,
     features: {
         products: { type: Boolean, default: true },
@@ -32,6 +31,26 @@ const TenantSchema = new mongoose.Schema({
         loginitems: { type: Boolean, default: false },
         logoutitems: { type: Boolean, default: false },
         reports: { type: Boolean, default: false }
+    },
+    stripe: {
+        enabled: { type: Boolean, default: false },
+        secretKeyCiphertext: { type: String, select: false },
+        secretKeyIv: { type: String, select: false },
+        secretKeyTag: { type: String, select: false },
+        secretKeyLast4: String,
+        publishableKey: String,
+        updatedAt: Date
+    },
+    avatax: {
+        enabled: { type: Boolean, default: false },
+        username: String,
+        passwordCiphertext: { type: String, select: false },
+        passwordIv: { type: String, select: false },
+        passwordTag: { type: String, select: false },
+        passwordLast4: String,
+        environment: String,
+        companyCode: String,
+        updatedAt: Date
     }
 });
 

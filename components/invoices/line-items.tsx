@@ -20,11 +20,12 @@ interface LineItemsProps {
   items: LineItem[],
   shipping: number,
   tax: number,
+  avataxEnabled?: boolean,
   onChange: (items: LineItem[]) => void
 }
 
 
-export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
+export function LineItems({ items, shipping, tax, avataxEnabled = false, onChange }: LineItemsProps) {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false)
   const [currentEditIndex, setCurrentEditIndex] = useState<number | null>(null)
   const [isAddingNewItem, setIsAddingNewItem] = useState(false)
@@ -208,19 +209,21 @@ export function LineItems({ items, shipping, tax, onChange }: LineItemsProps) {
               />
             </div>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="font-medium">Tax:</span>
-            <div className="flex items-center">
-              <span className="mr-1">$</span>
-              <Input 
-                type="number" 
-                className="w-[100px]" 
-                placeholder="0.00"
-                value={tax}
-                readOnly
-              />
+          {avataxEnabled && (
+            <div className="flex justify-between items-center">
+              <span className="font-medium">Tax:</span>
+              <div className="flex items-center">
+                <span className="mr-1">$</span>
+                <Input
+                  type="number"
+                  className="w-[100px]"
+                  placeholder="0.00"
+                  value={tax}
+                  readOnly
+                />
+              </div>
             </div>
-          </div>
+          )}
           <div className="flex justify-between pt-2 border-t">
             <span className="font-bold">Total:</span>
             <span className="font-bold">${calculateSubtotal().toFixed(2)}</span>

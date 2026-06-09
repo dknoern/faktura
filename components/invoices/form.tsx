@@ -94,7 +94,7 @@ interface Product {
   longDesc?: string
 }
 
-export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, proposalLineItems, salesPerson }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, proposalLineItems?: { name: string; longDesc?: string; amount: number }[], salesPerson?: string }) {
+export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, proposalLineItems, salesPerson, avataxEnabled = false }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, proposalLineItems?: { name: string; longDesc?: string; amount: number }[], salesPerson?: string, avataxEnabled?: boolean }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const submissionRef = useRef(false)
@@ -503,17 +503,19 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="taxExempt" 
-              checked={formData.taxExempt || false}
-              onCheckedChange={(checked) => 
-                setFormData({ ...formData, taxExempt: checked as boolean })
-              }
-            />
-            <label htmlFor="taxExempt" className="text-sm font-medium">Tax Exempt</label>
-          </div>
-          
+          {avataxEnabled && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="taxExempt"
+                checked={formData.taxExempt || false}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, taxExempt: checked as boolean })
+                }
+              />
+              <label htmlFor="taxExempt" className="text-sm font-medium">Tax Exempt</label>
+            </div>
+          )}
+
           <div>
             <h3 className="font-medium mb-2">Billing Address</h3>
             <div className="flex items-center space-x-2 mb-2">
@@ -571,11 +573,12 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
       
       {/* Line Items Section */}
       <div className="p-4">
-        <LineItems 
-          items={formData.lineItems} 
+        <LineItems
+          items={formData.lineItems}
           shipping={formData.shipping || 0}
           tax={formData.tax || 0}
-          onChange={handleLineItemsChange} 
+          avataxEnabled={avataxEnabled}
+          onChange={handleLineItemsChange}
         />
       </div>
       

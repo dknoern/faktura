@@ -66,6 +66,7 @@
     "react-hot-toast": "^2.5.2",
     "recharts": "^3.0.2",
     "sharp": "^0.34.0",
+    "stripe": "^22.2.0",
     "swagger-ui-react": "^5.32.6",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",

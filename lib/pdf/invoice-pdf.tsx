@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document, Page, View, Text, Image, StyleSheet, Font, Svg, Path, Circle, Line } from '@react-pdf/renderer';
+import { Document, Page, View, Text, Image, StyleSheet, Font, Svg, Path, Circle, Line, Link } from '@react-pdf/renderer';
 import { Invoice, Tenant, formatCurrency, formatDate } from '@/lib/invoice-renderer';
 
 const gold = '#B69D57';
@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   logo: {
-    width: 150,
     height: 60,
   },
   invoiceLabel: {
@@ -150,6 +149,36 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 8,
   },
+  // Payment link (Stripe)
+  paymentLinkContainer: {
+    marginTop: 10,
+    alignItems: 'flex-end',
+  },
+  paymentLinkBox: {
+    backgroundColor: '#FAF6EC',
+    borderWidth: 1,
+    borderColor: gold,
+    borderStyle: 'solid',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    maxWidth: 320,
+  },
+  paymentLinkLabel: {
+    fontFamily: 'Helvetica-Bold',
+    fontSize: 9,
+    color: gold,
+    marginBottom: 2,
+  },
+  paymentLinkText: {
+    fontSize: 8,
+    color: '#333',
+    marginBottom: 2,
+  },
+  paymentLinkAnchor: {
+    fontSize: 8,
+    color: '#0B5FFF',
+    textDecoration: 'underline',
+  },
   // Warranty / Return
   policySection: {
     marginTop: 12,
@@ -224,6 +253,19 @@ interface InvoicePdfProps {
   invoice: Invoice;
   tenant: Tenant;
   logoUrl: string;
+}
+
+function PaymentLinkBlock({ url }: { url?: string | null }) {
+  if (!url) return null;
+  return (
+    <View style={styles.paymentLinkContainer}>
+      <View style={styles.paymentLinkBox}>
+        <Text style={styles.paymentLinkLabel}>PAY ONLINE</Text>
+        <Text style={styles.paymentLinkText}>Pay by credit card or ACH:</Text>
+        <Link src={url} style={styles.paymentLinkAnchor}>{url}</Link>
+      </View>
+    </View>
+  );
 }
 
 export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps) {
@@ -326,10 +368,12 @@ export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps
               <Text style={styles.totalsLabel}>SUBTOTAL:</Text>
               <Text style={styles.totalsValue}>{formatCurrency(invoice.subtotal)}</Text>
             </View>
-            <View style={styles.totalsRow}>
-              <Text style={styles.totalsLabel}>TAX:</Text>
-              <Text style={styles.totalsValue}>{formatCurrency(invoice.tax)}</Text>
-            </View>
+            {tenant.avatax?.enabled ? (
+              <View style={styles.totalsRow}>
+                <Text style={styles.totalsLabel}>TAX:</Text>
+                <Text style={styles.totalsValue}>{formatCurrency(invoice.tax)}</Text>
+              </View>
+            ) : null}
             <View style={styles.totalsRow}>
               <Text style={styles.totalsLabel}>SHIPPING:</Text>
               <Text style={styles.totalsValue}>{formatCurrency(invoice.shipping)}</Text>
@@ -341,6 +385,8 @@ export function InvoicePdfDocument({ invoice, tenant, logoUrl }: InvoicePdfProps
           </View>
           <Text style={styles.thankYou}>Thank you for your business</Text>
         </View>
+
+        <PaymentLinkBlock url={invoice.stripePaymentLink?.url} />
 
         {/* Warranty and Return Policy */}
         {(tenant.warranty || tenant.returnPolicy || tenant.bankWireTransferInstructions) ? (

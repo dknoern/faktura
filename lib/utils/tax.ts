@@ -1,56 +1,58 @@
 import { Invoice } from "../invoice-renderer";
 
-import Avatax from 'avatax';
 import * as Enums from 'avatax/lib/enums/index';
-
-// Configure Avatax client with the required properties
-const avataxConfig = {
-  appName: 'Lager2App',
-  appVersion: '1.0',
-  environment: process.env.AVATAX_ENVIRONMENT || 'sandbox',
-  machineName: process.env.AVATAX_MACHINE_NAME || 'local'
-};
-
-// Security credentials for Avatax
-const avataxCredentials = {
-  username: process.env.AVATAX_USERNAME,
-  password: process.env.AVATAX_PASSWORD
-};
+import { getAvataxForTenant } from "@/lib/avatax/client";
+import { loadTenantAvataxConfig, isFullyConfigured, DEFAULT_COMPANY_CODE } from "@/lib/avatax/config";
 
 /**
- * Calculate tax for an invoice using Avatax
- * @param invoice The invoice to calculate tax for
- * @returns The calculated tax amount
+ * Calculate tax for an invoice using Avatax (per-tenant credentials).
+ * Returns 0 immediately if the tenant has not opted in to AvaTax.
  */
-export async function calcTax(invoice: Invoice): Promise<number> {
+export async function calcTax(invoice: Invoice, tenantId: string): Promise<number> {
   console.log('Calculating tax for invoice', invoice._id);
 
-  // Special cases where we don't need to calculate tax
+  // Gate everything on per-tenant opt-in.
+  const config = await loadTenantAvataxConfig(tenantId);
+  if (!config?.enabled) {
+    return 0;
+  }
+
+  // Existing zero-cases: preserved exactly.
   if (!invoice.shipState) {
     console.log("State not specified, will not calculate tax");
     return 0;
-  } else if (invoice.taxExempt) {
+  }
+  if (invoice.taxExempt) {
     console.log("Tax exempt, no tax");
     return 0;
-  }else if (invoice.methodOfSale == 'Ebay') {
+  }
+  if (invoice.methodOfSale == 'Ebay') {
     console.log("ebay, no tax");
     return 0;
-  } else if (invoice.shipState === 'TX') {
-    // Manual Texas tax calculation
+  }
+  if (invoice.shipState === 'TX') {
+    // Manual Texas tax — kept even when AvaTax is enabled.
     const totalTax = invoice.subtotal * 0.0825;
     console.log("Manually calculating TX tax:", totalTax);
     return totalTax;
   }
 
-  const commit = invoice.invoiceType != 'Estimate';
+  if (!isFullyConfigured(config)) {
+    console.warn(`[avatax] tenant ${tenantId}: enabled but credentials incomplete; returning 0`);
+    return 0;
+  }
 
-  console.log('Invoice type:', invoice.invoiceType, 'Committing to Avatax:', commit)
+  const clientCtx = await getAvataxForTenant(tenantId);
+  if (!clientCtx) {
+    console.warn(`[avatax] tenant ${tenantId}: client unavailable despite enabled+configured; returning 0`);
+    return 0;
+  }
+  const { client, config: tenantConfig } = clientCtx;
+
+  const commit = invoice.invoiceType != 'Estimate';
+  console.log('Invoice type:', invoice.invoiceType, 'Committing to Avatax:', commit);
 
   try {
-
-    const client = new Avatax(avataxConfig).withSecurity(avataxCredentials);
-
-    // Prepare line items for tax calculation
     const lines = invoice.lineItems.map((item, index) => ({
       number: (index + 1).toString(),
       quantity: 1,
@@ -64,24 +66,22 @@ export async function calcTax(invoice: Invoice): Promise<number> {
       customerCode: (invoice.customerId || '0').toString(),
       type: Enums.DocumentType.SalesInvoice,
       date: new Date(invoice.date || Date.now()),
-      companyCode: 'DEFAULT',
+      companyCode: tenantConfig.companyCode || DEFAULT_COMPANY_CODE,
       commit: commit,
       currencyCode: 'USD',
       taxCode: 'PC040206',
       addresses: {
         singleLocation: {
-          line1: invoice.shipAddress1 ,
+          line1: invoice.shipAddress1,
           line2: invoice.shipAddress2 || '',
           line3: invoice.shipAddress3 || '',
-          city: invoice.shipCity ,
-          region: invoice.shipState ,
+          city: invoice.shipCity,
+          region: invoice.shipState,
           postalCode: invoice.shipZip
         }
       },
       lines: lines
     };
-
-    // Call Avatax API to calculate tax
 
     const createOrAdjustTransactionModel = {
       createTransactionModel: transactionModel,
@@ -90,7 +90,7 @@ export async function calcTax(invoice: Invoice): Promise<number> {
     };
 
     const result = await client.createOrAdjustTransaction({ model: createOrAdjustTransactionModel });
-    // Calculate total tax from result
+
     let totalTax = 0;
     if (result && result.summary && Array.isArray(result.summary)) {
       result.summary.forEach((item: any) => {
@@ -103,7 +103,6 @@ export async function calcTax(invoice: Invoice): Promise<number> {
     console.log("Total tax from Avalara for invoice", invoice._id, "is", totalTax);
     return totalTax;
   } catch (error: any) {
-    // Log only the core error message without stack trace
     let coreErrorMessage = "Failed to calculate tax";
     if (error && typeof error === 'object') {
       if (error.message) {
@@ -114,7 +113,7 @@ export async function calcTax(invoice: Invoice): Promise<number> {
         coreErrorMessage = error.error.message;
       }
     }
-    
+
     console.error('Avatax calculation error:', coreErrorMessage);
     console.log('Invoice data causing error:', JSON.stringify({
       _id: invoice._id || 'undefined',
@@ -122,7 +121,6 @@ export async function calcTax(invoice: Invoice): Promise<number> {
       shipState: invoice.shipState || 'undefined'
     }));
 
-    // Return the error message with context for frontend
     const errorMessage = "Tax calculation failure: " + coreErrorMessage;
     throw new Error(errorMessage);
   }

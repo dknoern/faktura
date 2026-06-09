@@ -15,4 +15,18 @@ export interface Tenant {
   bankWireTransferInstructions?: string;
   proposalTerms?: string;
   repairConfirmationText?: string;
+  stripe?: {
+    enabled?: boolean;
+    secretKeyLast4?: string;
+    publishableKey?: string;
+    updatedAt?: string | Date;
+  };
+  avatax?: {
+    enabled?: boolean;
+    username?: string;
+    passwordLast4?: string;
+    environment?: 'sandbox' | 'production';
+    companyCode?: string;
+    updatedAt?: string | Date;
+  };
 }
