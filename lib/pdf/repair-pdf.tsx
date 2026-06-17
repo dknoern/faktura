@@ -7,7 +7,7 @@ const gold = '#B69D57';
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
-    fontSize: 9,
+    fontSize: 12,
     color: '#333',
     padding: 40,
     lineHeight: 1.5,
@@ -39,11 +39,11 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
+    fontSize: 12,
     marginBottom: 2,
   },
   fieldValue: {
-    fontSize: 9,
+    fontSize: 12,
     marginBottom: 10,
   },
   // Table
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   tableHeaderCell: {
     fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
+    fontSize: 12,
     padding: 6,
   },
   tableRow: {
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   tableCell: {
-    fontSize: 9,
+    fontSize: 12,
     padding: 6,
   },
   // Images
@@ -158,8 +158,6 @@ export function RepairPdfDocument({ repair, tenant, logoUrl, imageUrls = [], sho
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        <View style={{ transform: 'scale(0.9)', transformOrigin: 'top left', width: '111%' }}>
-
           {/* Header */}
           <View style={styles.header}>
             <View>
@@ -224,20 +222,20 @@ export function RepairPdfDocument({ repair, tenant, logoUrl, imageUrls = [], sho
           {/* Repair Issues */}
           <View style={{ marginBottom: 16 }}>
             <Text style={styles.sectionTitle}>Repair Issues</Text>
-            <Text style={{ fontSize: 9 }}>{repair.repairIssues || 'None specified'}</Text>
+            <Text style={{ fontSize: 12 }}>{repair.repairIssues || 'None specified'}</Text>
           </View>
 
           {/* Repair Cost */}
           <View style={{ marginBottom: 16 }}>
             <Text style={styles.sectionTitle}>Repair Cost</Text>
-            <Text style={{ fontSize: 9 }}>{formattedCost}</Text>
+            <Text style={{ fontSize: 12 }}>{formattedCost}</Text>
           </View>
 
           {/* Repair Notes */}
           {repair.repairNotes ? (
             <View style={{ marginBottom: 16 }}>
               <Text style={styles.sectionTitle}>Repair Notes</Text>
-              <Text style={{ fontSize: 9 }}>{repair.repairNotes}</Text>
+              <Text style={{ fontSize: 12 }}>{repair.repairNotes}</Text>
             </View>
           ) : null}
 
@@ -295,8 +293,6 @@ export function RepairPdfDocument({ repair, tenant, logoUrl, imageUrls = [], sho
               </View>
             </View>
           </View>
-
-        </View>
       </Page>
     </Document>
   );
