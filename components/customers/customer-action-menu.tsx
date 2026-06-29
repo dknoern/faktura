@@ -32,9 +32,12 @@ type Customer = z.infer<typeof customerSchema>;
 interface CustomerActionMenuProps {
     customer: Customer;
     onAttachmentUpload?: () => void;
+    proposalsEnabled?: boolean;
+    repairsEnabled?: boolean;
+    wantedEnabled?: boolean;
 }
 
-export function CustomerActionMenu({ customer, onAttachmentUpload }: CustomerActionMenuProps) {
+export function CustomerActionMenu({ customer, onAttachmentUpload, proposalsEnabled = false, repairsEnabled = false, wantedEnabled = false }: CustomerActionMenuProps) {
     const router = useRouter();
     const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -107,18 +110,24 @@ export function CustomerActionMenu({ customer, onAttachmentUpload }: CustomerAct
                         <FileText className="mr-2 h-4 w-4" />
                         New Invoice
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleNewProposal}>
-                        <Lightbulb className="mr-2 h-4 w-4" />
-                        Create Proposal
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleNewRepair}>
-                        <Wrench className="mr-2 h-4 w-4" />
-                        New Repair
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleNewWanted}>
-                        <Gift className="mr-2 h-4 w-4" />
-                        New Wanted
-                    </DropdownMenuItem>
+                    {proposalsEnabled && (
+                        <DropdownMenuItem onClick={handleNewProposal}>
+                            <Lightbulb className="mr-2 h-4 w-4" />
+                            New Proposal
+                        </DropdownMenuItem>
+                    )}
+                    {repairsEnabled && (
+                        <DropdownMenuItem onClick={handleNewRepair}>
+                            <Wrench className="mr-2 h-4 w-4" />
+                            New Repair
+                        </DropdownMenuItem>
+                    )}
+                    {wantedEnabled && (
+                        <DropdownMenuItem onClick={handleNewWanted}>
+                            <Gift className="mr-2 h-4 w-4" />
+                            New Wanted
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                         onClick={() => setShowDeleteDialog(true)}

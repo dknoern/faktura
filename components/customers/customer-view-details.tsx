@@ -12,9 +12,12 @@ type Customer = z.infer<typeof customerSchema>;
 
 interface CustomerViewDetailsProps {
     customer: Customer;
+    proposalsEnabled?: boolean;
+    repairsEnabled?: boolean;
+    wantedEnabled?: boolean;
 }
 
-export function CustomerViewDetails({ customer: initialCustomer }: CustomerViewDetailsProps) {
+export function CustomerViewDetails({ customer: initialCustomer, proposalsEnabled = false, repairsEnabled = false, wantedEnabled = false }: CustomerViewDetailsProps) {
     const [customer, setCustomer] = useState(initialCustomer);
 
     const handleAttachmentChange = async () => {
@@ -44,7 +47,13 @@ export function CustomerViewDetails({ customer: initialCustomer }: CustomerViewD
                         </p>
                     )}
                 </div>
-                <CustomerActionMenu customer={customer} onAttachmentUpload={handleAttachmentChange} />
+                <CustomerActionMenu
+                    customer={customer}
+                    onAttachmentUpload={handleAttachmentChange}
+                    proposalsEnabled={proposalsEnabled}
+                    repairsEnabled={repairsEnabled}
+                    wantedEnabled={wantedEnabled}
+                />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
