@@ -311,14 +311,11 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
-
-    const imageHost = await getImageHost();
-
     // Build the esign URL
-    const baseUrl = imageHost || process.env.NEXTAUTH_URL || process.env.AUTH_URL || 'http://localhost:3000';
+    const baseUrl = request.headers.get('origin') || process.env.NEXTAUTH_URL || process.env.AUTH_URL || 'http://localhost:3000';
     const esignUrl = `${baseUrl}/esign/${esignToken}`;
 
-    const emailHtml = generateEsignEmailHtml(type, data, tenant, esignUrl, imageHost);
+    const emailHtml = generateEsignEmailHtml(type, data, tenant, esignUrl, baseUrl);
     const subject = `${documentTitle} - Signature Required from ${tenant.nameLong || tenant.name || ''}`;
 
     if (type === 'proposal') {

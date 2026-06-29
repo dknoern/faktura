@@ -114,6 +114,7 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
             open={emailDialogOpen}
             onOpenChange={setEmailDialogOpen}
             invoiceId={invoice._id.toString()}
+            defaultEmail={invoice.customerEmail}
         />
         </>
     );

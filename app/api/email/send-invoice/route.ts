@@ -117,7 +117,13 @@ export async function POST(request: Request) {
       pdfFilename
     );
 
+    const destinations = [...emailAddresses];
+    if (tenant.email && !destinations.includes(tenant.email)) {
+      destinations.push(tenant.email);
+    }
+
     await sesClient.send(new SendRawEmailCommand({
+      Destinations: destinations,
       RawMessage: {
         Data: new TextEncoder().encode(rawEmail),
       },

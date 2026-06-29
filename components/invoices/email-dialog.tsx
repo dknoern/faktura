@@ -19,11 +19,18 @@ interface EmailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   invoiceId: string;
+  defaultEmail?: string;
 }
 
-export function EmailDialog({ open, onOpenChange, invoiceId }: EmailDialogProps) {
-  const [emailAddresses, setEmailAddresses] = useState("");
+export function EmailDialog({ open, onOpenChange, invoiceId, defaultEmail }: EmailDialogProps) {
+  const [emailAddresses, setEmailAddresses] = useState(defaultEmail ?? "");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setEmailAddresses(defaultEmail ?? "");
+    }
+  }, [open, defaultEmail]);
 
   // Function to reset any lingering scroll locks or pointer events
   const resetBodyStyles = () => {

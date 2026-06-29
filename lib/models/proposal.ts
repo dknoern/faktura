@@ -11,6 +11,8 @@ var ProposalSchema = new mongoose.Schema({
     customerNumber: Number,
     customerFirstName: String,
     customerLastName: String,
+    customerEmail: String,
+    customerPhone: String,
     date: Date,
     total: Number,
     search: String,

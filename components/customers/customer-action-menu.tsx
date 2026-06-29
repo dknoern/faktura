@@ -18,7 +18,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Edit, ChevronDown, Paperclip, FileText, Wrench, Gift, Trash2 } from "lucide-react";
+import { Edit, ChevronDown, Paperclip, FileText, Wrench, Gift, Trash2, Lightbulb } from "lucide-react";
 import { customerSchema } from "@/lib/models/customer";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -54,6 +54,10 @@ export function CustomerActionMenu({ customer, onAttachmentUpload }: CustomerAct
 
     const handleNewInvoice = () => {
         router.push(`/invoices/new?customerId=${customer._id}`);
+    };
+
+    const handleNewProposal = () => {
+        router.push(`/proposals/new/${customer._id}`);
     };
 
     const handleNewRepair = () => {
@@ -102,6 +106,10 @@ export function CustomerActionMenu({ customer, onAttachmentUpload }: CustomerAct
                     <DropdownMenuItem onClick={handleNewInvoice}>
                         <FileText className="mr-2 h-4 w-4" />
                         New Invoice
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleNewProposal}>
+                        <Lightbulb className="mr-2 h-4 w-4" />
+                        Create Proposal
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleNewRepair}>
                         <Wrench className="mr-2 h-4 w-4" />

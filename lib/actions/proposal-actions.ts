@@ -18,6 +18,8 @@ export interface ProposalData {
   customerNumber?: number;
   customerFirstName: string;
   customerLastName: string;
+  customerEmail?: string;
+  customerPhone?: string;
   date: string | Date;
   total: number;
   lineItems: ProposalLineItem[];

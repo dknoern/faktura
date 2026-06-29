@@ -196,10 +196,15 @@ export async function POST(request: Request) {
     const formattedDate = formatDate(out.date);
 
     // Send email using AWS SES
+    const bccAddresses = tenant.email && !emailAddresses.includes(tenant.email)
+      ? [tenant.email]
+      : [];
+
     const params = {
       Source: formatFromAddress(tenant.name, tenant.email),
       Destination: {
         ToAddresses: emailAddresses,
+        ...(bccAddresses.length > 0 ? { BccAddresses: bccAddresses } : {}),
       },
       Message: {
         Subject: {

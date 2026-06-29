@@ -25,6 +25,8 @@ interface Proposal {
   customerId: string
   customerFirstName: string
   customerLastName: string
+  customerEmail?: string
+  customerPhone?: string
   date: string
   total: number
   lineItems: ProposalLineItem[]
@@ -46,6 +48,8 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
     customerNumber: customer.customerNumber,
     customerFirstName: customer.firstName,
     customerLastName: customer.lastName,
+    customerEmail: proposal?.customerEmail ?? customer.email ?? '',
+    customerPhone: proposal?.customerPhone ?? customer.phone ?? '',
     date: proposal?.date || new Date().toISOString().split('T')[0],
     status: proposal?.status || 'Draft',
     conditions: proposal?.conditions || ''
@@ -121,6 +125,26 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
             </div>
           </div>
           
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="customerEmail">Email</Label>
+              <Input
+                id="customerEmail"
+                type="email"
+                value={formData.customerEmail}
+                onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="customerPhone">Phone</Label>
+              <Input
+                id="customerPhone"
+                value={formData.customerPhone}
+                onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="status">Status</Label>

@@ -67,8 +67,8 @@ interface Customer {
   firstName: string
   lastName: string
   company?: string
-  email?: string
-  phone?: string
+  emails?: { email: string; type?: string }[]
+  phones?: { phone: string; type?: string }[]
   address1?: string
   address2?: string
   address3: string
@@ -140,8 +140,8 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
           billingState: selectedCustomer?.billingState || "",
           billingZip: selectedCustomer?.billingZip || "",
           billingCountry: "USA",
-          customerEmail: selectedCustomer?.email || "",
-          customerPhone: selectedCustomer?.phone || "",
+          customerEmail: selectedCustomer?.emails?.[0]?.email || "",
+          customerPhone: selectedCustomer?.phones?.[0]?.phone || "",
           date: new Date().toISOString(),
           total: initialLineItems.reduce((sum, li) => sum + (li.amount || 0), 0),
           subtotal: initialLineItems.reduce((sum, li) => sum + (li.amount || 0), 0),
