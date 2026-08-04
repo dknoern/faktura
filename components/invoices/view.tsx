@@ -1,9 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Invoice, formatCurrency } from "@/lib/invoice-renderer";
 import { InvoiceActionMenu } from "./invoice-action-menu";
+import { PaymentsSection } from "@/components/payments/payments-section";
+import { RecordPaymentDialog } from "@/components/payments/record-payment-dialog";
+import { type PaymentRecord } from "@/lib/actions/payment-actions";
 import { toast } from "react-hot-toast";
 import {
     Table,
@@ -31,8 +34,17 @@ const invoiceTypeLabel = (type: string) => {
     }
 };
 
-export function ViewInvoice({ invoice, avataxEnabled = false }: { invoice: Invoice; avataxEnabled?: boolean }) {
+interface ViewInvoiceProps {
+    invoice: Invoice;
+    avataxEnabled?: boolean;
+    paymentsEnabled?: boolean;
+    initialPayments?: PaymentRecord[];
+}
+
+export function ViewInvoice({ invoice, avataxEnabled = false, paymentsEnabled = false, initialPayments = [] }: ViewInvoiceProps) {
     const fullName = `${invoice.customerFirstName} ${invoice.customerLastName}`.trim();
+    const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
+    const [payments, setPayments] = useState<PaymentRecord[]>(initialPayments);
 
     const handlePdfPrint = useCallback(async () => {
         try {
@@ -98,6 +110,7 @@ export function ViewInvoice({ invoice, avataxEnabled = false }: { invoice: Invoi
     ].filter(Boolean) as string[];
 
     return (
+        <>
         <div className="container mx-auto px-8">
             <div className="bg-white p-8 rounded-lg shadow">
 
@@ -106,7 +119,11 @@ export function ViewInvoice({ invoice, avataxEnabled = false }: { invoice: Invoi
                     <h1 className="text-2xl font-semibold" style={{ color: '#B69D57' }}>
                         {invoiceTypeLabel(invoice.invoiceType).toUpperCase()}
                     </h1>
-                    <InvoiceActionMenu invoice={invoice} />
+                    <InvoiceActionMenu
+                        invoice={invoice}
+                        paymentsEnabled={paymentsEnabled}
+                        onRecordPayment={() => setRecordPaymentOpen(true)}
+                    />
                 </div>
 
                 {/* Header row: customer address left, invoice meta right */}
@@ -199,7 +216,25 @@ export function ViewInvoice({ invoice, avataxEnabled = false }: { invoice: Invoi
 
                 <p className="text-right text-sm text-muted-foreground mt-2">Thank you for your business</p>
 
+                {paymentsEnabled && (
+                    <PaymentsSection
+                        initialPayments={payments}
+                        invoiceTotal={invoice.total}
+                        onOpenRecordPayment={() => setRecordPaymentOpen(true)}
+                    />
+                )}
+
             </div>
         </div>
+
+        {paymentsEnabled && (
+            <RecordPaymentDialog
+                open={recordPaymentOpen}
+                onClose={() => setRecordPaymentOpen(false)}
+                invoiceId={invoice._id.toString()}
+                onSuccess={(payment) => setPayments((prev) => [...prev, payment])}
+            />
+        )}
+        </>
     );
 }

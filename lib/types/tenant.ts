@@ -1,5 +1,20 @@
+export interface TenantFeatures {
+  products?: boolean;
+  customers?: boolean;
+  proposals?: boolean;
+  invoices?: boolean;
+  returns?: boolean;
+  repairs?: boolean;
+  wanted?: boolean;
+  loginitems?: boolean;
+  logoutitems?: boolean;
+  reports?: boolean;
+  payments?: boolean;
+}
+
 export interface Tenant {
   _id: string;
+  features?: TenantFeatures;
   name?: string;
   nameLong?: string;
   email?: string;

@@ -41,12 +41,32 @@ interface Invoice {
     invoiceType: string;
 }
 
+function PaymentBadge({ total, paid }: { total: number; paid: number }) {
+    if (paid <= 0) return null;
+    if (paid >= total) {
+        return (
+            <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                Paid
+            </span>
+        );
+    }
+    return (
+        <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+            Partial
+        </span>
+    );
+}
+
 export function InvoicesTable({
     invoices,
-    pagination
+    pagination,
+    paymentsEnabled = false,
+    paymentTotals = {},
 }: {
     invoices: Invoice[],
-    pagination: PaginationProps
+    pagination: PaginationProps,
+    paymentsEnabled?: boolean,
+    paymentTotals?: Record<string, number>,
 }) {
     const router = useRouter();
     const pathname = usePathname();
@@ -175,6 +195,7 @@ export function InvoicesTable({
                         <TableHead style={{ whiteSpace: 'nowrap' }}>Tracking #</TableHead>
                         <TableHead style={{ textAlign: 'right' }}>Total</TableHead>
                         <TableHead>Type</TableHead>
+                        {paymentsEnabled && <TableHead>Paid</TableHead>}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -226,8 +247,8 @@ export function InvoicesTable({
                                 <TableCell style={{ textAlign: 'right' }}>{(invoice.total ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                                 <TableCell>
                                     <span className={`px-2 py-1 rounded-full text-xs ${
-                                        invoice.invoiceType === 'Memo' 
-                                            ? 'bg-yellow-100 text-yellow-800' 
+                                        invoice.invoiceType === 'Memo'
+                                            ? 'bg-yellow-100 text-yellow-800'
                                             : invoice.invoiceType === 'Partner'
                                             ? 'bg-blue-100 text-blue-800'
                                             : invoice.invoiceType === 'Consignment'
@@ -237,6 +258,14 @@ export function InvoicesTable({
                                         {invoice.invoiceType}
                                     </span>
                                 </TableCell>
+                                {paymentsEnabled && (
+                                    <TableCell>
+                                        <PaymentBadge
+                                            total={invoice.total ?? 0}
+                                            paid={paymentTotals[invoice._id] ?? 0}
+                                        />
+                                    </TableCell>
+                                )}
                                 </TableRow>
                         )
                     }

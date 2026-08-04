@@ -8,7 +8,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit, ChevronDown, Printer, Mail, RotateCcw, Download } from "lucide-react";
+import { Edit, ChevronDown, Printer, Mail, RotateCcw, Download, CreditCard } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Invoice } from "@/lib/invoice-renderer";
@@ -16,9 +16,11 @@ import { EmailDialog } from "./email-dialog";
 
 interface InvoiceActionMenuProps {
     invoice: Invoice;
+    paymentsEnabled?: boolean;
+    onRecordPayment?: () => void;
 }
 
-export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
+export function InvoiceActionMenu({ invoice, paymentsEnabled = false, onRecordPayment }: InvoiceActionMenuProps) {
     const router = useRouter();
     const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
@@ -106,6 +108,13 @@ export function InvoiceActionMenu({ invoice }: InvoiceActionMenuProps) {
                     <RotateCcw className="mr-2 h-4 w-4" />
                     Create Return
                 </DropdownMenuItem>
+
+                {paymentsEnabled && (
+                    <DropdownMenuItem onClick={onRecordPayment}>
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Record Payment
+                    </DropdownMenuItem>
+                )}
 
             </DropdownMenuContent>
         </DropdownMenu>

@@ -6,6 +6,7 @@ import { StripeSettingsSection } from "@/components/stripe/stripe-settings-secti
 import { AvataxSettingsSection } from "@/components/avatax/avatax-settings-section";
 import { TenantLogoSection } from "@/components/tenant/tenant-logo-section";
 import { RequiredDataSettingsSection } from "@/components/tenant/required-data-settings-section";
+import { FeaturesSettingsSection } from "@/components/tenant/features-settings-section";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function ProfilePage() {
@@ -61,6 +62,8 @@ export default async function ProfilePage() {
           <AvataxSettingsSection />
           <Separator />
           <RequiredDataSettingsSection />
+          <Separator />
+          <FeaturesSettingsSection />
           <Separator />
           <ApiKeysSection />
         </>
