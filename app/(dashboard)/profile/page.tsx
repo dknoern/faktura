@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { getTenantId } from "@/lib/auth-utils";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ApiKeysSection } from "@/components/api-keys/api-keys-section";
@@ -12,6 +13,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export default async function ProfilePage() {
   const session = await auth();
   const user = session?.user as any;
+  const tenantId = await getTenantId();
 
   const displayName = user?.fullName || user?.name || user?.email || "User";
   const tenantName = user?.tenantName;
@@ -57,7 +59,7 @@ export default async function ProfilePage() {
           <Separator />
           <TenantLogoSection />
           <Separator />
-          <StripeSettingsSection />
+          <StripeSettingsSection tenantId={tenantId} />
           <Separator />
           <AvataxSettingsSection />
           <Separator />

@@ -13,7 +13,11 @@ import {
   type StripeSettingsView,
 } from "@/lib/actions/tenant-stripe-actions";
 
-export function StripeSettingsSection() {
+interface StripeSettingsSectionProps {
+  tenantId: string;
+}
+
+export function StripeSettingsSection({ tenantId }: StripeSettingsSectionProps) {
   const [settings, setSettings] = useState<StripeSettingsView | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -22,12 +26,14 @@ export function StripeSettingsSection() {
   const [enabled, setEnabled] = useState(false);
   const [secretKey, setSecretKey] = useState("");
   const [publishableKey, setPublishableKey] = useState("");
+  const [webhookSecret, setWebhookSecret] = useState("");
 
   const applySettings = useCallback((s: StripeSettingsView) => {
     setSettings(s);
     setEnabled(s.enabled);
     setPublishableKey(s.publishableKey || "");
     setSecretKey("");
+    setWebhookSecret("");
   }, []);
 
   const load = useCallback(async () => {
@@ -53,6 +59,7 @@ export function StripeSettingsSection() {
         enabled,
         secretKey: secretKey.trim() || undefined,
         publishableKey: publishableKey.trim() || undefined,
+        webhookSecret: webhookSecret.trim() || undefined,
       });
       if (!result.success) {
         toast.error(result.error || "Failed to save");
@@ -83,9 +90,18 @@ export function StripeSettingsSection() {
     }
   }
 
-  const placeholder = settings?.hasSecretKey
+  const secretPlaceholder = settings?.hasSecretKey
     ? `sk_••••${settings.secretKeyLast4 || "????"}`
     : "sk_live_… or sk_test_…";
+
+  const webhookPlaceholder = settings?.hasWebhookSecret
+    ? `whsec_••••${settings.webhookSecretLast4 || "????"}`
+    : "whsec_…";
+
+  const webhookUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/api/webhooks/stripe/${tenantId}`
+      : `/api/webhooks/stripe/${tenantId}`;
 
   return (
     <div className="space-y-4">
@@ -117,7 +133,7 @@ export function StripeSettingsSection() {
               id="stripe-secret"
               type="password"
               autoComplete="off"
-              placeholder={placeholder}
+              placeholder={secretPlaceholder}
               value={secretKey}
               onChange={(e) => setSecretKey(e.target.value)}
             />
@@ -137,6 +153,30 @@ export function StripeSettingsSection() {
               value={publishableKey}
               onChange={(e) => setPublishableKey(e.target.value)}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="stripe-webhook-secret">Webhook signing secret</Label>
+            <Input
+              id="stripe-webhook-secret"
+              type="password"
+              autoComplete="off"
+              placeholder={webhookPlaceholder}
+              value={webhookSecret}
+              onChange={(e) => setWebhookSecret(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              {settings?.hasWebhookSecret
+                ? "A webhook secret is stored. Leave blank to keep it, or paste a new value to replace it."
+                : "Paste the signing secret from your Stripe webhook endpoint."}
+            </p>
+            <div className="rounded-md bg-muted px-3 py-2 text-xs font-mono break-all select-all">
+              {webhookUrl}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Register the URL above as a webhook endpoint in your Stripe dashboard (listen for{" "}
+              <code className="font-mono">checkout.session.completed</code>), then paste the signing secret here.
+            </p>
           </div>
 
           <div className="flex gap-2">

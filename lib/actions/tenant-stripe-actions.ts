@@ -12,6 +12,8 @@ export interface StripeSettingsView {
   secretKeyLast4: string | null;
   publishableKey: string | null;
   hasSecretKey: boolean;
+  hasWebhookSecret: boolean;
+  webhookSecretLast4: string | null;
   updatedAt: string | null;
 }
 
@@ -41,6 +43,8 @@ export async function getTenantStripeSettings(): Promise<StripeSettingsView> {
       'stripe.publishableKey': 1,
       'stripe.updatedAt': 1,
       'stripe.secretKeyCiphertext': 1,
+      'stripe.webhookSecretLast4': 1,
+      'stripe.webhookSecretCiphertext': 1,
     })
     .lean();
 
@@ -51,6 +55,8 @@ export async function getTenantStripeSettings(): Promise<StripeSettingsView> {
       secretKeyLast4: null,
       publishableKey: null,
       hasSecretKey: false,
+      hasWebhookSecret: false,
+      webhookSecretLast4: null,
       updatedAt: null,
     };
   }
@@ -60,6 +66,8 @@ export async function getTenantStripeSettings(): Promise<StripeSettingsView> {
     secretKeyLast4: stripe.secretKeyLast4 || null,
     publishableKey: stripe.publishableKey || null,
     hasSecretKey: !!stripe.secretKeyCiphertext,
+    hasWebhookSecret: !!stripe.webhookSecretCiphertext,
+    webhookSecretLast4: stripe.webhookSecretLast4 || null,
     updatedAt: stripe.updatedAt ? new Date(stripe.updatedAt).toISOString() : null,
   };
 }
@@ -68,6 +76,7 @@ export interface UpdateStripeInput {
   enabled: boolean;
   secretKey?: string;
   publishableKey?: string;
+  webhookSecret?: string;
 }
 
 export interface UpdateStripeResult {
@@ -134,6 +143,18 @@ export async function updateTenantStripeConfig(input: UpdateStripeInput): Promis
       }
     }
 
+    const trimmedWebhookSecret = (input.webhookSecret || '').trim();
+    if (trimmedWebhookSecret) {
+      if (!trimmedWebhookSecret.startsWith('whsec_')) {
+        return { success: false, error: 'Invalid webhook secret. Must start with whsec_' };
+      }
+      const encryptedWh = encryptSecret(trimmedWebhookSecret);
+      update['stripe.webhookSecretCiphertext'] = encryptedWh.ciphertext;
+      update['stripe.webhookSecretIv'] = encryptedWh.iv;
+      update['stripe.webhookSecretTag'] = encryptedWh.tag;
+      update['stripe.webhookSecretLast4'] = encryptedWh.last4;
+    }
+
     await Tenant.updateOne({ _id: tenantObjectId }, { $set: update });
 
     const settings = await getTenantStripeSettings();
@@ -166,6 +187,10 @@ export async function removeTenantStripeCredentials(): Promise<UpdateStripeResul
           'stripe.secretKeyIv': '',
           'stripe.secretKeyTag': '',
           'stripe.secretKeyLast4': '',
+          'stripe.webhookSecretCiphertext': '',
+          'stripe.webhookSecretIv': '',
+          'stripe.webhookSecretTag': '',
+          'stripe.webhookSecretLast4': '',
         },
       }
     );

@@ -22,6 +22,44 @@ interface ClientCacheEntry {
 // SDK if multiple call sites resolve the same tenant.
 const cache = new Map<string, ClientCacheEntry>();
 
+export async function getWebhookSecretForTenant(
+  tenantId: string
+): Promise<string | null> {
+  await dbConnect();
+
+  const tenant = await Tenant.findById(tenantId)
+    .select({
+      "stripe.webhookSecretCiphertext": 1,
+      "stripe.webhookSecretIv": 1,
+      "stripe.webhookSecretTag": 1,
+    })
+    .lean();
+
+  const stripe = (tenant as any)?.stripe;
+  if (
+    !stripe?.webhookSecretCiphertext ||
+    !stripe?.webhookSecretIv ||
+    !stripe?.webhookSecretTag
+  ) {
+    return null;
+  }
+
+  try {
+    return decryptSecret({
+      ciphertext: stripe.webhookSecretCiphertext,
+      iv: stripe.webhookSecretIv,
+      tag: stripe.webhookSecretTag,
+    });
+  } catch (err) {
+    console.error(
+      `[stripe] Failed to decrypt webhook secret for tenant ${tenantId}: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    );
+    return null;
+  }
+}
+
 export async function loadTenantStripeConfig(
   tenantId: string
 ): Promise<TenantStripeConfig | null> {

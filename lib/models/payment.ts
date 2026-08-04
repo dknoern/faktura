@@ -12,6 +12,7 @@ const PaymentSchema = new mongoose.Schema(
       enum: ["cash", "check", "credit_card", "ach"],
     },
     notes: { type: String },
+    stripeSessionId: { type: String, sparse: true, index: true },
   },
   { timestamps: true }
 );

@@ -46,6 +46,10 @@ const TenantSchema = new mongoose.Schema({
         secretKeyTag: { type: String, select: false },
         secretKeyLast4: String,
         publishableKey: String,
+        webhookSecretCiphertext: { type: String, select: false },
+        webhookSecretIv: { type: String, select: false },
+        webhookSecretTag: { type: String, select: false },
+        webhookSecretLast4: String,
         updatedAt: Date
     },
     avatax: {
