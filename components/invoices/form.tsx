@@ -9,6 +9,14 @@ import { useRouter } from "next/navigation"
 import { LineItems, LineItem } from "./line-items"
 import { upsertInvoice } from "@/lib/actions/invoice-actions"
 import { toast } from "react-hot-toast"
+import type { TenantRequiredData } from "@/lib/tenant-required-data"
+
+const DEFAULT_REQUIRED_DATA: TenantRequiredData = {
+  customerPhone: true,
+  customerEmail: true,
+  customerAddress: true,
+  salesPerson: true,
+}
 
 const formatDateTime = (input: string) => {
   const dateObj = new Date(input);
@@ -94,7 +102,7 @@ interface Product {
   longDesc?: string
 }
 
-export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, proposalLineItems, salesPerson, avataxEnabled = false }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, proposalLineItems?: { name: string; longDesc?: string; amount: number }[], salesPerson?: string, avataxEnabled?: boolean }) {
+export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, proposalLineItems, salesPerson, avataxEnabled = false, requiredData = DEFAULT_REQUIRED_DATA }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, proposalLineItems?: { name: string; longDesc?: string; amount: number }[], salesPerson?: string, avataxEnabled?: boolean, requiredData?: TenantRequiredData }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const submissionRef = useRef(false)
@@ -180,8 +188,16 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
   // Require that all line items have a description and amount, invoice type and sales person are selected before allowing save
   const allItemsValid = formData.lineItems.length > 0 && formData.lineItems.every(item => item.name.trim() !== "");
   const invoiceTypeValid = formData.invoiceType && formData.invoiceType.trim() !== "";
-  const salesPersonValid = formData.salesPerson && formData.salesPerson.trim() !== "";
-  const canSubmit = allItemsValid && invoiceTypeValid && salesPersonValid;
+  const salesPersonValid = !requiredData.salesPerson || (formData.salesPerson && formData.salesPerson.trim() !== "");
+  const customerPhoneValid = !requiredData.customerPhone || (formData.customerPhone && formData.customerPhone.trim() !== "");
+  const customerEmailValid = !requiredData.customerEmail || (formData.customerEmail && formData.customerEmail.trim() !== "");
+  const customerAddressValid = !requiredData.customerAddress || (
+    formData.shipAddress1?.trim() &&
+    formData.shipCity?.trim() &&
+    formData.shipState?.trim() &&
+    formData.shipZip?.trim()
+  );
+  const canSubmit = allItemsValid && invoiceTypeValid && salesPersonValid && customerPhoneValid && customerEmailValid && customerAddressValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -199,12 +215,27 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
       alert("Please select an invoice type before saving.");
       return;
     }
-    
+
     if (!salesPersonValid) {
       alert("Please enter a sales person before saving.");
       return;
     }
-    
+
+    if (!customerPhoneValid) {
+      alert("A customer phone number is required.");
+      return;
+    }
+
+    if (!customerEmailValid) {
+      alert("A customer email address is required.");
+      return;
+    }
+
+    if (!customerAddressValid) {
+      alert("Shipping address (address line 1, city, state, and ZIP) is required.");
+      return;
+    }
+
     if (!allItemsValid) {
       alert("Please ensure every item has a description and amount.");
       return;
@@ -308,15 +339,15 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
           </div>
           
           <div className="grid grid-cols-[120px_1fr] items-center">
-            <label className="text-sm font-medium">Phone</label>
+            <label className="text-sm font-medium">Phone{requiredData.customerPhone && <span className="text-red-500"> *</span>}</label>
             <Input
               value={formData.customerPhone || ""}
               onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
             />
           </div>
-          
+
           <div className="grid grid-cols-[120px_1fr] items-center">
-            <label className="text-sm font-medium">Email</label>
+            <label className="text-sm font-medium">Email{requiredData.customerEmail && <span className="text-red-500"> *</span>}</label>
             <Input
               type="email"
               value={formData.customerEmail || ""}
@@ -333,11 +364,11 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
           </div>
           
           <div>
-            <h3 className="font-medium mb-2">Shipping Address  <span className="text-red-500">*</span></h3>
+            <h3 className="font-medium mb-2">Shipping Address{requiredData.customerAddress && <span className="text-red-500"> *</span>}</h3>
             <div className="space-y-2">
               <Input
                 placeholder="Address Line 1"
-                required
+                required={requiredData.customerAddress}
                 value={formData.shipAddress1 || ""}
                 onChange={(e) => setFormData({ ...formData, shipAddress1: e.target.value })}
               />
@@ -354,13 +385,13 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   placeholder="City"
-                  required
+                  required={requiredData.customerAddress}
                   value={formData.shipCity || ""}
                   onChange={(e) => setFormData({ ...formData, shipCity: e.target.value })}
                 />
                 <Input
                   placeholder="State"
-                  required
+                  required={requiredData.customerAddress}
                   value={formData.shipState || ""}
                   onChange={(e) => setFormData({ ...formData, shipState: e.target.value })}
                 />
@@ -368,7 +399,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   placeholder="ZIP"
-                  required
+                  required={requiredData.customerAddress}
                   value={formData.shipZip || ""}
                   onChange={(e) => setFormData({ ...formData, shipZip: e.target.value })}
                 />
@@ -412,11 +443,10 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
         {/* Right Column */}
         <div className="space-y-4">
           <div className="grid grid-cols-[120px_1fr] items-center">
-            <label className="text-sm font-medium">Sales Person <span className="text-red-500">*</span></label>
+            <label className="text-sm font-medium">Sales Person{requiredData.salesPerson && <span className="text-red-500"> *</span>}</label>
             <Input
               value={formData.salesPerson}
               onChange={(e) => setFormData({ ...formData, salesPerson: e.target.value })}
-              required
             />
           </div>
           

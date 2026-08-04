@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -35,10 +35,17 @@ interface EmailDialogProps {
   isOpen: boolean
   onClose: () => void
   proposal: Proposal
+  defaultEmail?: string
 }
 
-export function EmailDialog({ isOpen, onClose, proposal }: EmailDialogProps) {
-  const [emails, setEmails] = useState("")
+export function EmailDialog({ isOpen, onClose, proposal, defaultEmail }: EmailDialogProps) {
+  const [emails, setEmails] = useState(defaultEmail ?? "")
+
+  useEffect(() => {
+    if (isOpen && defaultEmail) {
+      setEmails(defaultEmail)
+    }
+  }, [isOpen, defaultEmail])
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
 

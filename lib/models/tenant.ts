@@ -32,6 +32,12 @@ const TenantSchema = new mongoose.Schema({
         logoutitems: { type: Boolean, default: false },
         reports: { type: Boolean, default: false }
     },
+    requiredData: {
+        customerPhone: { type: Boolean, default: true },
+        customerEmail: { type: Boolean, default: true },
+        customerAddress: { type: Boolean, default: true },
+        salesPerson: { type: Boolean, default: true },
+    },
     stripe: {
         enabled: { type: Boolean, default: false },
         secretKeyCiphertext: { type: String, select: false },

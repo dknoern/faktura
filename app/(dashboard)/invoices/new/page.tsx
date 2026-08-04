@@ -3,6 +3,7 @@ import { fetchCustomerById, fetchProductById, fetchProposalById } from "@/lib/da
 import { redirect } from "next/navigation";
 import { getFullName, getTenantId } from "@/lib/auth-utils";
 import { loadTenantAvataxConfig } from "@/lib/avatax/config";
+import { loadTenantRequiredData } from "@/lib/tenant-required-data";
 
 type SearchParams = Promise<{ customerId?: string, productId?: string, proposalId?: string }>
 
@@ -36,7 +37,10 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: S
     const customerData = await fetchCustomerById(customerId);
     const fullName = await getFullName()
     const tenantId = await getTenantId();
-    const avataxConfig = await loadTenantAvataxConfig(tenantId);
+    const [avataxConfig, requiredData] = await Promise.all([
+        loadTenantAvataxConfig(tenantId),
+        loadTenantRequiredData(tenantId),
+    ]);
     const avataxEnabled = !!avataxConfig?.enabled;
 
     // If customer not found, redirect back to invoices page
@@ -66,6 +70,7 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: S
                 proposalLineItems={proposalLineItems}
                 salesPerson={fullName}
                 avataxEnabled={avataxEnabled}
+                requiredData={requiredData}
             />
         </div>
     );

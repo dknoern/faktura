@@ -29,4 +29,10 @@ export interface Tenant {
     companyCode?: string;
     updatedAt?: string | Date;
   };
+  requiredData?: {
+    customerPhone?: boolean;
+    customerEmail?: boolean;
+    customerAddress?: boolean;
+    salesPerson?: boolean;
+  };
 }

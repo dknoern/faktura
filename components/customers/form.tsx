@@ -27,6 +27,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createCustomer, updateCustomer } from "@/lib/actions/customer-actions";
+import type { TenantRequiredData } from "@/lib/tenant-required-data";
+
+const DEFAULT_REQUIRED_DATA: TenantRequiredData = {
+  customerPhone: true,
+  customerEmail: true,
+  customerAddress: true,
+  salesPerson: true,
+};
 
 const customerFormSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -55,11 +63,21 @@ const customerFormSchema = z.object({
 
 type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
-export function CustomerForm({ customer }: { customer?: z.infer<typeof customerSchema> }) {
+export function CustomerForm({ customer, requiredData = DEFAULT_REQUIRED_DATA }: { customer?: z.infer<typeof customerSchema>; requiredData?: TenantRequiredData }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+    document.body.style.removeProperty('pointer-events');
+    document.documentElement.style.removeProperty('overflow');
+    document.documentElement.style.removeProperty('pointer-events');
+    document.body.style.overflow = 'auto';
+    document.body.style.pointerEvents = 'auto';
+  }, []);
 
   // Initialize email fields from customer data
   const getInitialEmailFields = () => {
@@ -128,6 +146,17 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
       const allEmails = emailFields.filter(item => item.email && item.email.trim() !== '');
       // Combine phone fields with types into phones array
       const allPhones = phoneFields.filter(item => item.phone && item.phone.trim() !== '');
+
+      if (requiredData.customerPhone && allPhones.length === 0) {
+        setError("At least one phone number is required.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (requiredData.customerEmail && allEmails.length === 0) {
+        setError("At least one email address is required.");
+        setIsSubmitting(false);
+        return;
+      }
       const submitData = {
         ...data,
         emails: allEmails.length > 0 ? allEmails : [],
@@ -261,7 +290,7 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
           />
 
           <div>
-            <FormLabel>Email(s)</FormLabel>
+            <FormLabel>Email(s){requiredData.customerEmail && <span className="text-red-500"> *</span>}</FormLabel>
             <div className="space-y-2">
               {emailFields.map((emailItem, index) => (
                 <div key={index} className="flex gap-2">
@@ -332,7 +361,7 @@ export function CustomerForm({ customer }: { customer?: z.infer<typeof customerS
           </div>
 
           <div>
-            <FormLabel>Phone Number(s)</FormLabel>
+            <FormLabel>Phone Number(s){requiredData.customerPhone && <span className="text-red-500"> *</span>}</FormLabel>
             <div className="space-y-2">
               {phoneFields.map((phoneItem, index) => (
                 <div key={index} className="flex gap-2">

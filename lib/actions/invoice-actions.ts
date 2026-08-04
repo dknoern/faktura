@@ -11,6 +11,7 @@ import { productModel } from "@/lib/models/product";
 import { getNextCounter, getTenantObjectId } from "@/lib/tenant-utils";
 import { getTenantId } from "@/lib/auth-utils";
 import { ensureInvoicePaymentLink } from "@/lib/stripe/payment-links";
+import { loadTenantRequiredData } from "@/lib/tenant-required-data";
 
 export interface LineItem {
   productId?: string;
@@ -66,10 +67,26 @@ export interface InvoiceData {
 export async function upsertInvoice(data: InvoiceData, id?: string) {
   try {
     await dbConnect();
-    
+
+    const tenantIdForValidation = await getTenantId();
+    const requiredData = await loadTenantRequiredData(tenantIdForValidation);
+
+    if (requiredData.salesPerson && !data.salesPerson?.trim()) {
+      return { success: false, error: "Sales person is required." };
+    }
+    if (requiredData.customerPhone && !data.customerPhone?.trim()) {
+      return { success: false, error: "Customer phone is required." };
+    }
+    if (requiredData.customerEmail && !data.customerEmail?.trim()) {
+      return { success: false, error: "Customer email is required." };
+    }
+    if (requiredData.customerAddress && (!data.shipAddress1?.trim() || !data.shipCity?.trim() || !data.shipState?.trim() || !data.shipZip?.trim())) {
+      return { success: false, error: "Shipping address (address line 1, city, state, and ZIP) is required." };
+    }
+
     let invoiceNumber: number;
     let invoiceData: any;
-    
+
     // Check if we're updating an existing invoice or creating a new one
     const isUpdate = id !== undefined;
 

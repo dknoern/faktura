@@ -11,6 +11,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { customerSchema } from "@/lib/models/customer";
 import { getNextCounter, getTenantObjectId } from "@/lib/tenant-utils";
+import { getTenantId } from "@/lib/auth-utils";
+import { loadTenantRequiredData } from "@/lib/tenant-required-data";
 
 type CustomerData = z.infer<typeof customerSchema>;
 type CustomerFormData = Omit<CustomerData, '_id' | 'lastUpdated' | 'search'>;
@@ -47,6 +49,19 @@ export async function createCustomer(data: CustomerFormData): Promise<ActionResu
 
   try {
     await dbConnect();
+
+    const tenantId = await getTenantId();
+    const requiredData = await loadTenantRequiredData(tenantId);
+
+    const phones = data.phones?.filter((p: any) => p.phone?.trim()) ?? [];
+    const emails = data.emails?.filter((e: any) => e.email?.trim()) ?? [];
+
+    if (requiredData.customerPhone && phones.length === 0) {
+      return { success: false, error: "At least one phone number is required." };
+    }
+    if (requiredData.customerEmail && emails.length === 0) {
+      return { success: false, error: "At least one email address is required." };
+    }
 
     const newCustomerNumber = await getNextCounter('customerNumber');
     const tenantObjectId = await getTenantObjectId();
@@ -104,6 +119,19 @@ export async function updateCustomer(id: string, data: CustomerFormData): Promis
 
   try {
     await dbConnect();
+
+    const tenantId = await getTenantId();
+    const requiredData = await loadTenantRequiredData(tenantId);
+
+    const phones = data.phones?.filter((p: any) => p.phone?.trim()) ?? [];
+    const emails = data.emails?.filter((e: any) => e.email?.trim()) ?? [];
+
+    if (requiredData.customerPhone && phones.length === 0) {
+      return { success: false, error: "At least one phone number is required." };
+    }
+    if (requiredData.customerEmail && emails.length === 0) {
+      return { success: false, error: "At least one email address is required." };
+    }
 
     const emailsString = data.emails
       ? data.emails.map((item: any) => typeof item === 'string' ? item : item.email).join(' ')

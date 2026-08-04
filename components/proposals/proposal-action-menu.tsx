@@ -161,6 +161,7 @@ export function ProposalActionMenu({ proposal, customerEmail }: ProposalActionMe
         isOpen={isEmailDialogOpen}
         onClose={() => setIsEmailDialogOpen(false)}
         proposal={proposal}
+        defaultEmail={customerEmail}
       />
 
       <EsignRequestDialog
