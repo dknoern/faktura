@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: node24
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
