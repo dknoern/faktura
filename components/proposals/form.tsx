@@ -42,15 +42,16 @@ interface ProposalFormProps {
 export function ProposalForm({ customer, proposal }: ProposalFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  
+
   const [formData, setFormData] = useState({
     customerId: customer._id,
     customerNumber: customer.customerNumber,
-    customerFirstName: customer.firstName,
-    customerLastName: customer.lastName,
+    customerFirstName: proposal?.customerFirstName ?? customer.firstName,
+    customerLastName: proposal?.customerLastName ?? customer.lastName,
     customerEmail: proposal?.customerEmail ?? customer.email ?? '',
     customerPhone: proposal?.customerPhone ?? customer.phone ?? '',
-    date: proposal?.date || new Date().toISOString().split('T')[0],
+    // Saved dates come back as full ISO strings; the date input needs yyyy-MM-dd
+    date: proposal?.date?.split('T')[0] || new Date().toISOString().split('T')[0],
     status: proposal?.status || 'Draft',
     conditions: proposal?.conditions || ''
   })
@@ -103,14 +104,23 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
           <CardTitle>{proposal ? "Edit Proposal" : "New Proposal"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="customerName">Customer</Label>
+              <Label htmlFor="customerFirstName">First Name</Label>
               <Input
-                id="customerName"
-                value={`${customer.firstName} ${customer.lastName}`}
-                disabled
-                className="bg-gray-100"
+                id="customerFirstName"
+                value={formData.customerFirstName}
+                onChange={(e) => setFormData({ ...formData, customerFirstName: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="customerLastName">Last Name</Label>
+              <Input
+                id="customerLastName"
+                value={formData.customerLastName}
+                onChange={(e) => setFormData({ ...formData, customerLastName: e.target.value })}
+                required
               />
             </div>
             <div>
