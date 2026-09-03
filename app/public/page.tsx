@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { signIn } from "@/auth"
 
@@ -52,16 +53,23 @@ export default async function PublicPage() {
       <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-16">
           <span className="text-xl font-bold tracking-tight text-indigo-600">Fakturian</span>
-          <form
-            action={async () => {
-              "use server"
-              await signIn('auth0', { redirectTo: "/home" })
-            }}
-          >
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-5 h-9 text-sm font-semibold">
-              Sign In
-            </Button>
-          </form>
+          <div className="flex items-center gap-3">
+            <Link href="/signup">
+              <Button variant="ghost" className="text-indigo-600 hover:text-indigo-700 rounded-full px-5 h-9 text-sm font-semibold">
+                Sign Up
+              </Button>
+            </Link>
+            <form
+              action={async () => {
+                "use server"
+                await signIn('auth0', { redirectTo: "/home" })
+              }}
+            >
+              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-5 h-9 text-sm font-semibold">
+                Sign In
+              </Button>
+            </form>
+          </div>
         </div>
       </header>
 
@@ -83,16 +91,11 @@ export default async function PublicPage() {
           <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
             Fakturian gives retail businesses everything they need to manage inventory, issue invoices, create bids, and track items — all in one clean, fast platform.
           </p>
-          <form
-            action={async () => {
-              "use server"
-              await signIn('auth0', { redirectTo: "/home" })
-            }}
-          >
+          <Link href="/signup">
             <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-8 py-3 text-base font-semibold h-auto shadow-lg shadow-indigo-200">
               Get Started →
             </Button>
-          </form>
+          </Link>
         </div>
       </section>
 

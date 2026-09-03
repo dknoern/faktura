@@ -26,7 +26,7 @@ export const SEED = {
   proposalDate: '2026-03-14',
 }
 
-const uri = loadEnv().MONGODB_URI
+const uri = process.env.MONGODB_URI || loadEnv().MONGODB_URI
 const c = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 })
 await c.connect()
 const db = c.db()

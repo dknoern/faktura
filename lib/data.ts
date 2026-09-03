@@ -465,12 +465,37 @@ export async function fetchOuts(page = 1, limit = 10, search = '') {
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
-            
-            // Create a regex condition for each token
-            const searchConditions = searchTokens.map(token => (
-                { search: { $regex: token, $options: 'i' } }
-            ));
-            
+
+            // Each token must match at least one of the displayed fields
+            // (date, sent to, description, by, comments)
+            const searchConditions = searchTokens.map(token => {
+                const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                return {
+                    $or: [
+                        { sentTo: { $regex: escaped, $options: 'i' } },
+                        { description: { $regex: escaped, $options: 'i' } },
+                        { user: { $regex: escaped, $options: 'i' } },
+                        { comments: { $regex: escaped, $options: 'i' } },
+                        {
+                            // Match against the date as displayed in the table (MM/DD/YYYY)
+                            $expr: {
+                                $regexMatch: {
+                                    input: {
+                                        $dateToString: {
+                                            format: '%m/%d/%Y',
+                                            date: '$date',
+                                            onNull: ''
+                                        }
+                                    },
+                                    regex: escaped,
+                                    options: 'i'
+                                }
+                            }
+                        }
+                    ]
+                };
+            });
+
             // Combine status filter with search conditions
             query = {
                 $and: [

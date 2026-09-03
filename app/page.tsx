@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { signIn } from "@/auth"
 
@@ -13,16 +14,24 @@ export default async function Page() {
         style={{ backgroundImage: 'url(/rolex-blackbook.png)' }}
       />
       
-      {/* Sign In Button - Upper Right */}
-      <div className="absolute top-6 right-6 z-10">
+      {/* Sign In / Sign Up Buttons - Upper Right */}
+      <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+        <Link href="/signup">
+          <Button
+            variant="outline"
+            className="bg-transparent border-white/50 text-white font-bold hover:bg-white/10 backdrop-blur-sm"
+          >
+            Sign Up
+          </Button>
+        </Link>
         <form
           action={async () => {
             "use server"
-            await signIn('auth0', { redirectTo: "/home" }) 
+            await signIn('auth0', { redirectTo: "/home" })
           }}
         >
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="bg-transparent border-white/50 text-white font-bold hover:bg-white/10 backdrop-blur-sm"
           >
             Sign In

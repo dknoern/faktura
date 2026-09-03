@@ -7,7 +7,7 @@ export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
 }
 
-const PUBLIC_TENANT_PATTERNS = ['faktur', 'popdesign']
+const PUBLIC_TENANT_PATTERNS = ['faktur', 'popdesign','localhost']
 
 function isPublicTenant(req: NextRequest): boolean {
   const hostname = req.headers.get('host') || req.nextUrl.hostname
@@ -37,7 +37,15 @@ export default auth((req: NextRequest & { auth: any }) => {
   if (session?.user && pathname === '/') {
     return NextResponse.redirect(new URL('/home', req.url))
   }
-  
+
+  // Block unverified users from the dashboard until they confirm their email
+  const isExemptFromVerification = pathname.startsWith('/verify-email') ||
+                                    pathname.startsWith('/signup') ||
+                                    pathname.startsWith('/auth')
+  if (session?.user && (session.user as any).emailVerified === false && !isExemptFromVerification) {
+    return NextResponse.redirect(new URL('/verify-email', req.url))
+  }
+
   // Check payload size for server actions before processing
   const contentLength = req.headers.get('content-length')
   if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {

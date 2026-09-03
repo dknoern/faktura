@@ -3,6 +3,29 @@ import "next-auth/jwt"
 
 import Auth0 from "next-auth/providers/auth0"
 
+// Routes reachable without a session. Everything else defaults to protected,
+// so new routes are locked down unless explicitly opened up here.
+const PUBLIC_ROUTES = [
+  '/',              // marketing / login landing page
+  '/public',        // public tenant landing page
+  '/auth',          // NextAuth sign-in/callback pages (basePath: /auth)
+  '/signup',        // account signup flow
+  '/verify-email',  // email verification flow
+  '/esign',         // customer-facing e-sign pages
+  '/api/esign',     // e-sign API used by the pages above
+  '/api/webhooks',  // signature-verified webhooks (e.g. Stripe)
+  '/api/trello',    // signature-verified Trello webhook
+  '/api/v1',        // versioned API, authenticated via per-tenant API keys instead of session
+  '/api/images',    // serves image bytes referenced by outbound emails/esign pages
+  '/icon',          // app icon
+]
+
+function isPublicPath(pathname: string) {
+  return PUBLIC_ROUTES.some((route) =>
+    route === '/' ? pathname === '/' : pathname === route || pathname.startsWith(`${route}/`)
+  )
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: !!process.env.AUTH_DEBUG,
   theme: { logo: "https://authjs.dev/img/logo-sm.png" },
@@ -20,30 +43,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     authorized({ auth, request: { nextUrl } }) {
 
       const isLoggedIn = !!auth?.user;
-      // Allow public esign routes without auth
-      if (nextUrl.pathname.startsWith('/esign') || nextUrl.pathname.startsWith('/api/esign')) {
+
+      if (isPublicPath(nextUrl.pathname)) {
+        if (isLoggedIn && nextUrl.pathname === '/') {
+          return Response.redirect(new URL('/home', nextUrl));
+        }
         return true;
       }
 
-      const isOnProtectedRoute = nextUrl.pathname.startsWith('/products') || 
-                                 nextUrl.pathname.startsWith('/customers') ||
-                                 nextUrl.pathname.startsWith('/invoices') ||
-                                 nextUrl.pathname.startsWith('/returns') ||
-                                 nextUrl.pathname.startsWith('/repairs') ||
-                                 nextUrl.pathname.startsWith('/loginitems') ||
-                                 nextUrl.pathname.startsWith('/logoutitems') ||
-                                 nextUrl.pathname.startsWith('/reports') ||
-                                 nextUrl.pathname.startsWith('/profile') ||
-                                 nextUrl.pathname.startsWith('/proposals')||
-                                 nextUrl.pathname.startsWith('/wanted')
-      if (isOnProtectedRoute) {
-        if (isLoggedIn) return true;
-        return Response.redirect(new URL('/', nextUrl));
-      } else if (isLoggedIn && nextUrl.pathname === '/') {
-        return Response.redirect(new URL('/home', nextUrl));
-      }
-      return true;
-
+      if (isLoggedIn) return true;
+      return Response.redirect(new URL('/', nextUrl));
     },
     jwt({ token, trigger, session, account, profile }) {
       if (trigger === "update") token.name = session.user.name
@@ -77,8 +86,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (role && typeof role === 'string') {
           token.role = role
         }
+
+        // Standard OIDC claim, unnamespaced
+        if (typeof profileAny.email_verified === 'boolean') {
+          token.emailVerified = profileAny.email_verified
+        }
       }
-      
+
       return token
     },
     async session({ session, token }) {
@@ -127,6 +141,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
 
+      // Pass emailVerified to the session
+      if (typeof token?.emailVerified === 'boolean') {
+        if (session.user) {
+          (session.user as any).emailVerified = token.emailVerified
+        }
+      }
+
       return session
     },
   },
@@ -145,6 +166,7 @@ declare module "next-auth" {
     tenantName?: string
     fullName?: string
     role?: string
+    emailVerified?: boolean
   }
 }
 
@@ -155,5 +177,6 @@ declare module "next-auth/jwt" {
     fullName?: string
     tenantName?: string
     role?: string
+    emailVerified?: boolean
   }
 }
