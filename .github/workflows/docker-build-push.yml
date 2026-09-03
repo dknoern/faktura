@@ -36,8 +36,7 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ github.sha }}
-
-      - name: Trigger deploy via dockhook
-        run: |
-          curl -f -X POST "https://dockhook.popdesignbuild.com/webhook" \
-            -H "X-Webhook-Secret: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}"
+#      - name: Trigger deploy via dockhook
+#        run: |
+#          curl -f -X POST "https://dockhook.popdesignbuild.com/webhook" \
+#            -H "X-Webhook-Secret: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}"
