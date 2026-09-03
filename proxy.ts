@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { auth } from "./auth"
+import { isPublicTenantHost } from "./lib/public-tenant"
 
 // Read more: https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)$).*)"],
 }
-
-const PUBLIC_TENANT_PATTERNS = ['faktur', 'popdesign','localhost']
 
 function isPublicTenant(req: NextRequest): boolean {
   const hostname = req.headers.get('host') || req.nextUrl.hostname
-  return PUBLIC_TENANT_PATTERNS.some(pattern => hostname.includes(pattern))
+  return isPublicTenantHost(hostname)
 }
 
 export default auth((req: NextRequest & { auth: any }) => {
@@ -26,6 +25,9 @@ export default auth((req: NextRequest & { auth: any }) => {
       }
       return NextResponse.rewrite(new URL('/public', req.url))
     }
+  } else if (pathname === '/signup' || pathname.startsWith('/signup/')) {
+    // Self-serve signup is only offered on public deployments
+    return NextResponse.redirect(new URL('/', req.url))
   }
   
   // Skip middleware for server actions to avoid clientReferenceManifest issues

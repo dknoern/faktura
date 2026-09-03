@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { signIn } from "@/auth"
 
@@ -14,16 +13,8 @@ export default async function Page() {
         style={{ backgroundImage: 'url(/rolex-blackbook.png)' }}
       />
       
-      {/* Sign In / Sign Up Buttons - Upper Right */}
+      {/* Sign In Button - Upper Right (self-serve signup is only offered on public deployments) */}
       <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
-        <Link href="/signup">
-          <Button
-            variant="outline"
-            className="bg-transparent border-white/50 text-white font-bold hover:bg-white/10 backdrop-blur-sm"
-          >
-            Sign Up
-          </Button>
-        </Link>
         <form
           action={async () => {
             "use server"
