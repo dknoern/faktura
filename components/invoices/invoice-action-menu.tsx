@@ -8,11 +8,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Edit, ChevronDown, Printer, Mail, RotateCcw, Download, CreditCard } from "lucide-react";
+import { Edit, ChevronDown, Printer, Mail, RotateCcw, Download, CreditCard, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Invoice } from "@/lib/invoice-renderer";
 import { EmailDialog } from "./email-dialog";
+import { EsignRequestDialog } from "@/components/esign/esign-request-dialog";
 
 interface InvoiceActionMenuProps {
     invoice: Invoice;
@@ -23,6 +24,7 @@ interface InvoiceActionMenuProps {
 export function InvoiceActionMenu({ invoice, paymentsEnabled = false, onRecordPayment }: InvoiceActionMenuProps) {
     const router = useRouter();
     const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+    const [esignDialogOpen, setEsignDialogOpen] = useState(false);
 
     const handleEdit = () => {
         router.push(`/invoices/${invoice._id}/edit`);
@@ -103,6 +105,12 @@ export function InvoiceActionMenu({ invoice, paymentsEnabled = false, onRecordPa
                     Download PDF
                 </DropdownMenuItem>
 
+                {invoice.invoiceType === 'Estimate' && (
+                    <DropdownMenuItem onClick={() => setEsignDialogOpen(true)}>
+                        <Send className="mr-2 h-4 w-4" />
+                        Request e-Sign
+                    </DropdownMenuItem>
+                )}
 
                 <DropdownMenuItem onClick={handleReturn}>
                     <RotateCcw className="mr-2 h-4 w-4" />
@@ -123,6 +131,14 @@ export function InvoiceActionMenu({ invoice, paymentsEnabled = false, onRecordPa
             open={emailDialogOpen}
             onOpenChange={setEmailDialogOpen}
             invoiceId={invoice._id.toString()}
+            defaultEmail={invoice.customerEmail}
+        />
+
+        <EsignRequestDialog
+            open={esignDialogOpen}
+            onOpenChange={setEsignDialogOpen}
+            type="invoice"
+            id={invoice._id.toString()}
             defaultEmail={invoice.customerEmail}
         />
         </>

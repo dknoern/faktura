@@ -216,6 +216,24 @@ export function ViewInvoice({ invoice, avataxEnabled = false, paymentsEnabled = 
 
                 <p className="text-right text-sm text-muted-foreground mt-2">Thank you for your business</p>
 
+                {/* Signature */}
+                {invoice.signature && (
+                    <div className="border rounded-md p-4 bg-gray-50 mt-6">
+                        <p className="text-sm font-bold mb-2">Signature</p>
+                        <div className="bg-white border rounded-md p-2 inline-block">
+                            <img src={invoice.signature} alt="Signature" className="h-16 object-contain" />
+                        </div>
+                        {invoice.signerName && (
+                            <p className="text-sm font-medium mt-2">{invoice.signerName}</p>
+                        )}
+                        {invoice.signatureDate && (
+                            <p className="text-xs text-gray-500 mt-1">
+                                Signed on {formatDate(invoice.signatureDate)}
+                            </p>
+                        )}
+                    </div>
+                )}
+
                 {paymentsEnabled && (
                     <PaymentsSection
                         initialPayments={payments}

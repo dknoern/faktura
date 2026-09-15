@@ -3,6 +3,7 @@ import dbConnect from '@/lib/dbConnect';
 import { Repair } from '@/lib/models/repair';
 import { Proposal } from '@/lib/models/proposal';
 import { Out } from '@/lib/models/out';
+import { Invoice } from '@/lib/models/invoice';
 import { Tenant } from '@/lib/models/tenant';
 
 export async function GET(
@@ -17,11 +18,12 @@ export async function GET(
       return NextResponse.json({ error: 'Token is required' }, { status: 400 });
     }
 
-    // Search all three collections for the token
-    const [repair, proposal, out] = await Promise.all([
+    // Search all collections for the token
+    const [repair, proposal, out, invoice] = await Promise.all([
       Repair.findOne({ esignToken: token }),
       Proposal.findOne({ esignToken: token }),
       Out.findOne({ esignToken: token }),
+      Invoice.findOne({ esignToken: token }),
     ]);
 
     if (repair) {
@@ -48,6 +50,15 @@ export async function GET(
       return NextResponse.json({
         type: 'out',
         data: JSON.parse(JSON.stringify(out)),
+        tenant: tenant ? JSON.parse(JSON.stringify(tenant)) : null,
+      });
+    }
+
+    if (invoice) {
+      const tenant = await Tenant.findOne({ _id: invoice.tenantId });
+      return NextResponse.json({
+        type: 'invoice',
+        data: JSON.parse(JSON.stringify(invoice)),
         tenant: tenant ? JSON.parse(JSON.stringify(tenant)) : null,
       });
     }
@@ -81,11 +92,12 @@ export async function POST(
       );
     }
 
-    // Search all three collections for the token
-    const [repair, proposal, out] = await Promise.all([
+    // Search all collections for the token
+    const [repair, proposal, out, invoice] = await Promise.all([
       Repair.findOne({ esignToken: token }),
       Proposal.findOne({ esignToken: token }),
       Out.findOne({ esignToken: token }),
+      Invoice.findOne({ esignToken: token }),
     ]);
 
     if (repair) {
@@ -96,10 +108,19 @@ export async function POST(
         );
       }
 
+      const trimmedName = typeof signerName === 'string' ? signerName.trim() : '';
+      if (!trimmedName) {
+        return NextResponse.json(
+          { error: 'Full name is required' },
+          { status: 400 }
+        );
+      }
+
       await Repair.findOneAndUpdate(
         { esignToken: token },
         {
           signature,
+          signerName: trimmedName,
           signatureDate: new Date(),
           customerApprovedDate: new Date(),
           lastUpdated: new Date(),
@@ -168,6 +189,38 @@ export async function POST(
         success: true,
         type: 'out',
         message: 'Log out item signed successfully',
+      });
+    }
+
+    if (invoice) {
+      if (invoice.signature) {
+        return NextResponse.json(
+          { error: 'This document has already been signed' },
+          { status: 400 }
+        );
+      }
+
+      const trimmedName = typeof signerName === 'string' ? signerName.trim() : '';
+      if (!trimmedName) {
+        return NextResponse.json(
+          { error: 'Full name is required' },
+          { status: 400 }
+        );
+      }
+
+      await Invoice.findOneAndUpdate(
+        { esignToken: token },
+        {
+          signature,
+          signerName: trimmedName,
+          signatureDate: new Date(),
+        }
+      );
+
+      return NextResponse.json({
+        success: true,
+        type: 'invoice',
+        message: 'Estimate signed successfully',
       });
     }
 

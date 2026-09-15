@@ -47,6 +47,9 @@ export function EsignClient({ token }: EsignClientProps) {
   const [signerName, setSignerName] = useState("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const needsSignerName =
+    docType === "proposal" || docType === "invoice" || docType === "repair";
+
   useEffect(() => {
     async function fetchDocument() {
       try {
@@ -173,7 +176,7 @@ export function EsignClient({ token }: EsignClientProps) {
     }
 
     const trimmedName = signerName.trim();
-    if (docType === "proposal" && !trimmedName) {
+    if (needsSignerName && !trimmedName) {
       alert("Please type your full name before submitting.");
       return;
     }
@@ -284,6 +287,7 @@ export function EsignClient({ token }: EsignClientProps) {
         {docType === "repair" && <RepairContent data={docData} />}
         {docType === "proposal" && <ProposalContent data={docData} />}
         {docType === "out" && <OutContent data={docData} />}
+        {docType === "invoice" && <InvoiceContent data={docData} />}
 
         {/* Signature Area */}
         <Card className="mt-6">
@@ -297,7 +301,7 @@ export function EsignClient({ token }: EsignClientProps) {
               stylus to sign.
             </p>
 
-            {docType === "proposal" && (
+            {needsSignerName && (
               <div className="mb-4">
                 <Label htmlFor="signerName">Full Name</Label>
                 <Input
@@ -340,7 +344,7 @@ export function EsignClient({ token }: EsignClientProps) {
                 disabled={
                   isSaving ||
                   !hasSignature ||
-                  (docType === "proposal" && signerName.trim() === "")
+                  (needsSignerName && signerName.trim() === "")
                 }
                 className="bg-green-600 hover:bg-green-700"
               >
@@ -509,6 +513,100 @@ function ProposalContent({ data }: { data: any }) {
             <p className="text-sm whitespace-pre-wrap mt-1">{data.conditions}</p>
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function InvoiceContent({ data }: { data: any }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle style={{ color: "#B69D57" }}>Estimate</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">
+              Estimate #
+            </label>
+            <p className="text-sm font-bold">{data.invoiceNumber}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">
+              Date
+            </label>
+            <p className="text-sm">{formatDate(data.date)}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">
+              Customer
+            </label>
+            <p className="text-sm">
+              {data.customerFirstName} {data.customerLastName}
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50">
+                <TableHead className="font-bold">Item</TableHead>
+                <TableHead className="text-right font-bold w-[100px]">
+                  Price
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.lineItems && data.lineItems.length > 0 ? (
+                data.lineItems.map((item: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell className="py-3">
+                      <div className="font-bold uppercase text-sm">{item.name}</div>
+                      {item.longDesc && (
+                        <div className="text-xs text-muted-foreground mt-1 leading-relaxed">{item.longDesc}</div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right py-3 font-medium text-sm">
+                      {formatCurrency(item.amount)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={2}
+                    className="text-center py-8 text-muted-foreground"
+                  >
+                    No line items
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        <div className="flex justify-end">
+          <div className="w-48 space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Subtotal:</span>
+              <span>{formatCurrency(data.subtotal)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Tax:</span>
+              <span>{formatCurrency(data.tax)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Shipping:</span>
+              <span>{formatCurrency(data.shipping)}</span>
+            </div>
+            <div className="flex justify-between font-bold text-base border-t pt-2">
+              <span>Total:</span>
+              <span>{formatCurrency(data.total)}</span>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

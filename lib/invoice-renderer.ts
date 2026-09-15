@@ -57,6 +57,9 @@ export interface Invoice {
     currency: string;
     createdAt: string | Date;
   };
+  signature?: string;
+  signerName?: string;
+  signatureDate?: string | null;
 }
 
 export type { Tenant } from '@/lib/types/tenant';

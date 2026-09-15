@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SESClient, SendEmailCommand, SendRawEmailCommand } from '@aws-sdk/client-ses';
-import { fetchRepairById, fetchProposalById, fetchOutById, fetchTenant } from '@/lib/data';
+import { fetchRepairById, fetchProposalById, fetchOutById, fetchInvoiceById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getLogoDataUrl } from '@/lib/utils/logo';
 import { formatFromAddress } from '@/lib/utils/email-from';
@@ -8,6 +8,7 @@ import { generateProposalPdfBase64 } from '@/lib/pdf/generate-proposal-pdf';
 import { Repair } from '@/lib/models/repair';
 import { Proposal } from '@/lib/models/proposal';
 import { Out } from '@/lib/models/out';
+import { Invoice } from '@/lib/models/invoice';
 import dbConnect from '@/lib/dbConnect';
 import { randomUUID } from 'crypto';
 
@@ -79,7 +80,7 @@ function escapeHtml(value: string): string {
 }
 
 function generateEsignEmailHtml(
-  type: 'repair' | 'proposal' | 'out',
+  type: 'repair' | 'proposal' | 'out' | 'invoice',
   data: any,
   tenant: any,
   esignUrl: string,
@@ -167,6 +168,62 @@ function generateEsignEmailHtml(
           <div style="white-space: pre-wrap;">${escapeHtml(data.conditions)}</div>
         </div>
       ` : ''}
+    `;
+  } else if (type === 'invoice') {
+    documentTitle = 'Estimate';
+    customerName = `${data.customerFirstName} ${data.customerLastName}`.trim();
+    const lineItemsHtml = data.lineItems && data.lineItems.length > 0
+      ? data.lineItems.map((item: any) => `
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">
+            <div style="font-weight: bold; text-transform: uppercase;">${item.name || 'N/A'}</div>
+            ${item.longDesc ? `<div style="font-size: 12px; color: #666; margin-top: 2px;">${item.longDesc}</div>` : ''}
+          </td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(item.amount)}</td>
+        </tr>
+      `).join('')
+      : '<tr><td colspan="2" style="padding: 8px; text-align: center; color: #999;">No items</td></tr>';
+
+    documentDetails = `
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 150px;">Estimate #</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${data.invoiceNumber || 'N/A'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Date</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${formatDate(data.date)}</td>
+        </tr>
+      </table>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+        <thead>
+          <tr style="background-color: #f5f5f5;">
+            <th style="padding: 8px; text-align: left; border-bottom: 2px solid #ddd;">Item</th>
+            <th style="padding: 8px; text-align: right; border-bottom: 2px solid #ddd; width: 100px;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lineItemsHtml}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td style="padding: 8px; text-align: right;">Subtotal</td>
+            <td style="padding: 8px; text-align: right;">${formatCurrency(data.subtotal)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; text-align: right;">Tax</td>
+            <td style="padding: 8px; text-align: right;">${formatCurrency(data.tax)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; text-align: right;">Shipping</td>
+            <td style="padding: 8px; text-align: right;">${formatCurrency(data.shipping)}</td>
+          </tr>
+          <tr style="border-top: 2px solid #333;">
+            <td style="padding: 8px; text-align: right; font-weight: bold;">Total</td>
+            <td style="padding: 8px; text-align: right; font-weight: bold;">${formatCurrency(data.total)}</td>
+          </tr>
+        </tfoot>
+      </table>
     `;
   } else if (type === 'out') {
     documentTitle = 'Log Out Item';
@@ -290,6 +347,16 @@ export async function POST(request: Request) {
       await Out.findByIdAndUpdate(id, { esignToken });
       data = await fetchOutById(id);
       documentTitle = `Log Out - ${data?.sentTo}`;
+    } else if (type === 'invoice') {
+      data = await fetchInvoiceById(id);
+      if (data && data.invoiceType !== 'Estimate') {
+        return NextResponse.json(
+          { error: 'E-sign requests are only available for estimates' },
+          { status: 400 }
+        );
+      }
+      await Invoice.findByIdAndUpdate(id, { esignToken });
+      documentTitle = `Estimate #${data?.invoiceNumber}`;
     } else {
       return NextResponse.json(
         { error: 'Invalid document type' },

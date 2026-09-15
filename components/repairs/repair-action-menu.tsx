@@ -18,11 +18,12 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChevronDown, Edit, Printer, Mail, ImagePlus, Trash2, Download } from "lucide-react";
+import { ChevronDown, Edit, Printer, Mail, ImagePlus, Trash2, Download, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Repair } from "@/lib/repair-renderer";
 import { useState, useRef } from "react";
 import { EmailDialog } from "./email-dialog";
+import { EsignRequestDialog } from "@/components/esign/esign-request-dialog";
 import { UploadDialog } from "../upload-dialog";
 import { useDeviceDetection } from "@/hooks/use-device-detection";
 import { toast } from "react-hot-toast";
@@ -34,6 +35,7 @@ interface RepairActionMenuProps {
 export function RepairActionMenu({ repair }: RepairActionMenuProps) {
     const router = useRouter();
     const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+    const [esignDialogOpen, setEsignDialogOpen] = useState(false);
     const [showUploadDialog, setShowUploadDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -173,6 +175,11 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
                     Email
                 </DropdownMenuItem>
 
+                <DropdownMenuItem onClick={() => setEsignDialogOpen(true)}>
+                    <Send className="mr-2 h-4 w-4" />
+                    Request e-Sign
+                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem 
@@ -215,6 +222,14 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
             open={emailDialogOpen}
             onOpenChange={setEmailDialogOpen}
             repairId={repair._id}
+        />
+
+        <EsignRequestDialog
+            open={esignDialogOpen}
+            onOpenChange={setEsignDialogOpen}
+            type="repair"
+            id={repair._id}
+            defaultEmail={repair.email}
         />
 
         {/* Delete confirmation dialog */}

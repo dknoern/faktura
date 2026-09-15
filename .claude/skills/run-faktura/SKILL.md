@@ -157,6 +157,15 @@ colima stop                                  # only if you want the VM down agai
   borrowing real data.
 - **Docker is colima and it is usually stopped.** `mongo.sh start` boots
   it (~1 min).
+- **A colima (re)boot auto-starts OTHER projects' containers** via their
+  restart policies — notably `pizza-mongo` (mongo:7, replica set `rs0`),
+  which grabs 27017 and holds the user's REAL `lager` dev database. If it
+  wins the port, every `localhost:27017` client — including `seed.mjs` and
+  the dev server — talks to real data. `mongo.sh start` now refuses to run
+  when a foreign container owns 27017 (stop it with `docker stop pizza-mongo`;
+  it wasn't running before colima booted), and `seed.mjs` refuses to write
+  to any mongod missing the `faktura_verify_marker` doc that `mongo.sh`
+  plants in its own container. Do not weaken either guard.
 - **Dates are stored as UTC midnight and rendered in local time.** A
   proposal saved as `2026-03-14T00:00:00.000Z` displays as *March 13,
   2026* on the view page (`components/proposals/view-proposal.tsx`

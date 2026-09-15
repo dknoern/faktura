@@ -18,7 +18,7 @@ import toast from "react-hot-toast";
 interface EsignRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type: "repair" | "proposal" | "out";
+  type: "repair" | "proposal" | "out" | "invoice";
   id: string;
   defaultEmail?: string;
 }
@@ -60,6 +60,8 @@ export function EsignRequestDialog({
       ? "Repair Proposal"
       : type === "proposal"
       ? "Proposal"
+      : type === "invoice"
+      ? "Estimate"
       : "Log Out Item";
 
   const handleSend = async () => {

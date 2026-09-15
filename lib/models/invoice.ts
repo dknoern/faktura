@@ -66,6 +66,10 @@ var InvoiceSchema = new mongoose.Schema({
     },
     status: String,
     trackingNumber: String,
+    esignToken: String,
+    signature: String,
+    signerName: String,
+    signatureDate: Date,
     tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' },
     stripePaymentLink: {
         url: String,

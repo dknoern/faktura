@@ -183,6 +183,30 @@ export function ViewRepairClient({ repair, tenant, imageBaseUrl, images }: ViewR
           </Card>
         )}
 
+        {/* Signature */}
+        {repair.signature && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Signature</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="border rounded-md p-4 bg-gray-50">
+                <div className="bg-white border rounded-md p-2 inline-block">
+                  <img src={repair.signature} alt="Signature" className="h-16 object-contain" />
+                </div>
+                {repair.signerName && (
+                  <p className="text-sm font-medium mt-2">{repair.signerName}</p>
+                )}
+                {repair.signatureDate && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Signed on {formatDate(repair.signatureDate)}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Images */}
         {images.length > 0 && (
           <RepairImagesClient images={images} />

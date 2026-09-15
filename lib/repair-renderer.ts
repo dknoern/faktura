@@ -11,10 +11,14 @@ export interface Repair {
   returnDate: string | null;
   customerFirstName: string;
   customerLastName: string;
+  email?: string;
   vendor: string;
   repairCost: number;
   repairIssues: string;
   repairNotes: string;
+  signature?: string;
+  signerName?: string;
+  signatureDate?: string | null;
 }
 
 export type { Tenant } from '@/lib/types/tenant';

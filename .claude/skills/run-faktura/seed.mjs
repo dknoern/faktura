@@ -31,6 +31,17 @@ const c = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 })
 await c.connect()
 const db = c.db()
 
+// Refuse to write to anything but the throwaway instance mongo.sh started.
+// (A colima restart can hand 27017 to another project's mongod holding REAL
+// data — this marker is written by mongo.sh into its own container only.)
+const marker = await db.collection('faktura_verify_marker').findOne({ _id: 'marker' })
+if (!marker?.throwaway) {
+  console.error('ABORT: no throwaway marker on this mongod — this is NOT the')
+  console.error('faktura-verify-mongo container (real data?). Run mongo.sh start first.')
+  await c.close()
+  process.exit(1)
+}
+
 await db.collection('tenants').updateOne(
   { _id: TENANT },
   { $set: { name: 'lager', companyName: 'Lager Verify Co', status: 'Active' } },
