@@ -11,7 +11,7 @@ import {
 import { Edit, ChevronDown, Printer, Mail, RotateCcw, Download, CreditCard, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { Invoice } from "@/lib/invoice-renderer";
+import { Invoice, invoiceTypeLabel } from "@/lib/invoice-renderer";
 import { EmailDialog } from "./email-dialog";
 import { EsignRequestDialog } from "@/components/esign/esign-request-dialog";
 
@@ -105,12 +105,10 @@ export function InvoiceActionMenu({ invoice, paymentsEnabled = false, onRecordPa
                     Download PDF
                 </DropdownMenuItem>
 
-                {invoice.invoiceType === 'Estimate' && (
-                    <DropdownMenuItem onClick={() => setEsignDialogOpen(true)}>
-                        <Send className="mr-2 h-4 w-4" />
-                        Request e-Sign
-                    </DropdownMenuItem>
-                )}
+                <DropdownMenuItem onClick={() => setEsignDialogOpen(true)}>
+                    <Send className="mr-2 h-4 w-4" />
+                    Request e-Sign
+                </DropdownMenuItem>
 
                 <DropdownMenuItem onClick={handleReturn}>
                     <RotateCcw className="mr-2 h-4 w-4" />
@@ -140,6 +138,7 @@ export function InvoiceActionMenu({ invoice, paymentsEnabled = false, onRecordPa
             type="invoice"
             id={invoice._id.toString()}
             defaultEmail={invoice.customerEmail}
+            docLabel={invoiceTypeLabel(invoice.invoiceType)}
         />
         </>
     );

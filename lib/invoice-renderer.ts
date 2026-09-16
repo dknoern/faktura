@@ -64,6 +64,16 @@ export interface Invoice {
 
 export type { Tenant } from '@/lib/types/tenant';
 
+// Same mapping the invoice view header uses
+export const invoiceTypeLabel = (type: string | null | undefined) => {
+  switch (type) {
+    case 'Partner': return 'Partner Invoice';
+    case 'Memo': return 'Memo';
+    case 'Estimate': return 'Estimate';
+    default: return 'Invoice';
+  }
+};
+
 // Format currency values
 export const formatCurrency = (value: number | null | undefined = 0) => {
   const numValue = value ?? 0;

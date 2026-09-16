@@ -3,6 +3,7 @@ import { SESClient, SendEmailCommand, SendRawEmailCommand } from '@aws-sdk/clien
 import { fetchRepairById, fetchProposalById, fetchOutById, fetchInvoiceById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getLogoDataUrl } from '@/lib/utils/logo';
+import { invoiceTypeLabel } from '@/lib/invoice-renderer';
 import { formatFromAddress } from '@/lib/utils/email-from';
 import { generateProposalPdfBase64 } from '@/lib/pdf/generate-proposal-pdf';
 import { Repair } from '@/lib/models/repair';
@@ -170,7 +171,7 @@ function generateEsignEmailHtml(
       ` : ''}
     `;
   } else if (type === 'invoice') {
-    documentTitle = 'Estimate';
+    documentTitle = invoiceTypeLabel(data.invoiceType);
     customerName = `${data.customerFirstName} ${data.customerLastName}`.trim();
     const lineItemsHtml = data.lineItems && data.lineItems.length > 0
       ? data.lineItems.map((item: any) => `
@@ -187,7 +188,7 @@ function generateEsignEmailHtml(
     documentDetails = `
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
         <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 150px;">Estimate #</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 150px;">${documentTitle} #</td>
           <td style="padding: 8px; border-bottom: 1px solid #eee;">${data.invoiceNumber || 'N/A'}</td>
         </tr>
         <tr>
@@ -349,14 +350,8 @@ export async function POST(request: Request) {
       documentTitle = `Log Out - ${data?.sentTo}`;
     } else if (type === 'invoice') {
       data = await fetchInvoiceById(id);
-      if (data && data.invoiceType !== 'Estimate') {
-        return NextResponse.json(
-          { error: 'E-sign requests are only available for estimates' },
-          { status: 400 }
-        );
-      }
       await Invoice.findByIdAndUpdate(id, { esignToken });
-      documentTitle = `Estimate #${data?.invoiceNumber}`;
+      documentTitle = `${invoiceTypeLabel(data?.invoiceType)} #${data?.invoiceNumber}`;
     } else {
       return NextResponse.json(
         { error: 'Invalid document type' },

@@ -220,7 +220,7 @@ export async function POST(
       return NextResponse.json({
         success: true,
         type: 'invoice',
-        message: 'Estimate signed successfully',
+        message: 'Invoice signed successfully',
       });
     }
 

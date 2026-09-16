@@ -21,6 +21,7 @@ interface EsignRequestDialogProps {
   type: "repair" | "proposal" | "out" | "invoice";
   id: string;
   defaultEmail?: string;
+  docLabel?: string;
 }
 
 export function EsignRequestDialog({
@@ -29,6 +30,7 @@ export function EsignRequestDialog({
   type,
   id,
   defaultEmail = "",
+  docLabel,
 }: EsignRequestDialogProps) {
   const [emailAddresses, setEmailAddresses] = useState(defaultEmail);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,13 +58,14 @@ export function EsignRequestDialog({
   }, [open]);
 
   const typeLabel =
-    type === "repair"
+    docLabel ||
+    (type === "repair"
       ? "Repair Proposal"
       : type === "proposal"
       ? "Proposal"
       : type === "invoice"
-      ? "Estimate"
-      : "Log Out Item";
+      ? "Invoice"
+      : "Log Out Item");
 
   const handleSend = async () => {
     if (!emailAddresses.trim()) {

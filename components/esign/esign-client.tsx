@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { invoiceTypeLabel } from "@/lib/invoice-renderer";
 
 interface EsignClientProps {
   token: string;
@@ -519,16 +520,17 @@ function ProposalContent({ data }: { data: any }) {
 }
 
 function InvoiceContent({ data }: { data: any }) {
+  const label = invoiceTypeLabel(data.invoiceType);
   return (
     <Card>
       <CardHeader>
-        <CardTitle style={{ color: "#B69D57" }}>Estimate</CardTitle>
+        <CardTitle style={{ color: "#B69D57" }}>{label}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-muted-foreground">
-              Estimate #
+              {label} #
             </label>
             <p className="text-sm font-bold">{data.invoiceNumber}</p>
           </div>
