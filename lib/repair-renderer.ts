@@ -12,6 +12,7 @@ export interface Repair {
   customerFirstName: string;
   customerLastName: string;
   email?: string;
+  phone?: string;
   vendor: string;
   repairCost: number;
   repairIssues: string;

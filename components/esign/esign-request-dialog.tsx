@@ -21,6 +21,7 @@ interface EsignRequestDialogProps {
   type: "repair" | "proposal" | "out" | "invoice";
   id: string;
   defaultEmail?: string;
+  defaultPhone?: string;
   docLabel?: string;
 }
 
@@ -30,16 +31,21 @@ export function EsignRequestDialog({
   type,
   id,
   defaultEmail = "",
+  defaultPhone = "",
   docLabel,
 }: EsignRequestDialogProps) {
   const [emailAddresses, setEmailAddresses] = useState(defaultEmail);
+  const [phoneNumber, setPhoneNumber] = useState(defaultPhone);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (open && defaultEmail) {
       setEmailAddresses(defaultEmail);
     }
-  }, [open, defaultEmail]);
+    if (open && defaultPhone) {
+      setPhoneNumber(defaultPhone);
+    }
+  }, [open, defaultEmail, defaultPhone]);
 
   const resetBodyStyles = () => {
     document.body.style.overflow = "";
@@ -68,19 +74,29 @@ export function EsignRequestDialog({
       : "Log Out Item");
 
   const handleSend = async () => {
-    if (!emailAddresses.trim()) {
-      toast.error("Please enter at least one email address");
+    const email = emailAddresses.trim();
+    const phone = phoneNumber.trim();
+
+    if (!email && !phone) {
+      toast.error("Please enter an email address or mobile number");
       return;
     }
 
-    const emails = emailAddresses.split(",").map((e) => e.trim());
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const invalidEmails = emails.filter((e) => !emailRegex.test(e));
+    if (email) {
+      const emails = email.split(",").map((e) => e.trim());
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const invalidEmails = emails.filter((e) => !emailRegex.test(e));
 
-    if (invalidEmails.length > 0) {
-      toast.error(
-        `Invalid email address${invalidEmails.length > 1 ? "es" : ""}: ${invalidEmails.join(", ")}`
-      );
+      if (invalidEmails.length > 0) {
+        toast.error(
+          `Invalid email address${invalidEmails.length > 1 ? "es" : ""}: ${invalidEmails.join(", ")}`
+        );
+        return;
+      }
+    }
+
+    if (phone && phone.replace(/\D/g, "").length < 10) {
+      toast.error("Please enter a valid mobile number (at least 10 digits)");
       return;
     }
 
@@ -93,7 +109,8 @@ export function EsignRequestDialog({
         body: JSON.stringify({
           type,
           id,
-          email: emailAddresses,
+          email,
+          phone,
         }),
       });
 
@@ -102,6 +119,7 @@ export function EsignRequestDialog({
       if (response.ok) {
         toast.success(data.message || "E-sign request sent successfully!");
         setEmailAddresses("");
+        setPhoneNumber("");
         onOpenChange(false);
         setTimeout(() => resetBodyStyles(), 100);
       } else {
@@ -117,6 +135,7 @@ export function EsignRequestDialog({
 
   const handleCancel = () => {
     setEmailAddresses("");
+    setPhoneNumber("");
     onOpenChange(false);
     setTimeout(() => resetBodyStyles(), 100);
   };
@@ -138,17 +157,15 @@ export function EsignRequestDialog({
             Request e-Signature
           </DialogTitle>
           <DialogDescription>
-            Send an email requesting the customer to electronically sign the{" "}
-            {typeLabel.toLowerCase()}. They will receive a link to review and
-            sign the document.
+            Send an email or text message requesting the customer to
+            electronically sign the {typeLabel.toLowerCase()}. They will
+            receive a link to review and sign the document.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="esign-email-addresses">
-              Customer Email <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="esign-email-addresses">Customer Email</Label>
             <Input
               id="esign-email-addresses"
               placeholder="customer@example.com"
@@ -158,6 +175,20 @@ export function EsignRequestDialog({
             />
             <p className="text-sm text-muted-foreground">
               Separate multiple email addresses with commas
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="esign-phone-number">Mobile Number (SMS)</Label>
+            <Input
+              id="esign-phone-number"
+              type="tel"
+              placeholder="(555) 555-0142"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              disabled={isLoading}
+            />
+            <p className="text-sm text-muted-foreground">
+              Provide an email, a mobile number, or both
             </p>
           </div>
         </div>

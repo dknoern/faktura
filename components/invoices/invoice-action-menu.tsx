@@ -138,6 +138,7 @@ export function InvoiceActionMenu({ invoice, paymentsEnabled = false, onRecordPa
             type="invoice"
             id={invoice._id.toString()}
             defaultEmail={invoice.customerEmail}
+            defaultPhone={invoice.customerPhone}
             docLabel={invoiceTypeLabel(invoice.invoiceType)}
         />
         </>

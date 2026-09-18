@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SESClient, SendEmailCommand, SendRawEmailCommand } from '@aws-sdk/client-ses';
+import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { fetchRepairById, fetchProposalById, fetchOutById, fetchInvoiceById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getLogoDataUrl } from '@/lib/utils/logo';
@@ -54,6 +55,27 @@ const sesClient = new SESClient({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
   },
 });
+
+const snsClient = new SNSClient({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+  },
+});
+
+// Normalize a user-entered phone number to E.164 (SNS requirement).
+// Bare 10-digit numbers are assumed to be US/Canada.
+function toE164(raw: string): string | null {
+  const trimmed = raw.trim();
+  const digits = trimmed.replace(/\D/g, '');
+  if (trimmed.startsWith('+')) {
+    return digits.length >= 10 && digits.length <= 15 ? `+${digits}` : null;
+  }
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+  return null;
+}
 
 function formatDate(dateString: string | Date | null): string {
   if (!dateString) return '';
@@ -301,24 +323,35 @@ function generateEsignEmailHtml(
 
 export async function POST(request: Request) {
   try {
-    const { type, id, email } = await request.json();
+    const { type, id, email, phone } = await request.json();
 
-    if (!type || !id || !email) {
+    if (!type || !id || (!email && !phone)) {
       return NextResponse.json(
-        { error: 'Type, ID, and email are required' },
+        { error: 'Type, ID, and an email address or mobile number are required' },
         { status: 400 }
       );
     }
 
     // Parse comma-delimited email addresses
-    const emailAddresses = email
+    const emailAddresses: string[] = (email || '')
       .split(',')
       .map((addr: string) => addr.trim())
       .filter((addr: string) => addr.length > 0);
 
-    if (emailAddresses.length === 0) {
+    let smsNumber: string | null = null;
+    if (phone && String(phone).trim()) {
+      smsNumber = toE164(String(phone));
+      if (!smsNumber) {
+        return NextResponse.json(
+          { error: 'Invalid mobile number. Use a 10-digit US number or full international format (+…)' },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (emailAddresses.length === 0 && !smsNumber) {
       return NextResponse.json(
-        { error: 'At least one valid email address is required' },
+        { error: 'At least one email address or mobile number is required' },
         { status: 400 }
       );
     }
@@ -380,7 +413,9 @@ export async function POST(request: Request) {
     const emailHtml = generateEsignEmailHtml(type, data, tenant, esignUrl, baseUrl);
     const subject = `${documentTitle} - Signature Required from ${tenant.nameLong || tenant.name || ''}`;
 
-    if (type === 'proposal') {
+    if (emailAddresses.length === 0) {
+      // SMS only — skip email entirely
+    } else if (type === 'proposal') {
       const logoDataUrl = await getLogoDataUrl(tenant._id.toString());
       const pdfBase64 = await generateProposalPdfBase64(data, tenant, logoDataUrl);
       const pdfFilename = `Proposal-${data.customerLastName || 'document'}.pdf`;
@@ -414,9 +449,27 @@ export async function POST(request: Request) {
       }));
     }
 
+    if (smsNumber) {
+      const smsBody = `${tenant.nameLong || tenant.name || ''}: Please review and sign ${documentTitle}: ${esignUrl}`;
+      await snsClient.send(new PublishCommand({
+        PhoneNumber: smsNumber,
+        Message: smsBody,
+        MessageAttributes: {
+          'AWS.SNS.SMS.SMSType': { DataType: 'String', StringValue: 'Transactional' },
+        },
+      }));
+    }
+
+    const sentTo = [
+      emailAddresses.length > 0
+        ? `${emailAddresses.length} email recipient${emailAddresses.length > 1 ? 's' : ''}`
+        : null,
+      smsNumber ? `SMS at ${smsNumber}` : null,
+    ].filter(Boolean).join(' and ');
+
     return NextResponse.json({
       success: true,
-      message: `E-sign request sent to ${emailAddresses.length} recipient${emailAddresses.length > 1 ? 's' : ''}`,
+      message: `E-sign request sent to ${sentTo}`,
     });
   } catch (error) {
     console.error('Error sending esign request email:', error);

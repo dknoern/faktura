@@ -25,6 +25,7 @@ interface Proposal {
   customerId: string
   customerFirstName: string
   customerLastName: string
+  customerPhone?: string
   date: string
   total: number
   lineItems: ProposalLineItem[]
@@ -170,6 +171,7 @@ export function ProposalActionMenu({ proposal, customerEmail }: ProposalActionMe
         type="proposal"
         id={proposal._id}
         defaultEmail={customerEmail}
+        defaultPhone={proposal.customerPhone}
       />
     </>
   )

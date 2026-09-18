@@ -230,6 +230,7 @@ export function RepairActionMenu({ repair }: RepairActionMenuProps) {
             type="repair"
             id={repair._id}
             defaultEmail={repair.email}
+            defaultPhone={repair.phone}
         />
 
         {/* Delete confirmation dialog */}
