@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
 import { fetchTenant } from "@/lib/data"
 import { formatFromAddress } from "@/lib/utils/email-from"
+import { htmlToPlainText } from "@/lib/utils/email-mime"
 
 
 // Configure AWS SES
@@ -41,6 +42,10 @@ export async function POST(request: NextRequest) {
           Charset: 'UTF-8',
         },
         Body: {
+          Text: {
+            Data: htmlToPlainText(html),
+            Charset: 'UTF-8',
+          },
           Html: {
             Data: html,
             Charset: 'UTF-8',

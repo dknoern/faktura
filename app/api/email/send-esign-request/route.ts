@@ -5,6 +5,7 @@ import { getImageHost } from '@/lib/utils/imageHost';
 import { getLogoDataUrl } from '@/lib/utils/logo';
 import { invoiceTypeLabel } from '@/lib/invoice-renderer';
 import { formatFromAddress } from '@/lib/utils/email-from';
+import { buildRawEmail, htmlToPlainText } from '@/lib/utils/email-mime';
 import { generateProposalPdfBase64 } from '@/lib/pdf/generate-proposal-pdf';
 import { Repair } from '@/lib/models/repair';
 import { Proposal } from '@/lib/models/proposal';
@@ -12,40 +13,6 @@ import { Out } from '@/lib/models/out';
 import { Invoice } from '@/lib/models/invoice';
 import dbConnect from '@/lib/dbConnect';
 import { randomUUID } from 'crypto';
-
-function buildRawEmail(
-  from: string,
-  to: string[],
-  subject: string,
-  htmlBody: string,
-  pdfBase64: string,
-  pdfFilename: string
-): string {
-  const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-
-  return [
-    `From: ${from}`,
-    `To: ${to.join(', ')}`,
-    `Subject: ${subject}`,
-    'MIME-Version: 1.0',
-    `Content-Type: multipart/mixed; boundary="${boundary}"`,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/html; charset=UTF-8',
-    'Content-Transfer-Encoding: 7bit',
-    '',
-    htmlBody,
-    '',
-    `--${boundary}`,
-    `Content-Type: application/pdf; name="${pdfFilename}"`,
-    'Content-Transfer-Encoding: base64',
-    `Content-Disposition: attachment; filename="${pdfFilename}"`,
-    '',
-    pdfBase64,
-    '',
-    `--${boundary}--`,
-  ].join('\r\n');
-}
 
 const sesClient = new SESClient({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -385,14 +352,13 @@ export async function POST(request: Request) {
       const pdfBase64 = await generateProposalPdfBase64(data, tenant, logoDataUrl);
       const pdfFilename = `Proposal-${data.customerLastName || 'document'}.pdf`;
 
-      const rawEmail = buildRawEmail(
-        formatFromAddress(tenant.name, tenant.email),
-        emailAddresses,
+      const rawEmail = buildRawEmail({
+        from: formatFromAddress(tenant.name, tenant.email),
+        to: emailAddresses,
         subject,
-        emailHtml,
-        pdfBase64,
-        pdfFilename
-      );
+        htmlBody: emailHtml,
+        attachment: { filename: pdfFilename, contentBase64: pdfBase64 },
+      });
 
       const destinations = [...emailAddresses];
       if (tenant.email && !destinations.includes(tenant.email)) {
@@ -409,7 +375,10 @@ export async function POST(request: Request) {
         Destination: { ToAddresses: emailAddresses },
         Message: {
           Subject: { Data: subject },
-          Body: { Html: { Data: emailHtml } },
+          Body: {
+            Text: { Data: htmlToPlainText(emailHtml), Charset: 'UTF-8' },
+            Html: { Data: emailHtml, Charset: 'UTF-8' },
+          },
         },
       }));
     }

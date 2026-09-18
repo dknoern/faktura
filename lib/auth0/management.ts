@@ -90,6 +90,8 @@ export interface NewAuth0User {
   password: string;
   tenantName: string;
   role: string;
+  tenantId?: string;
+  userType?: string;
 }
 
 export interface Auth0User {
@@ -107,9 +109,14 @@ export async function createAuth0User(data: NewAuth0User): Promise<Auth0User> {
       email: data.email,
       password: data.password,
       email_verified: false,
+      // Suppress Auth0's built-in verification email — both the signup and
+      // vendor-invite flows send their own branded email with the right link
+      verify_email: false,
       app_metadata: {
         tenantName: data.tenantName,
         role: data.role,
+        ...(data.tenantId ? { tenantId: data.tenantId } : {}),
+        ...(data.userType ? { userType: data.userType } : {}),
       },
     }),
   });
@@ -146,6 +153,26 @@ export async function createEmailVerificationTicket(
   await throwIfNotOk(res);
   const data = await res.json();
   return data.ticket;
+}
+
+// Auth0 requires password updates to be the only field in the PATCH request
+export async function updateAuth0UserPassword(userId: string, password: string): Promise<void> {
+  const res = await managementFetch(`users/${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      password,
+      connection: process.env.AUTH0_CONNECTION || "Username-Password-Authentication",
+    }),
+  });
+  await throwIfNotOk(res);
+}
+
+export async function markAuth0UserEmailVerified(userId: string): Promise<void> {
+  const res = await managementFetch(`users/${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ email_verified: true }),
+  });
+  await throwIfNotOk(res);
 }
 
 export async function findUserByEmail(email: string): Promise<Auth0User | null> {

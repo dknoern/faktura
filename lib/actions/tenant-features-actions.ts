@@ -14,6 +14,7 @@ export interface TenantFeaturesView {
   logoutitems: boolean;
   reports: boolean;
   payments: boolean;
+  vendors: boolean;
 }
 
 async function requireAdmin(): Promise<void> {
@@ -41,6 +42,7 @@ export async function getTenantFeaturesSettings(): Promise<TenantFeaturesView> {
     logoutitems: f.logoutitems ?? false,
     reports: f.reports ?? false,
     payments: f.payments ?? false,
+    vendors: f.vendors ?? false,
   };
 }
 
@@ -63,6 +65,7 @@ export async function updateTenantFeaturesSettings(
         "features.logoutitems": settings.logoutitems,
         "features.reports": settings.reports,
         "features.payments": settings.payments,
+        "features.vendors": settings.vendors,
       },
     }
   );

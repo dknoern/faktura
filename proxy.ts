@@ -48,6 +48,23 @@ export default auth((req: NextRequest & { auth: any }) => {
     return NextResponse.redirect(new URL('/verify-email', req.url))
   }
 
+  // Vendor users only get their (currently blank) home page until the vendor
+  // portal ships; bounce them off every other route.
+  const isVendorUser = (session?.user as any)?.role === 'vendor' || (session?.user as any)?.userType === 'vendor'
+  if (session?.user && isVendorUser) {
+    const isVendorAllowedPath = pathname === '/' ||
+                                pathname === '/home' ||
+                                pathname.startsWith('/auth') ||
+                                pathname.startsWith('/verify-email') ||
+                                pathname.startsWith('/invite') ||
+                                // Public customer-facing e-sign pages still work while signed in
+                                pathname.startsWith('/esign') ||
+                                pathname.startsWith('/api/esign')
+    if (!isVendorAllowedPath) {
+      return NextResponse.redirect(new URL('/home', req.url))
+    }
+  }
+
   // Check payload size for server actions before processing
   const contentLength = req.headers.get('content-length')
   if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
@@ -80,6 +97,9 @@ export default auth((req: NextRequest & { auth: any }) => {
     }
     if((session as any).fullName) {
       requestHeaders.set('x-full-name', (session as any).fullName)
+    }
+    if ((session.user as any).role) {
+      requestHeaders.set('x-user-role', (session.user as any).role)
     }
   }
 

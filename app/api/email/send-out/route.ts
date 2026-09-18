@@ -4,6 +4,7 @@ import { fetchOutById, fetchTenant } from '@/lib/data';
 import { getImageHost } from '@/lib/utils/imageHost';
 import { getOutImages } from '@/lib/utils/storage';
 import { formatFromAddress } from '@/lib/utils/email-from';
+import { htmlToPlainText } from '@/lib/utils/email-mime';
 
 // Initialize AWS SES client
 const sesClient = new SESClient({
@@ -211,6 +212,9 @@ export async function POST(request: Request) {
           Data: `Log Out ${formattedDate} - ${out.sentTo || 'Unknown'} from ${tenant.nameLong || 'DeMesy'}`,
         },
         Body: {
+          Text: {
+            Data: htmlToPlainText(emailHtml),
+          },
           Html: {
             Data: emailHtml,
           },

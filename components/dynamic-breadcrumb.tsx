@@ -24,6 +24,9 @@ const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
   "/customers": [
     { label: "Customers", href: "/customers" }
   ],
+  "/vendors": [
+    { label: "Vendors", href: "/vendors" }
+  ],
   "/invoices": [
     { label: "Invoices", href: "/invoices" }
   ],

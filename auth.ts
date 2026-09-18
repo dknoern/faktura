@@ -11,6 +11,7 @@ const PUBLIC_ROUTES = [
   '/auth',          // NextAuth sign-in/callback pages (basePath: /auth)
   '/signup',        // account signup flow
   '/verify-email',  // email verification flow
+  '/invite',        // vendor invitation acceptance flow
   '/esign',         // customer-facing e-sign pages
   '/api/esign',     // e-sign API used by the pages above
   '/api/webhooks',  // signature-verified webhooks (e.g. Stripe)
@@ -87,6 +88,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.role = role
         }
 
+        const userType = profileAny['https://fakturian.com/userType'] || profileAny.userType
+        if (userType && typeof userType === 'string') {
+          token.userType = userType
+        }
+
         // Standard OIDC claim, unnamespaced
         if (typeof profileAny.email_verified === 'boolean') {
           token.emailVerified = profileAny.email_verified
@@ -141,6 +147,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
 
+      // Pass userType to the session
+      if (token?.userType) {
+        if (session.user) {
+          (session.user as any).userType = token.userType
+        }
+      }
+
       // Pass emailVerified to the session
       if (typeof token?.emailVerified === 'boolean') {
         if (session.user) {
@@ -166,6 +179,7 @@ declare module "next-auth" {
     tenantName?: string
     fullName?: string
     role?: string
+    userType?: string
     emailVerified?: boolean
   }
 }
@@ -177,6 +191,7 @@ declare module "next-auth/jwt" {
     fullName?: string
     tenantName?: string
     role?: string
+    userType?: string
     emailVerified?: boolean
   }
 }

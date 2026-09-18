@@ -64,12 +64,46 @@ async function sendVerificationEmail(to: string, ticketUrl: string): Promise<voi
     Message: {
       Subject: { Data: "Verify your email to finish creating your account", Charset: "UTF-8" },
       Body: {
+        Text: {
+          Data: [
+            `Welcome to Fakturian!`,
+            ``,
+            `Open the link below to verify your email address and finish setting up your account:`,
+            ``,
+            ticketUrl,
+            ``,
+            `If you didn't create a Fakturian account, you can ignore this email.`,
+            ``,
+            `— The Fakturian team`,
+          ].join("\n"),
+          Charset: "UTF-8",
+        },
         Html: {
-          Data: `
-            <p>Welcome to Fakturian!</p>
-            <p>Click the link below to verify your email address and finish setting up your account.</p>
-            <p><a href="${ticketUrl}">Verify your email</a></p>
-          `,
+          Data: `<!DOCTYPE html>
+<html lang="en">
+  <body style="margin:0; padding:24px; background-color:#f6f6f6; font-family: Arial, Helvetica, sans-serif; color:#222222;">
+    <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:8px; padding:32px;">
+      <h1 style="font-size:20px; margin:0 0 16px;">Welcome to Fakturian!</h1>
+      <p style="font-size:14px; line-height:1.6; margin:0 0 24px;">
+        Verify your email address using the button below to finish setting up your account.
+      </p>
+      <p style="text-align:center; margin:0 0 24px;">
+        <a href="${ticketUrl}"
+           style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; font-size:14px; padding:12px 24px; border-radius:6px;">
+          Verify your email
+        </a>
+      </p>
+      <p style="font-size:12px; line-height:1.6; color:#555555; margin:0;">
+        If the button doesn't work, copy and paste this link into your browser:<br>
+        <a href="${ticketUrl}" style="color:#2563eb; word-break:break-all;">${ticketUrl}</a>
+      </p>
+    </div>
+    <p style="max-width:520px; margin:16px auto 0; font-size:11px; line-height:1.5; color:#888888; text-align:center;">
+      You're receiving this email because ${to} was used to create a Fakturian account.
+      If you didn't sign up, you can ignore this email.
+    </p>
+  </body>
+</html>`,
           Charset: "UTF-8",
         },
       },

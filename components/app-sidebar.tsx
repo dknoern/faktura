@@ -14,6 +14,7 @@ import {
   ChartColumn,
   Home,
   Gift,
+  Store,
 } from "lucide-react"
 
 import {
@@ -44,6 +45,11 @@ const data = {
       title: "Customers",
       url: "/customers",
       icon: Users,
+    },
+    {
+      title: "Vendors",
+      url: "/vendors",
+      icon: Store,
     },
     {
       title: "Invoices",
@@ -149,6 +155,7 @@ interface TenantFeatures {
   loginitems?: boolean;
   logoutitems?: boolean;
   reports?: boolean;
+  vendors?: boolean;
 }
 
 interface Tenant {
@@ -175,6 +182,7 @@ export function AppSidebar({ tenant, ...props }: AppSidebarProps) {
     const featureMap: { [key: string]: keyof TenantFeatures } = {
       'Products': 'products',
       'Customers': 'customers',
+      'Vendors': 'vendors',
       'Proposals': 'proposals',
       'Invoices': 'invoices',
       'Returns': 'returns',

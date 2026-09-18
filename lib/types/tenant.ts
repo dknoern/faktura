@@ -10,6 +10,7 @@ export interface TenantFeatures {
   logoutitems?: boolean;
   reports?: boolean;
   payments?: boolean;
+  vendors?: boolean;
 }
 
 export interface Tenant {

@@ -8,6 +8,7 @@ import { Return } from './models/return';
 import { Repair } from './models/repair';
 import { Out } from './models/out';
 import { customerModel } from './models/customer'; import { logModel } from './models/log';
+import { vendorModel } from './models/vendor';
 import { Wanted } from './models/wanted';
 import { addTenantFilter, getTenantObjectId, getNextCounter } from './tenant-utils';
 import { getTenantId } from './auth-utils';
@@ -54,6 +55,65 @@ export async function fetchCustomers(page = 1, limit = 10, search = '', { includ
         };
     } catch (error) {
         console.error('Error fetching customers:', error);
+        throw error;
+    }
+}
+
+
+export async function fetchVendors(page = 1, limit = 10, search = '', { includeDeleted = false }: { includeDeleted?: boolean } = {}) {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const skip = (page - 1) * limit;
+
+        let query: any = {};
+        if (search) {
+            const searchTokens = search.trim().split(/\s+/);
+            const searchConditions = searchTokens.map(token => (
+                { search: { $regex: token, $options: 'i' } }
+            ));
+            query = { $and: searchConditions };
+        }
+
+        query = addTenantFilter(query, tenantObjectId);
+        if (!includeDeleted) {
+            query.status = { $ne: 'Deleted' };
+        }
+
+        const vendors = await vendorModel.find(query)
+            .sort({ lastUpdated: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalCount = await vendorModel.countDocuments(query);
+        return {
+            vendors: JSON.parse(JSON.stringify(vendors)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching vendors:', error);
+        throw error;
+    }
+}
+
+
+export async function fetchVendorById(id: string, { includeDeleted = false }: { includeDeleted?: boolean } = {}) {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const query: any = { _id: id, tenantId: tenantObjectId };
+        if (!includeDeleted) {
+            query.status = { $ne: 'Deleted' };
+        }
+        const vendor = await vendorModel.findOne(query);
+        return vendor;
+    } catch (error) {
+        console.error('Error fetching vendor:', error);
         throw error;
     }
 }

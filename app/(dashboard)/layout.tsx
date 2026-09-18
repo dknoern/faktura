@@ -13,6 +13,7 @@ import {
 import UserButton from "@/components/user-button";
 import { fetchTenantById } from "@/lib/data";
 import { getTenantId } from "@/lib/auth-utils";
+import { auth } from "@/auth";
 
 // Force dynamic rendering since we fetch tenant data
 export const dynamic = 'force-dynamic';
@@ -33,6 +34,16 @@ export default async function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Vendor users don't get the dashboard navigation (blank home page for now)
+  let isVendor = false;
+  try {
+    const session = await auth();
+    const user = session?.user as any;
+    isVendor = user?.role === 'vendor' || user?.userType === 'vendor';
+  } catch {
+    // No session available (e.g. build time); fall through with defaults
+  }
+
   // During build time, database might not be available, so provide fallback
   let tenant = null;
   try {
@@ -50,14 +61,18 @@ export default async function Layout({
       className={`flex h-screen flex-col md:flex-row overflow-hidden ${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <SidebarProvider>
-        <AppSidebar tenant={tenant} />
+        {!isVendor && <AppSidebar tenant={tenant} />}
         <SidebarInset className="flex flex-col h-full w-full min-w-0 relative">
           <div className="h-full overflow-y-auto">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background border-b w-full">
 
               <div className="flex items-center gap-2 px-2 sm:px-4 flex-1 min-w-0 overflow-hidden">
-                <SidebarTrigger className="-ml-1 shrink-0" />
-                <Separator orientation="vertical" className="mr-2 h-4 shrink-0" />
+                {!isVendor && (
+                  <>
+                    <SidebarTrigger className="-ml-1 shrink-0" />
+                    <Separator orientation="vertical" className="mr-2 h-4 shrink-0" />
+                  </>
+                )}
                 <DynamicBreadcrumb />
 
               </div>
