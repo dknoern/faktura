@@ -34,7 +34,7 @@ export default async function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Vendor users don't get the dashboard navigation (blank home page for now)
+  // Vendor users get a minimal navigation (Home + Time) instead of the full dashboard
   let isVendor = false;
   try {
     const session = await auth();
@@ -61,18 +61,14 @@ export default async function Layout({
       className={`flex h-screen flex-col md:flex-row overflow-hidden ${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <SidebarProvider>
-        {!isVendor && <AppSidebar tenant={tenant} />}
+        <AppSidebar tenant={tenant} isVendor={isVendor} />
         <SidebarInset className="flex flex-col h-full w-full min-w-0 relative">
           <div className="h-full overflow-y-auto">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background border-b w-full">
 
               <div className="flex items-center gap-2 px-2 sm:px-4 flex-1 min-w-0 overflow-hidden">
-                {!isVendor && (
-                  <>
-                    <SidebarTrigger className="-ml-1 shrink-0" />
-                    <Separator orientation="vertical" className="mr-2 h-4 shrink-0" />
-                  </>
-                )}
+                <SidebarTrigger className="-ml-1 shrink-0" />
+                <Separator orientation="vertical" className="mr-2 h-4 shrink-0" />
                 <DynamicBreadcrumb />
 
               </div>

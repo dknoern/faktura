@@ -32,7 +32,8 @@ const TenantSchema = new mongoose.Schema({
         logoutitems: { type: Boolean, default: false },
         reports: { type: Boolean, default: false },
         payments: { type: Boolean, default: false },
-        vendors: { type: Boolean, default: false }
+        vendors: { type: Boolean, default: false },
+        time: { type: Boolean, default: false }
     },
     requiredData: {
         customerPhone: { type: Boolean, default: true },

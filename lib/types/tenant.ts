@@ -11,6 +11,7 @@ export interface TenantFeatures {
   reports?: boolean;
   payments?: boolean;
   vendors?: boolean;
+  time?: boolean;
 }
 
 export interface Tenant {

@@ -15,6 +15,7 @@ export interface TenantFeaturesView {
   reports: boolean;
   payments: boolean;
   vendors: boolean;
+  time: boolean;
 }
 
 async function requireAdmin(): Promise<void> {
@@ -43,6 +44,7 @@ export async function getTenantFeaturesSettings(): Promise<TenantFeaturesView> {
     reports: f.reports ?? false,
     payments: f.payments ?? false,
     vendors: f.vendors ?? false,
+    time: f.time ?? false,
   };
 }
 
@@ -66,6 +68,7 @@ export async function updateTenantFeaturesSettings(
         "features.reports": settings.reports,
         "features.payments": settings.payments,
         "features.vendors": settings.vendors,
+        "features.time": settings.time,
       },
     }
   );

@@ -28,6 +28,7 @@ interface Proposal {
   customerEmail?: string
   customerPhone?: string
   date: string
+  project?: string
   total: number
   lineItems: ProposalLineItem[]
   conditions?: string
@@ -52,6 +53,7 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
     customerPhone: proposal?.customerPhone ?? customer.phone ?? '',
     // Saved dates come back as full ISO strings; the date input needs yyyy-MM-dd
     date: proposal?.date?.split('T')[0] || new Date().toISOString().split('T')[0],
+    project: proposal?.project || '',
     status: proposal?.status || 'Draft',
     conditions: proposal?.conditions || ''
   })
@@ -153,6 +155,16 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
                 onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
               />
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="project">Project</Label>
+            <Input
+              id="project"
+              value={formData.project}
+              onChange={(e) => setFormData({ ...formData, project: e.target.value })}
+              placeholder="Optional project name"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

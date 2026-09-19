@@ -21,6 +21,7 @@ const FEATURE_FIELDS: { key: keyof TenantFeaturesView; label: string; descriptio
   { key: "reports", label: "Reports", description: "Enable the reports section" },
   { key: "payments", label: "Payments", description: "Enable payment tracking on invoices" },
   { key: "vendors", label: "Vendors", description: "Enable vendor management and vendor user invitations" },
+  { key: "time", label: "Time", description: "Enable time tracking for vendors with admin approval" },
 ];
 
 export function FeaturesSettingsSection() {
@@ -34,6 +35,7 @@ export function FeaturesSettingsSection() {
     reports: false,
     payments: false,
     vendors: false,
+    time: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

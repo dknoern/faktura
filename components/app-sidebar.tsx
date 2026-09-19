@@ -15,6 +15,7 @@ import {
   Home,
   Gift,
   Store,
+  Clock,
 } from "lucide-react"
 
 import {
@@ -50,6 +51,11 @@ const data = {
       title: "Vendors",
       url: "/vendors",
       icon: Store,
+    },
+    {
+      title: "Time",
+      url: "/time",
+      icon: Clock,
     },
     {
       title: "Invoices",
@@ -156,6 +162,7 @@ interface TenantFeatures {
   logoutitems?: boolean;
   reports?: boolean;
   vendors?: boolean;
+  time?: boolean;
 }
 
 interface Tenant {
@@ -167,22 +174,29 @@ interface Tenant {
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   tenant?: Tenant | null;
+  isVendor?: boolean;
 }
 
-export function AppSidebar({ tenant, ...props }: AppSidebarProps) {
+export function AppSidebar({ tenant, isVendor = false, ...props }: AppSidebarProps) {
   const tenantName = tenant?.name || 'Lager';
   const features = tenant?.features || {};
 
   // Filter menu items based on tenant features
   const filteredNavMain = data.navMain.filter(item => {
+    // Vendor users only get Home and (when enabled) Time
+    if (isVendor) {
+      return item.title === 'Home' || (item.title === 'Time' && features.time === true);
+    }
+
     // Always show Home
     if (item.title === 'Home') return true;
-    
+
     // Map menu titles to feature keys
     const featureMap: { [key: string]: keyof TenantFeatures } = {
       'Products': 'products',
       'Customers': 'customers',
       'Vendors': 'vendors',
+      'Time': 'time',
       'Proposals': 'proposals',
       'Invoices': 'invoices',
       'Returns': 'returns',

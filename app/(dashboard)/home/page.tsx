@@ -3,6 +3,10 @@ import { SkeletonTable } from "@/components/skeletons";
 import { getDashboardStats, getMonthlySalesData, getRecentTransactions, getInventoryByProductType, getInventoryByStatus } from "@/lib/actions/dashboard-actions";
 import { Suspense } from "react";
 import { auth } from "@/auth";
+import { fetchTenant } from "@/lib/data";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Clock } from "lucide-react";
 
 // Force dynamic rendering since we fetch dashboard data
 export const dynamic = 'force-dynamic';
@@ -12,14 +16,30 @@ export default async function Page() {
   const session = await auth();
   const user = session?.user as any;
   if (user?.role === 'vendor' || user?.userType === 'vendor') {
+    const tenant = await fetchTenant();
+    const timeEnabled = tenant?.features?.time === true;
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <h2 className="text-2xl font-bold tracking-tight">
           Welcome{user?.name ? `, ${user.name}` : ''}
         </h2>
-        <p className="text-muted-foreground mt-2">
-          Your vendor portal is coming soon.
-        </p>
+        {timeEnabled ? (
+          <>
+            <p className="text-muted-foreground mt-2">
+              Track your hours and submit them for approval.
+            </p>
+            <Button asChild className="mt-6">
+              <Link href="/time">
+                <Clock className="mr-2 h-4 w-4" />
+                Enter Time
+              </Link>
+            </Button>
+          </>
+        ) : (
+          <p className="text-muted-foreground mt-2">
+            Your vendor portal is coming soon.
+          </p>
+        )}
       </div>
     );
   }

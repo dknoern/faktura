@@ -54,6 +54,7 @@ export default auth((req: NextRequest & { auth: any }) => {
   if (session?.user && isVendorUser) {
     const isVendorAllowedPath = pathname === '/' ||
                                 pathname === '/home' ||
+                                pathname.startsWith('/time') ||
                                 pathname.startsWith('/auth') ||
                                 pathname.startsWith('/verify-email') ||
                                 pathname.startsWith('/invite') ||

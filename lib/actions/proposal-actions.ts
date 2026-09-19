@@ -21,6 +21,7 @@ export interface ProposalData {
   customerEmail?: string;
   customerPhone?: string;
   date: string | Date;
+  project?: string;
   total: number;
   lineItems: ProposalLineItem[];
   conditions?: string;
@@ -92,6 +93,10 @@ function buildSearchField(doc: ProposalData) {
   const formattedDate = format(doc.date, 'yyyy-MM-dd');
 
   search += doc.customerFirstName + " " + doc.customerLastName + " " + formattedDate + " ";
+
+  if (doc.project) {
+    search += doc.project + " ";
+  }
 
   if (doc.lineItems != null) {
     for (var i = 0; i < doc.lineItems.length; i++) {

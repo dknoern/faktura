@@ -9,6 +9,7 @@ import { Repair } from './models/repair';
 import { Out } from './models/out';
 import { customerModel } from './models/customer'; import { logModel } from './models/log';
 import { vendorModel } from './models/vendor';
+import { timeEntryModel } from './models/time';
 import { Wanted } from './models/wanted';
 import { addTenantFilter, getTenantObjectId, getNextCounter } from './tenant-utils';
 import { getTenantId } from './auth-utils';
@@ -114,6 +115,106 @@ export async function fetchVendorById(id: string, { includeDeleted = false }: { 
         return vendor;
     } catch (error) {
         console.error('Error fetching vendor:', error);
+        throw error;
+    }
+}
+
+
+export async function fetchVendorByEmail(email: string) {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const vendor = await vendorModel.findOne({
+            tenantId: tenantObjectId,
+            email,
+            status: { $ne: 'Deleted' },
+        });
+        return vendor;
+    } catch (error) {
+        console.error('Error fetching vendor by email:', error);
+        throw error;
+    }
+}
+
+
+export async function fetchTimeEntries(
+    page = 1,
+    limit = 20,
+    { status = '', vendorId = '' }: { status?: string; vendorId?: string } = {}
+) {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const skip = (page - 1) * limit;
+
+        const query: any = { tenantId: tenantObjectId };
+        if (status) {
+            query.status = status;
+        }
+        if (vendorId) {
+            query.vendorId = vendorId;
+        }
+
+        const entries = await timeEntryModel.find(query)
+            .sort({ date: -1, createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalCount = await timeEntryModel.countDocuments(query);
+        return {
+            entries: JSON.parse(JSON.stringify(entries)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching time entries:', error);
+        throw error;
+    }
+}
+
+
+// Projects selectable for time entry — proposals, labelled by their project
+// name when set, otherwise by customer
+export async function fetchProjectOptions(): Promise<{ id: string; label: string }[]> {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const proposals = await Proposal.find({ tenantId: tenantObjectId })
+            .select({ project: 1, customerFirstName: 1, customerLastName: 1, date: 1 })
+            .sort({ date: -1 })
+            .limit(200);
+
+        return proposals.map((p: any) => ({
+            id: p._id.toString(),
+            label: p.project?.trim() ||
+                `${p.customerFirstName ?? ''} ${p.customerLastName ?? ''}`.trim() ||
+                'Proposal',
+        }));
+    } catch (error) {
+        console.error('Error fetching project options:', error);
+        throw error;
+    }
+}
+
+
+export async function fetchVendorOptions(): Promise<{ id: string; label: string }[]> {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const vendors = await vendorModel.find({ tenantId: tenantObjectId, status: { $ne: 'Deleted' } })
+            .select({ firstName: 1, lastName: 1, company: 1 })
+            .sort({ lastName: 1, firstName: 1 });
+
+        return vendors.map((v: any) => ({
+            id: v._id.toString(),
+            label: `${v.firstName} ${v.lastName}`.trim() + (v.company ? ` (${v.company})` : ''),
+        }));
+    } catch (error) {
+        console.error('Error fetching vendor options:', error);
         throw error;
     }
 }
