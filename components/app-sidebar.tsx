@@ -16,6 +16,7 @@ import {
   Gift,
   Store,
   Clock,
+  Banknote,
 } from "lucide-react"
 
 import {
@@ -56,6 +57,11 @@ const data = {
       title: "Time",
       url: "/time",
       icon: Clock,
+    },
+    {
+      title: "Payouts",
+      url: "/payouts",
+      icon: Banknote,
     },
     {
       title: "Invoices",
@@ -197,6 +203,7 @@ export function AppSidebar({ tenant, isVendor = false, ...props }: AppSidebarPro
       'Customers': 'customers',
       'Vendors': 'vendors',
       'Time': 'time',
+      'Payouts': 'time',
       'Proposals': 'proposals',
       'Invoices': 'invoices',
       'Returns': 'returns',

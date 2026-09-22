@@ -1,10 +1,10 @@
 'use server'
 
 import sharp from "sharp";
+import mongoose from "mongoose";
 import dbConnect from "@/lib/dbConnect";
 import { Tenant } from "@/lib/models/tenant";
 import { getTenantId } from "@/lib/auth-utils";
-import { getTenantObjectId } from "@/lib/tenant-utils";
 import { auth } from "@/auth";
 import { saveImage, deleteImage } from "@/lib/utils/storage";
 
@@ -17,6 +17,16 @@ async function requireAdmin(): Promise<void> {
   if (role !== 'admin') {
     throw new Error('Forbidden: admin access required');
   }
+}
+
+// Tenant comes from the session, not the proxy headers — multipart uploads
+// skip the proxy's header injection, so header-derived tenant context would
+// silently fall back to the default tenant
+async function getSessionTenant(): Promise<{ tenantId: string; tenantObjectId: mongoose.Types.ObjectId }> {
+  const session = await auth();
+  const sessionTenantId = (session?.user as any)?.tenantId;
+  const tenantId = sessionTenantId ? String(sessionTenantId) : await getTenantId();
+  return { tenantId, tenantObjectId: new mongoose.Types.ObjectId(tenantId) };
 }
 
 function logoFileName(tenantId: string): string {
@@ -35,8 +45,7 @@ export interface TenantLogoView {
 
 export async function getTenantLogoInfo(): Promise<TenantLogoView> {
   await dbConnect();
-  const tenantId = await getTenantId();
-  const tenantObjectId = await getTenantObjectId();
+  const { tenantId, tenantObjectId } = await getSessionTenant();
   const tenant = await Tenant.findOne({ _id: tenantObjectId }).select('logo').lean();
   const version = (tenant as any)?.logo as string | undefined;
   if (!version) {
@@ -55,7 +64,7 @@ export async function uploadTenantLogo(formData: FormData): Promise<UploadLogoRe
   try {
     await requireAdmin();
     await dbConnect();
-    const tenantId = await getTenantId();
+    const { tenantId, tenantObjectId } = await getSessionTenant();
 
     const file = formData.get('file');
     if (!(file instanceof File)) {
@@ -89,7 +98,6 @@ export async function uploadTenantLogo(formData: FormData): Promise<UploadLogoRe
     await saveImage(pngBuffer, logoFileName(tenantId));
 
     const version = Date.now().toString();
-    const tenantObjectId = await getTenantObjectId();
     await Tenant.updateOne({ _id: tenantObjectId }, { $set: { logo: version } });
 
     return {
@@ -110,7 +118,7 @@ export async function removeTenantLogo(): Promise<UploadLogoResult> {
   try {
     await requireAdmin();
     await dbConnect();
-    const tenantId = await getTenantId();
+    const { tenantId, tenantObjectId } = await getSessionTenant();
 
     try {
       await deleteImage(logoFileName(tenantId));
@@ -119,7 +127,6 @@ export async function removeTenantLogo(): Promise<UploadLogoResult> {
       console.warn('[tenant-logo] delete from storage failed (continuing):', err instanceof Error ? err.message : String(err));
     }
 
-    const tenantObjectId = await getTenantObjectId();
     await Tenant.updateOne({ _id: tenantObjectId }, { $unset: { logo: '' } });
 
     return {

@@ -27,6 +27,8 @@ export interface Tenant {
   state?: string;
   zip?: string;
   website?: string;
+  customDomain?: string;
+  splashImage?: string;
   warranty?: string;
   returnPolicy?: string;
   bankWireTransferInstructions?: string;

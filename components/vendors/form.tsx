@@ -27,6 +27,10 @@ const vendorFormSchema = z.object({
   company: z.string().optional(),
   taxId: z.string().optional(),
   venmoAlias: z.string().optional(),
+  hourlyRate: z.preprocess(
+    (v) => (v === '' || v == null ? undefined : Number(v)),
+    z.number().positive("Hourly rate must be greater than 0").optional()
+  ),
   address1: z.string().optional(),
   address2: z.string().optional(),
   city: z.string().optional(),
@@ -55,6 +59,7 @@ export function VendorForm({ vendor }: { vendor?: z.infer<typeof vendorSchema> }
       company: "",
       taxId: "",
       venmoAlias: "",
+      hourlyRate: undefined,
       address1: "",
       address2: "",
       city: "",
@@ -98,6 +103,7 @@ export function VendorForm({ vendor }: { vendor?: z.infer<typeof vendorSchema> }
         company: vendor.company || "",
         taxId: vendor.taxId || "",
         venmoAlias: vendor.venmoAlias || "",
+        hourlyRate: vendor.hourlyRate ?? undefined,
         address1: vendor.address1 || "",
         address2: vendor.address2 || "",
         city: vendor.city || "",
@@ -216,6 +222,27 @@ export function VendorForm({ vendor }: { vendor?: z.infer<typeof vendorSchema> }
                 <FormLabel>Venmo Alias</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="@username" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="hourlyRate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Hourly Rate (USD)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="e.g. 45.00"
+                    {...field}
+                    value={field.value ?? ""}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

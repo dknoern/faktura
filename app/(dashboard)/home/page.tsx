@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import { fetchTenant } from "@/lib/data";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Clock } from "lucide-react";
+import { Clock, Receipt, List } from "lucide-react";
 
 // Force dynamic rendering since we fetch dashboard data
 export const dynamic = 'force-dynamic';
@@ -26,14 +26,28 @@ export default async function Page() {
         {timeEnabled ? (
           <>
             <p className="text-muted-foreground mt-2">
-              Track your hours and submit them for approval.
+              Track your hours and expenses and submit them for approval.
             </p>
-            <Button asChild className="mt-6">
-              <Link href="/time">
-                <Clock className="mr-2 h-4 w-4" />
-                Enter Time
-              </Link>
-            </Button>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Button asChild>
+                <Link href="/time/new">
+                  <Clock className="mr-2 h-4 w-4" />
+                  Enter Time
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/time/expense/new">
+                  <Receipt className="mr-2 h-4 w-4" />
+                  Enter Expense
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/time">
+                  <List className="mr-2 h-4 w-4" />
+                  View Entries
+                </Link>
+              </Button>
+            </div>
           </>
         ) : (
           <p className="text-muted-foreground mt-2">

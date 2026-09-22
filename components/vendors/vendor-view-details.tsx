@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { vendorSchema } from "@/lib/models/vendor";
 import { z } from "zod";
 import { VendorActionMenu } from "./vendor-action-menu";
+import { PayoutSummary } from "./payout-dialog";
 import { useState } from "react";
 
 type Vendor = z.infer<typeof vendorSchema>;
@@ -12,9 +13,10 @@ type Vendor = z.infer<typeof vendorSchema>;
 interface VendorViewDetailsProps {
     vendor: Vendor;
     isAdmin?: boolean;
+    payout?: PayoutSummary | null;
 }
 
-export function VendorViewDetails({ vendor: initialVendor, isAdmin = false }: VendorViewDetailsProps) {
+export function VendorViewDetails({ vendor: initialVendor, isAdmin = false, payout = null }: VendorViewDetailsProps) {
     const [vendor, setVendor] = useState(initialVendor);
 
     return (
@@ -31,7 +33,7 @@ export function VendorViewDetails({ vendor: initialVendor, isAdmin = false }: Ve
                         </p>
                     )}
                 </div>
-                <VendorActionMenu vendor={vendor} isAdmin={isAdmin} onVendorChange={setVendor} />
+                <VendorActionMenu vendor={vendor} isAdmin={isAdmin} payout={payout} onVendorChange={setVendor} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -67,6 +69,14 @@ export function VendorViewDetails({ vendor: initialVendor, isAdmin = false }: Ve
                                 <p className="text-sm">{vendor.venmoAlias}</p>
                             </div>
                         )}
+                        <div>
+                            <label className="text-sm font-medium text-muted-foreground">Hourly Rate</label>
+                            <p className="text-sm">
+                                {vendor.hourlyRate != null
+                                    ? `$${vendor.hourlyRate.toFixed(2)}/hr`
+                                    : <span className="text-muted-foreground">Not set</span>}
+                            </p>
+                        </div>
                         {vendor.status && (
                             <div>
                                 <label className="text-sm font-medium text-muted-foreground">Status</label>

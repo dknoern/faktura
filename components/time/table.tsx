@@ -18,9 +18,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { PlusCircle, Check, X } from "lucide-react";
+import { PlusCircle, Check, X, ChevronDown, Clock, Receipt, Paperclip } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { approveTimeEntry, rejectTimeEntry } from "@/lib/actions/time-actions";
 
@@ -39,15 +45,18 @@ interface TimeTableProps {
     isAdmin?: boolean
     // Vendor column is redundant on a vendor's own list
     showVendor?: boolean
+    // Hidden when the table is embedded (e.g. on a vendor's view page)
+    showNewEntry?: boolean
 }
 
 function statusBadgeVariant(status?: string): "default" | "secondary" | "outline" | "destructive" {
     if (status === 'Approved') return 'default';
     if (status === 'Rejected') return 'destructive';
+    if (status === 'Paid') return 'secondary';
     return 'outline';
 }
 
-export function TimeTable({ entries, pagination, isAdmin = false, showVendor = true }: TimeTableProps) {
+export function TimeTable({ entries, pagination, isAdmin = false, showVendor = true, showNewEntry = true }: TimeTableProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -104,18 +113,32 @@ export function TimeTable({ entries, pagination, isAdmin = false, showVendor = t
                             <SelectItem value="Pending">Pending</SelectItem>
                             <SelectItem value="Approved">Approved</SelectItem>
                             <SelectItem value="Rejected">Rejected</SelectItem>
+                            <SelectItem value="Paid">Paid</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
 
-                <Button
-                    variant="outline"
-                    onClick={() => router.push('/time/new')}
-                    className="ml-4 flex items-center gap-1"
-                >
-                    <PlusCircle size={18} />
-                    <span>Enter Time</span>
-                </Button>
+                {showNewEntry && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="ml-4 flex items-center gap-1">
+                                <PlusCircle size={18} />
+                                <span>New Entry</span>
+                                <ChevronDown className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => router.push('/time/new')}>
+                                <Clock className="mr-2 h-4 w-4" />
+                                Enter Time
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push('/time/expense/new')}>
+                                <Receipt className="mr-2 h-4 w-4" />
+                                Enter Expense
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
             </div>
 
             <Table>
@@ -123,9 +146,11 @@ export function TimeTable({ entries, pagination, isAdmin = false, showVendor = t
                     <TableRow>
                         <TableHead>Date</TableHead>
                         {showVendor && <TableHead>Vendor</TableHead>}
+                        <TableHead>Type</TableHead>
                         <TableHead>Project</TableHead>
+                        <TableHead>Details</TableHead>
                         <TableHead className="text-right">Hours</TableHead>
-                        <TableHead>Comment</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
                         <TableHead>Status</TableHead>
                         {isAdmin && <TableHead className="text-center">Review</TableHead>}
                     </TableRow>
@@ -135,10 +160,48 @@ export function TimeTable({ entries, pagination, isAdmin = false, showVendor = t
                         <TableRow key={entry._id}>
                             <TableCell>{entry.date}</TableCell>
                             {showVendor && <TableCell>{entry.vendorName}</TableCell>}
+                            <TableCell>
+                                {entry.entryType === 'expense' ? (
+                                    <Badge variant="secondary">
+                                        <Receipt className="mr-1 h-3 w-3" />
+                                        Expense
+                                    </Badge>
+                                ) : (
+                                    <Badge variant="outline">
+                                        <Clock className="mr-1 h-3 w-3" />
+                                        Time
+                                    </Badge>
+                                )}
+                            </TableCell>
                             <TableCell>{entry.projectName}</TableCell>
-                            <TableCell className="text-right">{entry.hours.toFixed(1)}</TableCell>
-                            <TableCell className="max-w-[300px] truncate" title={entry.comment}>
-                                {entry.comment}
+                            <TableCell className="max-w-[300px]">
+                                {entry.description && (
+                                    <div className="truncate font-medium" title={entry.description}>
+                                        {entry.description}
+                                    </div>
+                                )}
+                                {entry.comment && (
+                                    <div className="truncate text-muted-foreground text-sm" title={entry.comment}>
+                                        {entry.comment}
+                                    </div>
+                                )}
+                                {entry.receipt && (
+                                    <a
+                                        href={`/api/time/receipt?entryId=${entry._id}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                                    >
+                                        <Paperclip className="h-3 w-3" />
+                                        Receipt
+                                    </a>
+                                )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                                {entry.hours != null ? entry.hours.toFixed(1) : ''}
+                            </TableCell>
+                            <TableCell className="text-right">
+                                {entry.amount != null ? `$${entry.amount.toFixed(2)}` : ''}
                             </TableCell>
                             <TableCell>
                                 <Badge variant={statusBadgeVariant(entry.status)}>{entry.status}</Badge>
@@ -174,10 +237,10 @@ export function TimeTable({ entries, pagination, isAdmin = false, showVendor = t
                     {entriesList.length === 0 && (
                         <TableRow>
                             <TableCell
-                                colSpan={5 + (showVendor ? 1 : 0) + (isAdmin ? 1 : 0)}
+                                colSpan={7 + (showVendor ? 1 : 0) + (isAdmin ? 1 : 0)}
                                 className="text-center text-muted-foreground py-8"
                             >
-                                No time entries yet
+                                No entries yet
                             </TableCell>
                         </TableRow>
                     )}

@@ -15,6 +15,8 @@ const vendorBaseSchema = z.object({
   company: z.string().optional(),
   taxId: z.string().optional(),
   venmoAlias: z.string().optional(),
+  // USD, used to price approved time entries at payout
+  hourlyRate: z.number().optional(),
   address1: z.string().optional(),
   address2: z.string().optional(),
   city: z.string().optional(),

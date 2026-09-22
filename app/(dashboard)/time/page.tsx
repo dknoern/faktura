@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 type SearchParams = Promise<{ page?: string, status?: string }>
 
-const VALID_STATUSES = ['Pending', 'Approved', 'Rejected'];
+const VALID_STATUSES = ['Pending', 'Approved', 'Rejected', 'Paid'];
 
 export default async function Page({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;

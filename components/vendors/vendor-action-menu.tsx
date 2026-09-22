@@ -18,26 +18,29 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Edit, ChevronDown, Trash2, UserPlus, MailPlus } from "lucide-react";
+import { Edit, ChevronDown, Trash2, UserPlus, MailPlus, Banknote } from "lucide-react";
 import { vendorSchema } from "@/lib/models/vendor";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { deleteVendor, inviteVendor, resendVendorInvite } from "@/lib/actions/vendor-actions";
 import { toast } from "react-hot-toast";
+import { PayoutDialog, PayoutSummary } from "./payout-dialog";
 
 type Vendor = z.infer<typeof vendorSchema>;
 
 interface VendorActionMenuProps {
     vendor: Vendor;
     isAdmin?: boolean;
+    payout?: PayoutSummary | null;
     onVendorChange?: (vendor: Vendor) => void;
 }
 
-export function VendorActionMenu({ vendor, isAdmin = false, onVendorChange }: VendorActionMenuProps) {
+export function VendorActionMenu({ vendor, isAdmin = false, payout = null, onVendorChange }: VendorActionMenuProps) {
     const router = useRouter();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showInviteDialog, setShowInviteDialog] = useState(false);
+    const [showPayoutDialog, setShowPayoutDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isInviting, setIsInviting] = useState(false);
 
@@ -110,6 +113,15 @@ export function VendorActionMenu({ vendor, isAdmin = false, onVendorChange }: Ve
                             )}
                         </DropdownMenuItem>
                     )}
+                    {isAdmin && payout && (
+                        <DropdownMenuItem
+                            disabled={!payout.eligible}
+                            onClick={() => setShowPayoutDialog(true)}
+                        >
+                            <Banknote className="mr-2 h-4 w-4" />
+                            Payout
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
                         <Trash2 className="mr-2 h-4 w-4" />
@@ -117,6 +129,16 @@ export function VendorActionMenu({ vendor, isAdmin = false, onVendorChange }: Ve
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            {isAdmin && payout && (
+                <PayoutDialog
+                    vendorId={vendor._id.toString()}
+                    vendorName={`${vendor.firstName} ${vendor.lastName}`}
+                    payout={payout}
+                    open={showPayoutDialog}
+                    onOpenChange={setShowPayoutDialog}
+                />
+            )}
 
             <AlertDialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
                 <AlertDialogContent>

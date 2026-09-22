@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getImage } from '@/lib/utils/storage';
+import { contentDispositionHeader } from '@/lib/utils/content-disposition';
 
 export async function GET(request: NextRequest) {
     try {
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
         return new NextResponse(new Uint8Array(fileBuffer), {
             headers: {
                 'Content-Type': contentType,
-                'Content-Disposition': `attachment; filename="${downloadName}"`,
+                'Content-Disposition': contentDispositionHeader('attachment', downloadName),
                 'Content-Length': fileBuffer.length.toString(),
             },
         });

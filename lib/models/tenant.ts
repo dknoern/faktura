@@ -15,6 +15,10 @@ const TenantSchema = new mongoose.Schema({
     phone: String,
     fax: String,
     website: String,
+    // Custom domain for this tenant's branded public landing page (no self-signup)
+    customDomain: String,
+    // Version stamp for the uploaded splash background (file: splash-<tenantId>.jpg)
+    splashImage: String,
     warranty: String,
     returnPolicy: String,
     bankWireTransferInstructions: String,

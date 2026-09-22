@@ -1,35 +1,21 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { auth } from "./auth"
-import { isPublicTenantHost } from "./lib/public-tenant"
 
 // Read more: https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)$).*)"],
 }
 
-function isPublicTenant(req: NextRequest): boolean {
-  const hostname = req.headers.get('host') || req.nextUrl.hostname
-  return isPublicTenantHost(hostname)
-}
-
 export default auth((req: NextRequest & { auth: any }) => {
   const session = req.auth
   const { pathname } = req.nextUrl
 
-  // Route public tenants to the public landing page
-  if (isPublicTenant(req)) {
-    if (pathname === '/') {
-      if (session?.user) {
-        return NextResponse.redirect(new URL('/home', req.url))
-      }
-      return NextResponse.rewrite(new URL('/public', req.url))
-    }
-  } else if (pathname === '/signup' || pathname.startsWith('/signup/')) {
-    // Self-serve signup is only offered on public deployments
-    return NextResponse.redirect(new URL('/', req.url))
-  }
-  
+  // Landing-page branding and signup gating are data-driven per host: the
+  // '/' page looks up the tenant by custom domain (app/page.tsx), and the
+  // signup page redirects away on tenant-branded domains (app/signup/page.tsx).
+
+
   // Skip middleware for server actions to avoid clientReferenceManifest issues
   if (req.method === 'POST' && req.headers.get('content-type')?.includes('multipart/form-data')) {
     return NextResponse.next()
@@ -55,6 +41,7 @@ export default auth((req: NextRequest & { auth: any }) => {
     const isVendorAllowedPath = pathname === '/' ||
                                 pathname === '/home' ||
                                 pathname.startsWith('/time') ||
+                                pathname.startsWith('/api/time') ||
                                 pathname.startsWith('/auth') ||
                                 pathname.startsWith('/verify-email') ||
                                 pathname.startsWith('/invite') ||

@@ -10,9 +10,11 @@ import { Out } from './models/out';
 import { customerModel } from './models/customer'; import { logModel } from './models/log';
 import { vendorModel } from './models/vendor';
 import { timeEntryModel } from './models/time';
+import { vendorPaymentModel } from './models/vendor-payment';
 import { Wanted } from './models/wanted';
 import { addTenantFilter, getTenantObjectId, getNextCounter } from './tenant-utils';
 import { getTenantId } from './auth-utils';
+import { hostMatchesDomain } from './public-tenant';
 
 export async function fetchCustomers(page = 1, limit = 10, search = '', { includeDeleted = false }: { includeDeleted?: boolean } = {}) {
     try {
@@ -172,6 +174,87 @@ export async function fetchTimeEntries(
         };
     } catch (error) {
         console.error('Error fetching time entries:', error);
+        throw error;
+    }
+}
+
+
+// Approved entries not yet included in a payout, used to build the payout summary
+export async function fetchUnpaidApprovedEntries(vendorId: string) {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const entries = await timeEntryModel.find({
+            tenantId: tenantObjectId,
+            vendorId,
+            status: 'Approved',
+        }).sort({ date: 1 });
+        return JSON.parse(JSON.stringify(entries));
+    } catch (error) {
+        console.error('Error fetching unpaid approved entries:', error);
+        throw error;
+    }
+}
+
+
+export async function fetchVendorPayments(page = 1, limit = 20, { vendorId = '' }: { vendorId?: string } = {}) {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const skip = (page - 1) * limit;
+
+        const query: any = { tenantId: tenantObjectId };
+        if (vendorId) {
+            query.vendorId = vendorId;
+        }
+
+        const payments = await vendorPaymentModel.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalCount = await vendorPaymentModel.countDocuments(query);
+        return {
+            payments: JSON.parse(JSON.stringify(payments)),
+            pagination: {
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching vendor payments:', error);
+        throw error;
+    }
+}
+
+
+export async function fetchVendorPaymentById(id: string) {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const payment = await vendorPaymentModel.findOne({ _id: id, tenantId: tenantObjectId });
+        return payment ? JSON.parse(JSON.stringify(payment)) : null;
+    } catch (error) {
+        console.error('Error fetching vendor payment:', error);
+        throw error;
+    }
+}
+
+
+// All time/expense entries included in a given payout
+export async function fetchEntriesByPaymentId(paymentId: string) {
+    try {
+        await dbConnect();
+        const tenantObjectId = await getTenantObjectId();
+        const entries = await timeEntryModel.find({
+            tenantId: tenantObjectId,
+            paymentId,
+        }).sort({ date: 1 });
+        return JSON.parse(JSON.stringify(entries));
+    } catch (error) {
+        console.error('Error fetching entries for payment:', error);
         throw error;
     }
 }
@@ -760,6 +843,26 @@ export async function fetchRepairById(id: string) {
 export async function fetchTenant() {
     const tenantId = await getTenantId();
     return await fetchTenantById(tenantId);
+}
+
+
+// Finds the tenant whose custom domain matches the request host (apex, www,
+// or any subdomain). Returns null when no tenant claims the domain — the
+// caller should then show the generic landing page with self-signup.
+// Never throws: the public landing page must render even if the DB is down.
+export async function fetchTenantByHost(host: string | null | undefined) {
+    if (!host) return null;
+    try {
+        await dbConnect();
+        const tenants = await Tenant.find({ customDomain: { $exists: true, $nin: [null, ''] } })
+            .select({ name: 1, nameLong: 1, customDomain: 1, splashImage: 1 })
+            .lean();
+        const match = (tenants as any[]).find((t) => hostMatchesDomain(host, t.customDomain));
+        return match ? JSON.parse(JSON.stringify(match)) : null;
+    } catch (error) {
+        console.error('Error fetching tenant by host:', error);
+        return null;
+    }
 }
 
 
