@@ -24,6 +24,8 @@ LineItemSchema.virtual('amountFMT').get(function (this: { amount: number }) {
 var InvoiceSchema = new mongoose.Schema({
     invoiceNumber: Number,
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'customer' },
+    // Set when the invoice was created from a proposal
+    proposalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Proposal' },
     customerNumber: Number,
     customerFirstName: String,
     customerLastName: String,

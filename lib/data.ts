@@ -261,12 +261,16 @@ export async function fetchEntriesByPaymentId(paymentId: string) {
 
 
 // Projects selectable for time entry — proposals, labelled by their project
-// name when set, otherwise by customer
+// name when set, otherwise by customer. Closed and Cancelled proposals no
+// longer accept time or expenses.
 export async function fetchProjectOptions(): Promise<{ id: string; label: string }[]> {
     try {
         await dbConnect();
         const tenantObjectId = await getTenantObjectId();
-        const proposals = await Proposal.find({ tenantId: tenantObjectId })
+        const proposals = await Proposal.find({
+            tenantId: tenantObjectId,
+            status: { $nin: ['Closed', 'Cancelled'] },
+        })
             .select({ project: 1, customerFirstName: 1, customerLastName: 1, date: 1 })
             .sort({ date: -1 })
             .limit(200);
@@ -855,7 +859,7 @@ export async function fetchTenantByHost(host: string | null | undefined) {
     try {
         await dbConnect();
         const tenants = await Tenant.find({ customDomain: { $exists: true, $nin: [null, ''] } })
-            .select({ name: 1, nameLong: 1, customDomain: 1, splashImage: 1 })
+            .select({ name: 1, nameLong: 1, customDomain: 1, splashImage: 1, logo: 1 })
             .lean();
         const match = (tenants as any[]).find((t) => hostMatchesDomain(host, t.customDomain));
         return match ? JSON.parse(JSON.stringify(match)) : null;

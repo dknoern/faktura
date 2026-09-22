@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/dbConnect";
 import { Invoice } from "@/lib/models/invoice";
+import { Proposal } from "@/lib/models/proposal";
 import { calcTax } from "@/lib/utils/tax";
 import { updateProductHistory } from "@/lib/utils/product-history";
 import { getShortUser } from "@/lib/auth-utils";
@@ -26,6 +27,8 @@ export interface InvoiceData {
   _id?: string;
   invoiceNumber?: number;
   customerId?: string;
+  // Present when the invoice is created from a proposal
+  proposalId?: string;
   customerNumber?: number;
   customerFirstName: string;
   customerLastName: string;
@@ -203,6 +206,30 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
       const tenantObjForLookup = await getTenantObjectId();
       const saved = await Invoice.findOne({ invoiceNumber, tenantId: tenantObjForLookup }).select('_id').lean();
       savedId = saved ? (saved as any)._id.toString() : undefined;
+    }
+
+    // If the invoice was created from a proposal, move the proposal to
+    // Invoiced (only from Draft/Sent/Accepted — never off a terminal status).
+    // Best-effort: a failure here should not block the invoice save.
+    if (!isUpdate && data.proposalId) {
+      try {
+        const tenantObjForProposal = await getTenantObjectId();
+        await Proposal.updateOne(
+          {
+            _id: data.proposalId,
+            tenantId: tenantObjForProposal,
+            $or: [
+              { status: { $in: ['Draft', 'Sent', 'Accepted'] } },
+              { status: { $exists: false } },
+              { status: null },
+            ],
+          },
+          { $set: { status: 'Invoiced' } }
+        );
+        revalidatePath('/proposals');
+      } catch (proposalError) {
+        console.error('Failed to mark proposal as Invoiced:', proposalError);
+      }
     }
 
     // Best-effort: create / refresh a Stripe Payment Link for this invoice.

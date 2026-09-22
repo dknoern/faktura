@@ -13,9 +13,11 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: S
     // Load proposal first if provided, so we can fall back to its customerId
     let proposalLineItems: { name: string; longDesc?: string; amount: number }[] | undefined;
     let customerIdFromProposal: string | undefined;
+    let proposalId: string | undefined;
     if (params.proposalId) {
         const proposal = await fetchProposalById(params.proposalId);
         if (proposal) {
+            proposalId = proposal._id.toString();
             proposalLineItems = (proposal.lineItems || []).map((li: any) => ({
                 name: li.name || "",
                 longDesc: li.longDesc || "",
@@ -67,6 +69,7 @@ export default async function NewInvoicePage({ searchParams }: { searchParams: S
             <InvoiceForm
                 selectedCustomer={customer}
                 selectedProduct={selectedProduct}
+                proposalId={proposalId}
                 proposalLineItems={proposalLineItems}
                 salesPerson={fullName}
                 avataxEnabled={avataxEnabled}

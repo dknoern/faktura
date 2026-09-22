@@ -180,6 +180,9 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
                 <option value="Sent">Sent</option>
                 <option value="Accepted">Accepted</option>
                 <option value="Rejected">Rejected</option>
+                <option value="Invoiced">Invoiced</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Closed">Closed</option>
               </select>
             </div>
             <div>

@@ -32,6 +32,7 @@ interface InvoiceFormData {
   _id?: string
   invoiceNumber?: number
   customerId?: string
+  proposalId?: string
   customerNumber?: number
   customerFirstName: string
   customerLastName: string
@@ -102,7 +103,7 @@ interface Product {
   longDesc?: string
 }
 
-export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, proposalLineItems, salesPerson, avataxEnabled = false, requiredData = DEFAULT_REQUIRED_DATA }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, proposalLineItems?: { name: string; longDesc?: string; amount: number }[], salesPerson?: string, avataxEnabled?: boolean, requiredData?: TenantRequiredData }) {
+export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, proposalId, proposalLineItems, salesPerson, avataxEnabled = false, requiredData = DEFAULT_REQUIRED_DATA }: { invoice?: InvoiceFormData, selectedCustomer?: Customer, selectedProduct?: Product, proposalId?: string, proposalLineItems?: { name: string; longDesc?: string; amount: number }[], salesPerson?: string, avataxEnabled?: boolean, requiredData?: TenantRequiredData }) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const submissionRef = useRef(false)
@@ -131,6 +132,7 @@ export function InvoiceForm({ invoice, selectedCustomer, selectedProduct, propos
       ? { ...invoice, date: invoice.date }
       : {
           customerId: selectedCustomer?._id,
+          proposalId: proposalId,
           customerNumber: selectedCustomer?.customerNumber,
           customerFirstName: selectedCustomer?.firstName || "",
           customerLastName: selectedCustomer?.lastName || "",

@@ -23,6 +23,19 @@ export default async function Page() {
     ? `/api/images/splash-${tenant._id}.jpg?v=${encodeURIComponent(tenant.splashImage)}`
     : '/rolex-blackbook.png';
 
+  // Per-tenant branding on the Auth0-hosted login page: passed as extra
+  // authorize params and read by the Universal Login template via
+  // config.extraParams. Logo must be an absolute URL reachable by the browser.
+  const proto = headersList.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+  const tenantDisplayName = tenant.nameLong || tenant.name || '';
+  const tenantLogoUrl = tenant.logo
+    ? `${proto}://${host}/api/images/logo-${tenant._id}.png?v=${encodeURIComponent(tenant.logo)}`
+    : undefined;
+  const authorizationParams: Record<string, string> = {
+    ...(tenantLogoUrl ? { 'ext-tenant-logo': tenantLogoUrl } : {}),
+    ...(tenantDisplayName ? { 'ext-tenant-name': tenantDisplayName } : {}),
+  };
+
   return (
     <main className="relative min-h-screen">
       {/* Background Image */}
@@ -36,7 +49,7 @@ export default async function Page() {
         <form
           action={async () => {
             "use server"
-            await signIn('auth0', { redirectTo: "/home" })
+            await signIn('auth0', { redirectTo: "/home" }, authorizationParams)
           }}
         >
           <Button
