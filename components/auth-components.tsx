@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation"
 import { signIn, signOut } from "@/auth"
 import { Button } from "./ui/button"
 
@@ -24,7 +25,12 @@ export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
     <form
       action={async () => {
         "use server"
-        await signOut({redirectTo: "/", redirect: true})
+        // Clear the session without letting Auth.js redirect: its redirect
+        // resolves against AUTH_URL, which would bounce users on tenant
+        // custom domains back to the platform host (generic landing page).
+        // Next's own redirect stays on the host the user is browsing.
+        await signOut({ redirect: false })
+        redirect('/')
       }}
       className="w-full"
     >
