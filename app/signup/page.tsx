@@ -8,7 +8,9 @@ export const dynamic = 'force-dynamic';
 export default async function SignUpPage() {
   // Self-serve signup is not offered on tenant-branded custom domains
   const headersList = await headers();
-  const tenant = await fetchTenantByHost(headersList.get('host'));
+  const tenant = await fetchTenantByHost(
+    headersList.get('x-forwarded-host') || headersList.get('host')
+  );
   if (tenant) {
     redirect('/');
   }

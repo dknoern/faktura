@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation"
-import { signIn, signOut } from "@/auth"
+import { signIn } from "@/auth"
 import { Button } from "./ui/button"
+import { SignOutButton } from "./sign-out-button"
 
 // Force dynamic rendering for server actions
 export const dynamic = 'force-dynamic';
@@ -20,23 +20,8 @@ export function SignIn({
   )
 }
 
+// Signs out via a client component that finishes with a full-page navigation
+// to '/', keeping users on the host (and branding) they're browsing on
 export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
-  return (
-    <form
-      action={async () => {
-        "use server"
-        // Clear the session without letting Auth.js redirect: its redirect
-        // resolves against AUTH_URL, which would bounce users on tenant
-        // custom domains back to the platform host (generic landing page).
-        // Next's own redirect stays on the host the user is browsing.
-        await signOut({ redirect: false })
-        redirect('/')
-      }}
-      className="w-full"
-    >
-      <Button variant="ghost" className="w-full p-0" {...props}>
-        Sign Out
-      </Button>
-    </form>
-  )
+  return <SignOutButton {...props} />
 }

@@ -12,7 +12,7 @@ export default async function Page() {
   // tenant's branded welcome page (no self-signup); everything else gets the
   // generic Fakturian landing with signup.
   const headersList = await headers();
-  const host = headersList.get('host');
+  const host = headersList.get('x-forwarded-host') || headersList.get('host');
   const tenant = await fetchTenantByHost(host);
 
   if (!tenant) {
