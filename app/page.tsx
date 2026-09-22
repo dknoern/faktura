@@ -25,12 +25,15 @@ export default async function Page() {
 
   // Per-tenant branding on the Auth0-hosted login page: passed as extra
   // authorize params and read by the Universal Login template via
-  // config.extraParams. Logo must be an absolute URL reachable by the browser.
+  // config.extraParams. Auth0 rejects the whole /authorize request unless
+  // ext- param values match /^[-\w.*~@+ /:]{1,255}$/ — so no query strings,
+  // no percent-encoding, and everything sanitized to that charset.
+  const extParamSafe = (value: string) => value.replace(/[^-\w.*~@+ /:]/g, '').slice(0, 255);
   const proto = headersList.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
-  const tenantDisplayName = tenant.nameLong || tenant.name || '';
-  const tenantLogoUrl = tenant.logo
-    ? `${proto}://${host}/api/images/logo-${tenant._id}.png?v=${encodeURIComponent(tenant.logo)}`
-    : undefined;
+  const tenantDisplayName = extParamSafe(tenant.nameLong || tenant.name || '');
+  const rawLogoUrl = tenant.logo ? `${proto}://${host}/api/images/logo-${tenant._id}.png` : '';
+  // Only pass the logo if the URL survives Auth0's charset rules unchanged
+  const tenantLogoUrl = rawLogoUrl && extParamSafe(rawLogoUrl) === rawLogoUrl ? rawLogoUrl : '';
   const authorizationParams: Record<string, string> = {
     ...(tenantLogoUrl ? { 'ext-tenant-logo': tenantLogoUrl } : {}),
     ...(tenantDisplayName ? { 'ext-tenant-name': tenantDisplayName } : {}),
