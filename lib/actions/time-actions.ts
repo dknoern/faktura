@@ -123,7 +123,10 @@ async function resolveEntryActor(vendorIdInput?: string): Promise<EntryActor> {
 async function resolveProject(proposalId: string, tenantObjectId: mongoose.Types.ObjectId) {
   const proposal = await Proposal.findOne({ _id: proposalId, tenantId: tenantObjectId });
   if (!proposal) return null;
+  // Same fallback chain as the project dropdown: project name, else first
+  // line item name, else customer name
   const projectName = proposal.project?.trim() ||
+    proposal.lineItems?.[0]?.name?.trim() ||
     `${proposal.customerFirstName ?? ''} ${proposal.customerLastName ?? ''}`.trim() ||
     'Proposal';
   return { proposal, projectName };

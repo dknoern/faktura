@@ -15,6 +15,8 @@ interface Proposal {
   customerFirstName: string
   customerLastName: string
   date: string
+  project?: string
+  lineItems?: { name?: string }[]
   total: number
   status?: string
 }
@@ -144,6 +146,7 @@ export function ProposalsTable({ proposals, pagination }: ProposalsTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Customer</TableHead>
+              <TableHead>Project</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
@@ -163,6 +166,7 @@ export function ProposalsTable({ proposals, pagination }: ProposalsTableProps) {
                 style={{ userSelect: 'text' }}
               >
                 <TableCell>{proposal.customerFirstName} {proposal.customerLastName}</TableCell>
+                <TableCell>{proposal.project || proposal.lineItems?.[0]?.name}</TableCell>
                 <TableCell>{formatDate(proposal.date)}</TableCell>
                 <TableCell>{formatCurrency(proposal.total)}</TableCell>
                 <TableCell>{proposal.status || 'Draft'}</TableCell>

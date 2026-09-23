@@ -10,6 +10,7 @@ export interface Proposal {
   customerFirstName: string;
   customerLastName: string;
   date: string;
+  project?: string;
   total: number;
   lineItems: ProposalLineItem[];
   conditions?: string;

@@ -47,10 +47,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'Helvetica-Bold',
   },
-  // Client info row
+  // Client info row (client / project / status)
   infoRow: {
     flexDirection: 'row',
-    gap: 120,
+    gap: 60,
     marginBottom: 20,
   },
   infoBlock: {},
@@ -199,6 +199,12 @@ export function ProposalPdfDocument({ proposal, tenant, logoUrl }: ProposalPdfPr
               <Text style={styles.infoLabel}>Client Information</Text>
               <Text style={styles.infoValue}>{proposal.customerFirstName} {proposal.customerLastName}</Text>
             </View>
+            {proposal.project ? (
+              <View style={styles.infoBlock}>
+                <Text style={styles.infoLabel}>Project</Text>
+                <Text style={styles.infoValue}>{proposal.project}</Text>
+              </View>
+            ) : null}
             {proposal.status ? (
               <View style={styles.infoBlock}>
                 <Text style={styles.infoLabel}>Status</Text>

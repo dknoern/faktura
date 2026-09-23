@@ -182,7 +182,7 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
                 <option value="Rejected">Rejected</option>
                 <option value="Invoiced">Invoiced</option>
                 <option value="Cancelled">Cancelled</option>
-                <option value="Closed">Closed</option>
+                <option value="Completed">Completed</option>
               </select>
             </div>
             <div>

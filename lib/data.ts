@@ -261,23 +261,26 @@ export async function fetchEntriesByPaymentId(paymentId: string) {
 
 
 // Projects selectable for time entry — proposals, labelled by their project
-// name when set, otherwise by customer. Closed and Cancelled proposals no
-// longer accept time or expenses.
+// name when set, otherwise by customer. Completed and Cancelled proposals no
+// longer accept time or expenses ('Closed' kept for docs saved before the
+// status was renamed to 'Completed').
 export async function fetchProjectOptions(): Promise<{ id: string; label: string }[]> {
     try {
         await dbConnect();
         const tenantObjectId = await getTenantObjectId();
         const proposals = await Proposal.find({
             tenantId: tenantObjectId,
-            status: { $nin: ['Closed', 'Cancelled'] },
+            status: { $nin: ['Completed', 'Closed', 'Cancelled'] },
         })
-            .select({ project: 1, customerFirstName: 1, customerLastName: 1, date: 1 })
+            .select({ project: 1, 'lineItems.name': 1, customerFirstName: 1, customerLastName: 1, date: 1 })
             .sort({ date: -1 })
             .limit(200);
 
+        // Label: project name, else first line item name, else customer name
         return proposals.map((p: any) => ({
             id: p._id.toString(),
             label: p.project?.trim() ||
+                p.lineItems?.[0]?.name?.trim() ||
                 `${p.customerFirstName ?? ''} ${p.customerLastName ?? ''}`.trim() ||
                 'Proposal',
         }));

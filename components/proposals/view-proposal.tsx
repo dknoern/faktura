@@ -50,6 +50,12 @@ export function ViewProposal({ proposal, customerEmail }: { proposal: Proposal; 
                         <p className="text-sm font-bold">Client Information</p>
                         <p className="text-sm">{customerName}</p>
                     </div>
+                    {proposal.project && (
+                        <div>
+                            <p className="text-sm font-bold">Project</p>
+                            <p className="text-sm">{proposal.project}</p>
+                        </div>
+                    )}
                     {proposal.status && (
                         <div>
                             <p className="text-sm font-bold">Status</p>
