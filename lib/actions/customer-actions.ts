@@ -357,7 +357,7 @@ export async function deleteCustomer(id: string): Promise<ActionResult<null>> {
     const tenantObjectId = await getTenantObjectId();
 
     const [invoiceCount, repairCount, returnCount, wantedCount] = await Promise.all([
-      Invoice.countDocuments({ customerId: id, tenantId: tenantObjectId }),
+      Invoice.countDocuments({ customerId: id, tenantId: tenantObjectId, status: { $ne: 'Deleted' } }),
       Repair.countDocuments({ customerId: id, tenantId: tenantObjectId, status: { $ne: 'Deleted' } }),
       Return.countDocuments({ customerId: id, tenantId: tenantObjectId }),
       Wanted.countDocuments({ customerId: id, tenantId: tenantObjectId }),

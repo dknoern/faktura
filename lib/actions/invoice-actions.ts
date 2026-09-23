@@ -11,7 +11,8 @@ import { format } from "date-fns";
 import { productModel } from "@/lib/models/product";
 import { getNextCounter, getTenantObjectId } from "@/lib/tenant-utils";
 import { getTenantId } from "@/lib/auth-utils";
-import { ensureInvoicePaymentLink } from "@/lib/stripe/payment-links";
+import { ensureInvoicePaymentLink, deactivateInvoicePaymentLink } from "@/lib/stripe/payment-links";
+import { getPaymentTotalsForInvoices } from "@/lib/actions/payment-actions";
 import { loadTenantRequiredData } from "@/lib/tenant-required-data";
 
 export interface LineItem {
@@ -64,7 +65,6 @@ export interface InvoiceData {
   taxExempt?: boolean;
   lineItems: LineItem[];
   trackingNumber?: string;
-  status?: string;
 }
 
 export async function upsertInvoice(data: InvoiceData, id?: string) {
@@ -136,8 +136,11 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
     if (isUpdate) {
       const tenantObjectId = await getTenantObjectId();
       // Update existing invoice - fetch existing invoiceNumber
-      const existing = await Invoice.findOne({ _id: id, tenantId: tenantObjectId }).select('invoiceNumber').lean();
-      invoiceNumber = (existing as any)?.invoiceNumber || data.invoiceNumber || 0;
+      const existing = await Invoice.findOne({ _id: id, tenantId: tenantObjectId, status: { $ne: 'Deleted' } }).select('invoiceNumber').lean();
+      if (!existing) {
+        return { success: false, error: 'Invoice not found' };
+      }
+      invoiceNumber = (existing as any).invoiceNumber || data.invoiceNumber || 0;
       invoiceData = {
         ...data,
         date: new Date(data.date)
@@ -156,7 +159,11 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
         date: new Date(data.date)
       };
     }
-    
+
+    // `status` is system-owned (only deleteInvoice writes it) - a request
+    // payload must never be able to set or clear the 'Deleted' marker.
+    delete invoiceData.status;
+
     // Calculate tax
     try {
       const tenantIdForTax = await getTenantId();
@@ -193,7 +200,7 @@ export async function upsertInvoice(data: InvoiceData, id?: string) {
     if (isUpdate) {
       // Update existing invoice
       const tenantObjForUpdate = await getTenantObjectId();
-      await Invoice.findOneAndUpdate({ _id: id, tenantId: tenantObjForUpdate }, invoiceData);
+      await Invoice.findOneAndUpdate({ _id: id, tenantId: tenantObjForUpdate, status: { $ne: 'Deleted' } }, invoiceData);
     } else {
       // Create new invoice
       const invoice = new Invoice(invoiceData);
@@ -284,6 +291,10 @@ export async function getInvoiceIdByNumber(invoiceNumber: number): Promise<strin
   }
 }
 
+function formatUsd(amount: number){
+  return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
 function buildSearchField(doc: any){
 
   var search = "";
@@ -304,4 +315,102 @@ function buildSearchField(doc: any){
       }
   }
   return search;
+}
+
+/**
+ * Soft-delete an invoice: marks it 'Deleted' (which hides it from every
+ * invoice list, lookup, and sales report) and returns its line-item products
+ * to inventory so they can be invoiced again.
+ */
+export async function deleteInvoice(id: string) {
+  try {
+    await dbConnect();
+    const tenantObjectId = await getTenantObjectId();
+
+    const invoice = await Invoice.findOne({
+      _id: id,
+      tenantId: tenantObjectId,
+      status: { $ne: 'Deleted' },
+    })
+      .select('invoiceNumber invoiceType lineItems stripePaymentLink')
+      .lean();
+
+    if (!invoice) {
+      return { success: false, error: 'Invoice not found', code: 'not_found' as const };
+    }
+
+    // A paid invoice is a money record: deleting it would orphan its Payment
+    // documents, which are only ever queried per-invoice and would become
+    // invisible. Remove the payments first if the invoice really must go.
+    const totals = await getPaymentTotalsForInvoices([id]);
+    const totalPaid = totals[id] ?? 0;
+    if (totalPaid > 0) {
+      return {
+        success: false,
+        error: `Cannot delete this invoice: ${formatUsd(totalPaid)} in payments has been recorded against it. Remove the payments first.`,
+        code: 'has_payments' as const,
+      };
+    }
+
+    const user = await getShortUser();
+
+    await Invoice.updateOne(
+      { _id: id, tenantId: tenantObjectId },
+      {
+        $set: {
+          status: 'Deleted',
+          deletedAt: new Date(),
+          deletedBy: user,
+          lastUpdated: new Date(),
+        },
+      }
+    );
+
+    // Creating an invoice marks its items Sold/Memo (except Partner and
+    // Estimate, which never touch product status), so deleting one puts those
+    // items back in stock. Otherwise upsertInvoice would refuse to re-invoice
+    // them, stranding the inventory.
+    const { invoiceType, lineItems, invoiceNumber } = invoice as any;
+    if (invoiceType !== 'Partner' && invoiceType !== 'Estimate') {
+      await updateProductHistory(
+        lineItems,
+        'In Stock',
+        'invoice deleted',
+        user,
+        invoiceNumber?.toString()
+      );
+    }
+
+    // Best-effort: kill the Stripe Payment Link so a deleted invoice can't
+    // still be paid. Wrapped so a Stripe outage can never fail the delete.
+    if ((invoice as any).stripePaymentLink?.id) {
+      try {
+        const tenantId = await getTenantId();
+        await deactivateInvoicePaymentLink(invoice as any, tenantId);
+        await Invoice.updateOne(
+          { _id: id, tenantId: tenantObjectId },
+          { $unset: { stripePaymentLink: "" } }
+        );
+      } catch (stripeErr) {
+        console.error(
+          `[stripe] failed to deactivate payment link for deleted invoice ${id}: ${
+            stripeErr instanceof Error ? stripeErr.message : String(stripeErr)
+          }`
+        );
+      }
+    }
+
+    revalidatePath('/invoices');
+    revalidatePath('/inventory');
+    revalidatePath('/');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting invoice:', error);
+    return {
+      success: false,
+      error: `Failed to delete invoice: ${error instanceof Error ? error.message : String(error)}`,
+      code: 'error' as const,
+    };
+  }
 }

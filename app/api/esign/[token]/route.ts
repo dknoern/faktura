@@ -23,7 +23,7 @@ export async function GET(
       Repair.findOne({ esignToken: token }),
       Proposal.findOne({ esignToken: token }),
       Out.findOne({ esignToken: token }),
-      Invoice.findOne({ esignToken: token }),
+      Invoice.findOne({ esignToken: token, status: { $ne: 'Deleted' } }),
     ]);
 
     if (repair) {
@@ -97,7 +97,7 @@ export async function POST(
       Repair.findOne({ esignToken: token }),
       Proposal.findOne({ esignToken: token }),
       Out.findOne({ esignToken: token }),
-      Invoice.findOne({ esignToken: token }),
+      Invoice.findOne({ esignToken: token, status: { $ne: 'Deleted' } }),
     ]);
 
     if (repair) {

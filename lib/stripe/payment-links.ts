@@ -208,3 +208,30 @@ export async function ensureInvoicePaymentLink(
     return null;
   }
 }
+
+/**
+ * Best-effort: deactivate an invoice's Stripe Payment Link so it can no longer
+ * be paid (used when an invoice is soft-deleted). Never throws - errors are
+ * logged and swallowed, since a Stripe outage must not block the delete.
+ */
+export async function deactivateInvoicePaymentLink(
+  invoice: InvoiceLike,
+  tenantId: string
+): Promise<void> {
+  const linkId = invoice.stripePaymentLink?.id;
+  if (!linkId) return;
+
+  const invoiceId = invoice._id?.toString?.() ?? String(invoice._id);
+
+  try {
+    const stripe = await getStripeForTenant(tenantId);
+    if (!stripe) return;
+    await stripe.paymentLinks.update(linkId, { active: false });
+  } catch (err: any) {
+    const code = err?.code || err?.type || "unknown";
+    const msg = err?.message || String(err);
+    console.error(
+      `[stripe] payment-link: failed to deactivate link ${linkId} for deleted invoice ${invoiceId} [${code}]: ${msg}`
+    );
+  }
+}

@@ -62,83 +62,91 @@ export function InventoryPieCharts({ productTypeData, statusData }: InventoryPie
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={productTypeConfig} className="mx-auto aspect-square max-h-[300px]">
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="rounded-lg border bg-background p-3 shadow-md">
-                        <div className="grid gap-2">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {payload[0].name}
-                            </span>
-                            <span className="text-lg font-bold">
-                              {payload[0].value?.toLocaleString()} items
-                            </span>
-                            <span className="text-sm text-muted-foreground">
-                              {((Number(payload[0].value) / totalProductTypeItems) * 100).toFixed(1)}%
-                            </span>
+          {totalProductTypeItems === 0 ? (
+            <div className="flex h-40 items-center justify-center">
+              <p className="text-sm text-muted-foreground">No inventory items yet</p>
+            </div>
+          ) : (
+            <>
+              <ChartContainer config={productTypeConfig} className="mx-auto aspect-square max-h-[300px]">
+                <PieChart>
+                  <ChartTooltip
+                    cursor={false}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="rounded-lg border bg-background p-3 shadow-md">
+                            <div className="grid gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  {payload[0].name}
+                                </span>
+                                <span className="text-lg font-bold">
+                                  {payload[0].value?.toLocaleString()} items
+                                </span>
+                                <span className="text-sm text-muted-foreground">
+                                  {((Number(payload[0].value) / totalProductTypeItems) * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Pie
-                data={productTypeData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={60}
-                strokeWidth={5}
-              >
-                {productTypeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Pie
+                    data={productTypeData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={60}
+                    strokeWidth={5}
+                  >
+                    {productTypeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                    <Label
+                      content={({ viewBox }) => {
+                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                          return (
+                            <text
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                            >
+                              <tspan
+                                x={viewBox.cx}
+                                y={(viewBox.cy || 0) - 10}
+                                className="fill-foreground text-3xl font-bold"
+                              >
+                                {totalProductTypeItems.toLocaleString()}
+                              </tspan>
+                              <tspan
+                                x={viewBox.cx}
+                                y={(viewBox.cy || 0) + 20}
+                                className="fill-muted-foreground text-sm"
+                              >
+                                Total Items
+                              </tspan>
+                            </text>
+                          );
+                        }
+                      }}
+                    />
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+              <div className="mt-4 flex flex-wrap justify-center gap-4">
+                {productTypeData.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
+                    <span className="text-sm text-muted-foreground">{item.name}</span>
+                  </div>
                 ))}
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      return (
-                        <text
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) - 10}
-                            className="fill-foreground text-3xl font-bold"
-                          >
-                            {totalProductTypeItems.toLocaleString()}
-                          </tspan>
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 20}
-                            className="fill-muted-foreground text-sm"
-                          >
-                            Total Items
-                          </tspan>
-                        </text>
-                      );
-                    }
-                  }}
-                />
-              </Pie>
-            </PieChart>
-          </ChartContainer>
-          <div className="mt-4 flex flex-wrap justify-center gap-4">
-            {productTypeData.map((item, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
-                <span className="text-sm text-muted-foreground">{item.name}</span>
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -153,83 +161,91 @@ export function InventoryPieCharts({ productTypeData, statusData }: InventoryPie
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={statusConfig} className="mx-auto aspect-square max-h-[300px]">
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="rounded-lg border bg-background p-3 shadow-md">
-                        <div className="grid gap-2">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {payload[0].name}
-                            </span>
-                            <span className="text-lg font-bold">
-                              {payload[0].value?.toLocaleString()} items
-                            </span>
-                            <span className="text-sm text-muted-foreground">
-                              {((Number(payload[0].value) / totalStatusItems) * 100).toFixed(1)}%
-                            </span>
+          {totalStatusItems === 0 ? (
+            <div className="flex h-40 items-center justify-center">
+              <p className="text-sm text-muted-foreground">No inventory items yet</p>
+            </div>
+          ) : (
+            <>
+              <ChartContainer config={statusConfig} className="mx-auto aspect-square max-h-[300px]">
+                <PieChart>
+                  <ChartTooltip
+                    cursor={false}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="rounded-lg border bg-background p-3 shadow-md">
+                            <div className="grid gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  {payload[0].name}
+                                </span>
+                                <span className="text-lg font-bold">
+                                  {payload[0].value?.toLocaleString()} items
+                                </span>
+                                <span className="text-sm text-muted-foreground">
+                                  {((Number(payload[0].value) / totalStatusItems) * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Pie
-                data={statusData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={60}
-                strokeWidth={5}
-              >
-                {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Pie
+                    data={statusData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={60}
+                    strokeWidth={5}
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                    <Label
+                      content={({ viewBox }) => {
+                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                          return (
+                            <text
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                            >
+                              <tspan
+                                x={viewBox.cx}
+                                y={(viewBox.cy || 0) - 10}
+                                className="fill-foreground text-3xl font-bold"
+                              >
+                                {totalStatusItems.toLocaleString()}
+                              </tspan>
+                              <tspan
+                                x={viewBox.cx}
+                                y={(viewBox.cy || 0) + 20}
+                                className="fill-muted-foreground text-sm"
+                              >
+                                Total Items
+                              </tspan>
+                            </text>
+                          );
+                        }
+                      }}
+                    />
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+              <div className="mt-4 flex flex-wrap justify-center gap-4">
+                {statusData.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
+                    <span className="text-sm text-muted-foreground">{item.name}</span>
+                  </div>
                 ))}
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      return (
-                        <text
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) - 10}
-                            className="fill-foreground text-3xl font-bold"
-                          >
-                            {totalStatusItems.toLocaleString()}
-                          </tspan>
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 20}
-                            className="fill-muted-foreground text-sm"
-                          >
-                            Total Items
-                          </tspan>
-                        </text>
-                      );
-                    }
-                  }}
-                />
-              </Pie>
-            </PieChart>
-          </ChartContainer>
-          <div className="mt-4 flex flex-wrap justify-center gap-4">
-            {statusData.map((item, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
-                <span className="text-sm text-muted-foreground">{item.name}</span>
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

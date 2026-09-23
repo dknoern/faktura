@@ -127,6 +127,7 @@ export async function getMonthlySalesData(): Promise<MonthlySalesData[]> {
       {
         $match: {
           date: { $gte: startDate, $lte: endDate },
+          status: { $ne: 'Deleted' },
           tenantId: tenantObjectId
         }
       },
@@ -189,7 +190,7 @@ export async function getRecentTransactions(): Promise<RecentTransaction[]> {
     const tenantObjectId = await getTenantObjectId();
 
     // Get recent sales (invoices)
-    const recentInvoices = await Invoice.find({ tenantId: tenantObjectId })
+    const recentInvoices = await Invoice.find({ tenantId: tenantObjectId, status: { $ne: 'Deleted' } })
       .sort({ date: -1 })
       .limit(5)
       .lean();

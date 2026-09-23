@@ -36,6 +36,9 @@ const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
   "/invoices": [
     { label: "Invoices", href: "/invoices" }
   ],
+  "/proposals": [
+    { label: "Proposals", href: "/proposals" }
+  ],
   "/returns": [
     { label: "Returns", href: "/returns" }
   ],
@@ -44,6 +47,12 @@ const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
   ],
   "/loginitems": [
     { label: "Log In Items", href: "/loginitems" }
+  ],
+  "/wanted": [
+    { label: "Wanted", href: "/wanted" }
+  ],
+  "/profile": [
+    { label: "Profile", href: "/profile" }
   ],
   "/reports": [
     { label: "Reports", href: "#" }

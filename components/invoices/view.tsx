@@ -46,6 +46,9 @@ export function ViewInvoice({ invoice, avataxEnabled = false, paymentsEnabled = 
     const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
     const [payments, setPayments] = useState<PaymentRecord[]>(initialPayments);
 
+    // Drives both the payments table and the action menu's delete guard.
+    const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+
     const handlePdfPrint = useCallback(async () => {
         try {
             toast.loading('Preparing to print...', { id: 'pdf-print' });
@@ -123,6 +126,7 @@ export function ViewInvoice({ invoice, avataxEnabled = false, paymentsEnabled = 
                         invoice={invoice}
                         paymentsEnabled={paymentsEnabled}
                         onRecordPayment={() => setRecordPaymentOpen(true)}
+                        totalPaid={totalPaid}
                     />
                 </div>
 
@@ -236,9 +240,12 @@ export function ViewInvoice({ invoice, avataxEnabled = false, paymentsEnabled = 
 
                 {paymentsEnabled && (
                     <PaymentsSection
-                        initialPayments={payments}
+                        payments={payments}
                         invoiceTotal={invoice.total}
                         onOpenRecordPayment={() => setRecordPaymentOpen(true)}
+                        onPaymentDeleted={(paymentId) =>
+                            setPayments((prev) => prev.filter((p) => p._id !== paymentId))
+                        }
                     />
                 )}
 

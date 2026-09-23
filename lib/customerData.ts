@@ -10,7 +10,7 @@ export async function fetchInvoicesByCustomerId(customerId: string, page = 1, li
     await dbConnect();
     const tenantObjectId = await getTenantObjectId();
     const skip = (page - 1) * limit;
-    const filter = { customerId: customerId, tenantId: tenantObjectId };
+    const filter = { customerId: customerId, tenantId: tenantObjectId, status: { $ne: 'Deleted' } };
 
     const invoices = await Invoice.find(filter)
       .sort({ _id: -1 })

@@ -31,17 +31,20 @@ const formatDate = (iso: string) =>
   });
 
 interface PaymentsSectionProps {
-  initialPayments: PaymentRecord[];
+  payments: PaymentRecord[];
   invoiceTotal: number;
   onOpenRecordPayment: () => void;
+  onPaymentDeleted: (paymentId: string) => void;
 }
 
+// Controlled by the parent so the invoice's paid total has a single source of
+// truth - the action menu disables Delete off the same list.
 export function PaymentsSection({
-  initialPayments,
+  payments,
   invoiceTotal,
   onOpenRecordPayment,
+  onPaymentDeleted,
 }: PaymentsSectionProps) {
-  const [payments, setPayments] = useState<PaymentRecord[]>(initialPayments);
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
@@ -55,7 +58,7 @@ export function PaymentsSection({
         toast.error(result.error ?? "Failed to delete payment");
         return;
       }
-      setPayments((prev) => prev.filter((p) => p._id !== paymentId));
+      onPaymentDeleted(paymentId);
       toast.success("Payment removed");
     } finally {
       setDeleting(null);

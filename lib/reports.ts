@@ -134,6 +134,7 @@ export async function getDailySales(year: number, month: number, day: number) {
                 $lte: endDate
             },
             "invoiceType": { $nin: ["Partner", "Consignment"] },
+            status: { $ne: 'Deleted' },
             tenantId: tenantObjectId
         }).sort({
             date: -1
@@ -256,6 +257,7 @@ export async function getMonthlySales(year: number, month: number) {
                 $gte: new Date(year, month - 1, 1),
                 $lte: new Date(year, month, 1)
             },
+            status: { $ne: 'Deleted' },
             tenantId: tenantObjectId
 
         }).sort({
@@ -408,7 +410,7 @@ export async function getFirstSaleDate() {
     try {
         await dbConnect();
         const tenantObjectId = await getTenantObjectId();
-        const invoice = await Invoice.findOne({ tenantId: tenantObjectId }).sort({
+        const invoice = await Invoice.findOne({ tenantId: tenantObjectId, status: { $ne: 'Deleted' } }).sort({
             date: 1
         }).select({
             date: 1
@@ -429,7 +431,7 @@ export async function getLastSaleDate() {
     try {
         await dbConnect();
         const tenantObjectId = await getTenantObjectId();
-        const invoice = await Invoice.findOne({ tenantId: tenantObjectId }).sort({
+        const invoice = await Invoice.findOne({ tenantId: tenantObjectId, status: { $ne: 'Deleted' } }).sort({
             date: -1
         }).select({
             date: 1

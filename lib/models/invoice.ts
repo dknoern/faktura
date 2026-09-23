@@ -67,6 +67,10 @@ var InvoiceSchema = new mongoose.Schema({
   	    type: [LineItemSchema]
     },
     status: String,
+    lastUpdated: Date,
+    // Soft-delete audit trail (status is set to 'Deleted')
+    deletedAt: Date,
+    deletedBy: String,
     trackingNumber: String,
     esignToken: String,
     signature: String,
@@ -197,6 +201,10 @@ function formatCity(city: string, state: string, zip: string){
 
 InvoiceSchema.virtual('isConsignment').get(function (this: { invoiceType: string }) {
     return "Consignment" == this.invoiceType;
+});
+
+InvoiceSchema.virtual('isDeleted').get(function (this: { status: string }) {
+    return "Deleted" == this.status;
 });
 
 export const Invoice = mongoose.models.Invoice || mongoose.model('Invoice', InvoiceSchema);

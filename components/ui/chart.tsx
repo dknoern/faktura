@@ -58,7 +58,16 @@ const ChartContainer = React.forwardRef<
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>
+        {/*
+          initialDimension defaults to { width: -1, height: -1 }, and since we
+          size the chart with percentages those -1s flow straight through to
+          the computed chart size on the first render - before the container's
+          ResizeObserver has measured anything. Recharts then logs "The
+          width(-1) and height(-1) of chart should be greater than 0" once per
+          mount. A 1x1 placeholder is past that check and is replaced with the
+          real measurement in the same mount, so nothing visible changes.
+        */}
+        <RechartsPrimitive.ResponsiveContainer initialDimension={{ width: 1, height: 1 }}>
           {children}
         </RechartsPrimitive.ResponsiveContainer>
       </div>

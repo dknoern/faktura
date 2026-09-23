@@ -273,7 +273,10 @@ export async function fetchProjectOptions(): Promise<{ id: string; label: string
             status: { $nin: ['Completed', 'Closed', 'Cancelled'] },
         })
             .select({ project: 1, 'lineItems.name': 1, customerFirstName: 1, customerLastName: 1, date: 1 })
-            .sort({ date: -1 })
+            // Newest first. _id breaks ties so proposals sharing a date (or
+            // missing one) still come back in a stable, newest-first order
+            // instead of whatever order Mongo happens to return.
+            .sort({ date: -1, _id: -1 })
             .limit(200);
 
         // Label: project name, else first line item name, else customer name
@@ -480,7 +483,10 @@ export async function fetchProposals(page = 1, limit = 10, search = '') {
         query = addTenantFilter(query, tenantObjectId);
 
         const proposals = await Proposal.find(query)
-            .sort({ _id: -1 })
+            // Newest first by date; _id breaks ties so proposals sharing a
+            // date (or missing one) keep a stable order. Matches the project
+            // dropdown in fetchProjectOptions.
+            .sort({ date: -1, _id: -1 })
             .skip(skip)
             .limit(limit);
 
@@ -890,7 +896,7 @@ export async function fetchInvoiceById(id: string) {
         await dbConnect();
         const tenantObjectId = await getTenantObjectId();
 
-        const invoice = await Invoice.findOne({ _id: id, tenantId: tenantObjectId });
+        const invoice = await Invoice.findOne({ _id: id, tenantId: tenantObjectId, status: { $ne: 'Deleted' } });
 
         return invoice ? JSON.parse(JSON.stringify(invoice)) : null;
     } catch (error) {
@@ -910,7 +916,8 @@ export async function fetchPartnerInvoiceByProductId(id: string) {
                         { invoiceType: 'Partner' }
                     ]
                 },
-                { 'lineItems.productId': id }
+                { 'lineItems.productId': id },
+                { status: { $ne: 'Deleted' } }
             ]
         });
 

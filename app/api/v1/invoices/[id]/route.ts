@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleItemRoute, withApiAuth, isValidObjectId } from "@/lib/v1-route-helpers";
 import { fetchInvoiceById } from "@/lib/data";
-import { upsertInvoice } from "@/lib/actions/invoice-actions";
-import dbConnect from "@/lib/dbConnect";
-import { Invoice } from "@/lib/models/invoice";
-import { getTenantObjectId } from "@/lib/tenant-utils";
+import { upsertInvoice, deleteInvoice } from "@/lib/actions/invoice-actions";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,13 +27,14 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   if (!isValidObjectId(id)) return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
 
   return withApiAuth(request, async () => {
-    await dbConnect();
-    const tenantObjectId = await getTenantObjectId();
-    const updated = await Invoice.findOneAndUpdate(
-      { _id: id, tenantId: tenantObjectId, status: { $ne: "Deleted" } },
-      { status: "Deleted" }
-    );
-    if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const result = await deleteInvoice(id);
+    if (!result.success) {
+      const status =
+        result.code === "not_found" ? 404 :
+        result.code === "has_payments" ? 409 :
+        500;
+      return NextResponse.json({ error: result.error }, { status });
+    }
     return new NextResponse(null, { status: 204 });
   });
 }
