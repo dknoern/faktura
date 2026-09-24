@@ -6,6 +6,10 @@
 export function normalizeHostname(value: string | null | undefined): string {
   if (!value) return ''
   return value
+    // Forwarded headers accumulate one value per proxy hop
+    // ("test.example.com, edge.internal"). The first is the host the client
+    // actually asked for; without this a second hop breaks domain matching.
+    .split(',')[0]
     .trim()
     .toLowerCase()
     .replace(/^https?:\/\//, '')

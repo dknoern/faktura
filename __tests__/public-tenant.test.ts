@@ -7,6 +7,11 @@ describe('normalizeHostname', () => {
     expect(normalizeHostname('localhost:3000')).toBe('localhost');
     expect(normalizeHostname(null)).toBe('');
   });
+
+  it('takes the first hop from a comma-separated forwarded host', () => {
+    expect(normalizeHostname('test.demesyinventory.com, edge.internal')).toBe('test.demesyinventory.com');
+    expect(normalizeHostname('test.demesyinventory.com,edge.internal')).toBe('test.demesyinventory.com');
+  });
 });
 
 describe('hostMatchesDomain', () => {
@@ -17,6 +22,15 @@ describe('hostMatchesDomain', () => {
   it('matches www and other subdomains', () => {
     expect(hostMatchesDomain('www.demesyinventory.com', 'demesyinventory.com')).toBe(true);
     expect(hostMatchesDomain('shop.demesyinventory.com', 'demesyinventory.com')).toBe(true);
+  });
+
+  it('matches deeply nested subdomains', () => {
+    expect(hostMatchesDomain('test.demesyinventory.com', 'demesyinventory.com')).toBe(true);
+    expect(hostMatchesDomain('deep.staging.demesyinventory.com', 'demesyinventory.com')).toBe(true);
+  });
+
+  it('matches a subdomain even when a proxy appends extra hops', () => {
+    expect(hostMatchesDomain('test.demesyinventory.com, edge.internal', 'demesyinventory.com')).toBe(true);
   });
 
   it('matches when the request host includes a port', () => {
