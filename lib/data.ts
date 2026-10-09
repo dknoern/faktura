@@ -14,7 +14,7 @@ import { vendorPaymentModel } from './models/vendor-payment';
 import { Wanted } from './models/wanted';
 import { addTenantFilter, getTenantObjectId, getNextCounter } from './tenant-utils';
 import { getTenantId } from './auth-utils';
-import { hostMatchesDomain } from './public-tenant';
+import { hostMatchesDomain, normalizeHostname } from './public-tenant';
 
 export async function fetchCustomers(page = 1, limit = 10, search = '', { includeDeleted = false }: { includeDeleted?: boolean } = {}) {
     try {
@@ -871,6 +871,18 @@ export async function fetchTenantByHost(host: string | null | undefined) {
             .select({ name: 1, nameLong: 1, customDomain: 1, splashImage: 1, logo: 1 })
             .lean();
         const match = (tenants as any[]).find((t) => hostMatchesDomain(host, t.customDomain));
+        if (!match) {
+            // Falling through to the generic landing (with signup) on a host
+            // that should be branded is hard to tell apart from a DB problem,
+            // so say which it is: zero configured domains almost always means
+            // this deployment is pointed at a different database.
+            const configured = (tenants as any[]).map((t) => t.customDomain);
+            console.warn(
+                `[public-tenant] no tenant for host "${normalizeHostname(host)}"; ` +
+                `${configured.length} configured domain(s)` +
+                (configured.length ? `: ${configured.slice(0, 5).join(', ')}` : '')
+            );
+        }
         return match ? JSON.parse(JSON.stringify(match)) : null;
     } catch (error) {
         console.error('Error fetching tenant by host:', error);
