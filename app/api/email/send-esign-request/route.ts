@@ -304,11 +304,15 @@ export async function POST(request: Request) {
       data = await fetchRepairById(id);
       documentTitle = `Repair #${data?.repairNumber}`;
     } else if (type === 'proposal') {
-      await Proposal.findByIdAndUpdate(id, {
-        esignToken,
-        status: 'Sent',
-        sentDate: new Date(),
-      });
+      // Guarded so a deleted proposal is never revived to 'Sent'
+      await Proposal.findOneAndUpdate(
+        { _id: id, status: { $ne: 'Deleted' } },
+        {
+          esignToken,
+          status: 'Sent',
+          sentDate: new Date(),
+        }
+      );
       data = await fetchProposalById(id);
       documentTitle = `Proposal for ${data?.customerFirstName} ${data?.customerLastName}`.trim();
     } else if (type === 'out') {

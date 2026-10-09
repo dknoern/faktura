@@ -32,7 +32,7 @@ export interface Tenant {
   warranty?: string;
   returnPolicy?: string;
   bankWireTransferInstructions?: string;
-  proposalTerms?: string;
+  proposalConditions?: string;
   repairConfirmationText?: string;
   stripe?: {
     enabled?: boolean;

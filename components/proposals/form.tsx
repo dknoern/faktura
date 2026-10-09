@@ -38,9 +38,11 @@ interface Proposal {
 interface ProposalFormProps {
   customer: Customer
   proposal?: Proposal
+  /** Pre-fills Conditions on a new proposal (tenant default terms). Ignored when editing. */
+  defaultConditions?: string
 }
 
-export function ProposalForm({ customer, proposal }: ProposalFormProps) {
+export function ProposalForm({ customer, proposal, defaultConditions }: ProposalFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -55,7 +57,9 @@ export function ProposalForm({ customer, proposal }: ProposalFormProps) {
     date: proposal?.date?.split('T')[0] || new Date().toISOString().split('T')[0],
     project: proposal?.project || '',
     status: proposal?.status || 'Draft',
-    conditions: proposal?.conditions || ''
+    // Editing keeps whatever was saved (even blank); only a brand-new
+    // proposal picks up the tenant default.
+    conditions: proposal ? (proposal.conditions || '') : (defaultConditions || '')
   })
 
   const [lineItems, setLineItems] = useState<ProposalLineItem[]>(

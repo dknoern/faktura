@@ -21,7 +21,7 @@ export async function GET(
     // Search all collections for the token
     const [repair, proposal, out, invoice] = await Promise.all([
       Repair.findOne({ esignToken: token }),
-      Proposal.findOne({ esignToken: token }),
+      Proposal.findOne({ esignToken: token, status: { $ne: 'Deleted' } }),
       Out.findOne({ esignToken: token }),
       Invoice.findOne({ esignToken: token, status: { $ne: 'Deleted' } }),
     ]);
@@ -95,7 +95,7 @@ export async function POST(
     // Search all collections for the token
     const [repair, proposal, out, invoice] = await Promise.all([
       Repair.findOne({ esignToken: token }),
-      Proposal.findOne({ esignToken: token }),
+      Proposal.findOne({ esignToken: token, status: { $ne: 'Deleted' } }),
       Out.findOne({ esignToken: token }),
       Invoice.findOne({ esignToken: token, status: { $ne: 'Deleted' } }),
     ]);
@@ -151,7 +151,7 @@ export async function POST(
       }
 
       await Proposal.findOneAndUpdate(
-        { esignToken: token },
+        { esignToken: token, status: { $ne: 'Deleted' } },
         {
           signature,
           signerName: trimmedName,

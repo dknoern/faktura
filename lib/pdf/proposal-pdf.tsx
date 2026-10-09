@@ -103,12 +103,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: 'right',
   },
-  // Terms
-  termsSection: {
-    marginBottom: 24,
-    fontSize: 10,
-    lineHeight: 1.6,
-  },
   // Conditions
   conditionsSection: {
     marginBottom: 24,
@@ -240,15 +234,6 @@ export function ProposalPdfDocument({ proposal, tenant, logoUrl }: ProposalPdfPr
           {proposal.conditions ? (
             <View style={styles.conditionsSection}>
               {proposal.conditions.split(/\n\s*\n/).map((paragraph, idx) => (
-                <Text key={idx} style={{ marginBottom: 8 }}>{paragraph.trim()}</Text>
-              ))}
-            </View>
-          ) : null}
-
-          {/* Terms */}
-          {tenant.proposalTerms ? (
-            <View style={styles.termsSection}>
-              {tenant.proposalTerms.split(/\n\s*\n/).map((paragraph, idx) => (
                 <Text key={idx} style={{ marginBottom: 8 }}>{paragraph.trim()}</Text>
               ))}
             </View>

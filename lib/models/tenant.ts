@@ -22,7 +22,7 @@ const TenantSchema = new mongoose.Schema({
     warranty: String,
     returnPolicy: String,
     bankWireTransferInstructions: String,
-    proposalTerms: String,
+    proposalConditions: String,
     email: String,
     features: {
         products: { type: Boolean, default: true },

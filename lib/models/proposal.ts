@@ -27,6 +27,9 @@ var ProposalSchema = new mongoose.Schema({
     signatureDate: Date,
     sentDate: Date,
     status: String,
+    // Soft-delete audit trail (status is set to 'Deleted')
+    deletedAt: Date,
+    deletedBy: String,
     tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' }
 });
 

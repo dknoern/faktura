@@ -270,7 +270,7 @@ export async function fetchProjectOptions(): Promise<{ id: string; label: string
         const tenantObjectId = await getTenantObjectId();
         const proposals = await Proposal.find({
             tenantId: tenantObjectId,
-            status: { $nin: ['Completed', 'Closed', 'Cancelled'] },
+            status: { $nin: ['Completed', 'Closed', 'Cancelled', 'Deleted'] },
         })
             .select({ project: 1, 'lineItems.name': 1, customerFirstName: 1, customerLastName: 1, date: 1 })
             // Newest first. _id breaks ties so proposals sharing a date (or
@@ -466,7 +466,8 @@ export async function fetchProposals(page = 1, limit = 10, search = '') {
         const tenantObjectId = await getTenantObjectId();
         const skip = (page - 1) * limit;
 
-        let query: any = {};
+        // Soft-deleted proposals are hidden from the list
+        let query: any = { status: { $ne: 'Deleted' } };
         if (search) {
             // Split search into tokens (words)
             const searchTokens = search.trim().split(/\s+/);
@@ -477,7 +478,7 @@ export async function fetchProposals(page = 1, limit = 10, search = '') {
             ));
             
             // Use $and to ensure ALL tokens must be found (in any order)
-            query = { $and: searchConditions };
+            query = { $and: [...searchConditions, { status: { $ne: 'Deleted' } }] };
         }
 
         query = addTenantFilter(query, tenantObjectId);
@@ -512,7 +513,7 @@ export async function fetchProposalById(id: string) {
     try {
         await dbConnect();
         const tenantObjectId = await getTenantObjectId();
-        const proposal = await Proposal.findOne({ _id: id, tenantId: tenantObjectId });
+        const proposal = await Proposal.findOne({ _id: id, tenantId: tenantObjectId, status: { $ne: 'Deleted' } });
         return JSON.parse(JSON.stringify(proposal));
     } catch (error) {
         console.error('Error fetching proposal:', error);

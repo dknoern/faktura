@@ -6,12 +6,24 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, Edit, Printer, Mail, Download, Send, FileText } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { ChevronDown, Edit, Printer, Mail, Download, Send, FileText, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { EmailDialog } from "./email-dialog"
 import { EsignRequestDialog } from "@/components/esign/esign-request-dialog"
+import { deleteProposal } from "@/lib/actions/proposal-actions"
 import { toast } from "react-hot-toast"
 
 interface ProposalLineItem {
@@ -40,6 +52,8 @@ export function ProposalActionMenu({ proposal, customerEmail }: ProposalActionMe
   const router = useRouter()
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
   const [isEsignDialogOpen, setIsEsignDialogOpen] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleEdit = () => {
     router.push(`/proposals/${proposal._id}/edit`)
@@ -120,6 +134,22 @@ export function ProposalActionMenu({ proposal, customerEmail }: ProposalActionMe
     setIsEmailDialogOpen(true)
   }
 
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true)
+    try {
+      const result = await deleteProposal(proposal._id)
+      if (result.success) {
+        toast.success('Proposal deleted')
+        router.push('/proposals')
+      } else {
+        toast.error(result.error ?? 'Failed to delete proposal')
+        setShowDeleteDialog(false)
+      }
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -154,6 +184,12 @@ export function ProposalActionMenu({ proposal, customerEmail }: ProposalActionMe
             <FileText className="mr-2 h-4 w-4" />
             Create Invoice
           </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -171,6 +207,30 @@ export function ProposalActionMenu({ proposal, customerEmail }: ProposalActionMe
         id={proposal._id}
         defaultEmail={customerEmail}
       />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Proposal</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this proposal for{' '}
+              {`${proposal.customerFirstName} ${proposal.customerLastName}`.trim()}? It will be
+              removed from the proposals list and can no longer be sent, signed, or used
+              for time entry. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
