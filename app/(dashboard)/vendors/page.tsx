@@ -12,7 +12,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
   const params = await searchParams;
   const page = params.page ? parseInt(params.page) : 1;
   const search = params.search || '';
-  const limit = 10;
+  const limit = 20;
 
   const tenant = await fetchTenant();
   if (tenant?.features?.vendors !== true) {

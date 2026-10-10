@@ -4,6 +4,7 @@ import dbConnect from '@/lib/dbConnect';
 import { productModel } from '@/lib/models/product';
 import { Repair } from '@/lib/models/repair';
 import { Invoice } from '@/lib/models/invoice';
+import { Payment } from '@/lib/models/payment';
 import { logModel } from '@/lib/models/log';
 import { fetchOuts } from '@/lib/data';
 import { Wanted } from '@/lib/models/wanted';
@@ -14,6 +15,7 @@ export interface DashboardStats {
   totalRepairsOut: number;
   totalItemsAtShow: number;
   totalItemsWanted: number;
+  outstandingBalance: number;
 }
 
 export interface MonthlySalesData {
@@ -90,15 +92,32 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     // Total items wanted where there is no found date
     // count records in wanteds collection that are not found
-    const totalItemsWanted = await Wanted.countDocuments({ 
-      foundDate: null, tenantId: tenantObjectId 
+    const totalItemsWanted = await Wanted.countDocuments({
+      foundDate: null, tenantId: tenantObjectId
     });
-    
+
+    // Outstanding balance: total invoiced minus total paid, across non-deleted invoices
+    const [invoiceTotalResult, paymentTotalResult] = await Promise.all([
+      Invoice.aggregate([
+        { $match: { tenantId: tenantObjectId, status: { $ne: 'Deleted' } } },
+        { $group: { _id: null, total: { $sum: '$total' } } }
+      ]),
+      Payment.aggregate([
+        { $match: { tenantId: tenantObjectId } },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ])
+    ]);
+
+    const totalInvoiced = invoiceTotalResult[0]?.total || 0;
+    const totalPaid = paymentTotalResult[0]?.total || 0;
+    const outstandingBalance = Math.max(totalInvoiced - totalPaid, 0);
+
     return {
       totalInventory,
       totalRepairsOut,
       totalItemsAtShow,
-      totalItemsWanted
+      totalItemsWanted,
+      outstandingBalance
     };
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
@@ -107,7 +126,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       totalInventory: 0,
       totalRepairsOut: 0,
       totalItemsAtShow: 0,
-      totalItemsWanted: 0
+      totalItemsWanted: 0,
+      outstandingBalance: 0
     };
   }
 }

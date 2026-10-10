@@ -9,7 +9,7 @@ type SearchParams = Promise<{ page: string; search?: string; filter?: string; vi
 export default async function Page({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const page = params.page ? parseInt(params.page) : 1;
-  const limit = 10;
+  const limit = 20;
   const search = params.search || "";
   const filter = params.filter || "outstanding";
   const { repairs, pagination } = await fetchRepairs(page, limit, search, filter);

@@ -59,24 +59,32 @@ export default async function Page() {
   }
 
   // Fetch all dashboard data in parallel
-  const [stats, salesData, transactions, productTypeData, statusData] = await Promise.all([
+  const [stats, salesData, transactions, productTypeData, statusData, tenant] = await Promise.all([
     getDashboardStats(),
     getMonthlySalesData(),
     getRecentTransactions(),
     getInventoryByProductType(),
-    getInventoryByStatus()
+    getInventoryByStatus(),
+    fetchTenant()
   ]);
+
+  const repairsEnabled = tenant?.features?.repairs === true;
+  const wantedEnabled = tenant?.features?.wanted === true;
+  const proposalsEnabled = tenant?.features?.proposals === true;
 
   return (
     <div>
       <div>
         <Suspense fallback={<SkeletonTable />}>
-          <Dashboard 
+          <Dashboard
             stats={stats}
             salesData={salesData}
             transactions={transactions}
             productTypeData={productTypeData}
             statusData={statusData}
+            repairsEnabled={repairsEnabled}
+            wantedEnabled={wantedEnabled}
+            outstandingBalanceEnabled={proposalsEnabled}
           />
         </Suspense>
       </div>

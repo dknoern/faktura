@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip} from "@/components/ui/chart";
 import {  type DashboardStats, type MonthlySalesData, type RecentTransaction, type InventoryBreakdown } from "@/lib/actions/dashboard-actions";
-import { Package, Wrench, Plane, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight, Gift } from "lucide-react";
+import { Package, Wrench, Plane, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight, Gift, Receipt } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { BRAND_CONFIG } from "@/lib/constants";
 import Link from "next/link";
@@ -16,9 +16,12 @@ interface DashboardProps {
   transactions: RecentTransaction[];
   productTypeData: InventoryBreakdown[];
   statusData: InventoryBreakdown[];
+  repairsEnabled: boolean;
+  wantedEnabled: boolean;
+  outstandingBalanceEnabled: boolean;
 }
 
-export function Dashboard({ stats, salesData, transactions, productTypeData, statusData }: DashboardProps) {
+export function Dashboard({ stats, salesData, transactions, productTypeData, statusData, repairsEnabled, wantedEnabled, outstandingBalanceEnabled }: DashboardProps) {
   // Chart configuration
   const chartConfig = {
     sales: {
@@ -69,10 +72,13 @@ export function Dashboard({ stats, salesData, transactions, productTypeData, sta
     }
   };
 
+  const visibleCardCount = 2 + (repairsEnabled ? 1 : 0) + (wantedEnabled ? 1 : 0) + (outstandingBalanceEnabled ? 1 : 0);
+  const gridColsClass = visibleCardCount >= 4 ? 'md:grid-cols-4' : visibleCardCount === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2';
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className={`grid gap-4 ${gridColsClass}`}>
         <Link href="/products">
           <Card className="cursor-pointer hover:shadow-md hover:bg-muted/50 transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -90,6 +96,7 @@ export function Dashboard({ stats, salesData, transactions, productTypeData, sta
           </Card>
         </Link>
         
+        {repairsEnabled && (
         <Link href="/repairs">
         <Card className="cursor-pointer hover:shadow-md hover:bg-muted/50 transition-all duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -106,7 +113,8 @@ export function Dashboard({ stats, salesData, transactions, productTypeData, sta
           </CardContent>
         </Card>
         </Link>
-        
+        )}
+
         <Link href="/reports/out-at-show">
         <Card className="cursor-pointer hover:shadow-md hover:bg-muted/50 transition-all duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -124,6 +132,7 @@ export function Dashboard({ stats, salesData, transactions, productTypeData, sta
         </Card>
         </Link>
 
+        {wantedEnabled && (
         <Link href="/wanted">
         <Card className="cursor-pointer hover:shadow-md hover:bg-muted/50 transition-all duration-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -140,6 +149,28 @@ export function Dashboard({ stats, salesData, transactions, productTypeData, sta
           </CardContent>
         </Card>
         </Link>
+        )}
+
+        {outstandingBalanceEnabled && (
+        <Link href="/invoices">
+        <Card className="cursor-pointer hover:shadow-md hover:bg-muted/50 transition-all duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Outstanding Balance
+            </CardTitle>
+            <Receipt className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.outstandingBalance.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Unpaid invoice balance
+            </p>
+          </CardContent>
+        </Card>
+        </Link>
+        )}
       </div>
 
       {/* Inventory Breakdown Pie Charts */}

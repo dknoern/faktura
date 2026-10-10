@@ -8,7 +8,7 @@ type SearchParams = Promise<{ page: string; search?: string }>;
 export default async function Page({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const page = params.page ? parseInt(params.page) : 1;
-  const limit = 10;
+  const limit = 20;
   const search = params.search || "";
   const { wanted, pagination } = await fetchWanted(page, limit, search);
 
