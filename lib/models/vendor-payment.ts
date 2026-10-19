@@ -21,6 +21,13 @@ const vendorPaymentBaseSchema = z.object({
   expenseAmount: z.number().optional(),
   totalAmount: z.number(),
   entryCount: z.number().optional(),
+  // Populated for method "venmo" - the PayPal Payouts API's own tracking ids
+  // and a snapshot of the phone number actually paid (vendor.phone can change
+  // later; this is what was paid at the time).
+  paypalBatchId: z.string().optional(),
+  paypalItemId: z.string().optional(),
+  paypalTransactionStatus: z.string().optional(),
+  paypalReceiver: z.string().optional(),
   paidBy: z.string().optional(),
   createdAt: z.date(),
   lastUpdated: z.date(),

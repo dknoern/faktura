@@ -14,9 +14,10 @@ interface VendorViewDetailsProps {
     vendor: Vendor;
     isAdmin?: boolean;
     payout?: PayoutSummary | null;
+    paypalConfigured?: boolean;
 }
 
-export function VendorViewDetails({ vendor: initialVendor, isAdmin = false, payout = null }: VendorViewDetailsProps) {
+export function VendorViewDetails({ vendor: initialVendor, isAdmin = false, payout = null, paypalConfigured = false }: VendorViewDetailsProps) {
     const [vendor, setVendor] = useState(initialVendor);
 
     return (
@@ -33,7 +34,7 @@ export function VendorViewDetails({ vendor: initialVendor, isAdmin = false, payo
                         </p>
                     )}
                 </div>
-                <VendorActionMenu vendor={vendor} isAdmin={isAdmin} payout={payout} onVendorChange={setVendor} />
+                <VendorActionMenu vendor={vendor} isAdmin={isAdmin} payout={payout} paypalConfigured={paypalConfigured} onVendorChange={setVendor} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

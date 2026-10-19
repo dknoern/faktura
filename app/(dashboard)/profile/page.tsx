@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { ApiKeysSection } from "@/components/api-keys/api-keys-section";
 import { StripeSettingsSection } from "@/components/stripe/stripe-settings-section";
 import { AvataxSettingsSection } from "@/components/avatax/avatax-settings-section";
+import { PaypalSettingsSection } from "@/components/paypal/paypal-settings-section";
 import { TenantLogoSection } from "@/components/tenant/tenant-logo-section";
 import { BrandingSettingsSection } from "@/components/tenant/branding-settings-section";
 import { RequiredDataSettingsSection } from "@/components/tenant/required-data-settings-section";
@@ -65,6 +66,8 @@ export default async function ProfilePage() {
           <StripeSettingsSection tenantId={tenantId} />
           <Separator />
           <AvataxSettingsSection />
+          <Separator />
+          <PaypalSettingsSection />
           <Separator />
           <RequiredDataSettingsSection />
           <Separator />

@@ -68,6 +68,16 @@ const TenantSchema = new mongoose.Schema({
         environment: String,
         companyCode: String,
         updatedAt: Date
+    },
+    paypal: {
+        enabled: { type: Boolean, default: false },
+        environment: { type: String, default: 'sandbox' },
+        clientId: String,
+        clientSecretCiphertext: { type: String, select: false },
+        clientSecretIv: { type: String, select: false },
+        clientSecretTag: { type: String, select: false },
+        clientSecretLast4: String,
+        updatedAt: Date
     }
 });
 

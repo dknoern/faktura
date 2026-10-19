@@ -12,6 +12,9 @@ import { Paperclip, Clock, Receipt } from "lucide-react";
 import Link from "next/link";
 import { notFound } from 'next/navigation';
 import { fetchVendorPaymentById, fetchEntriesByPaymentId, fetchTenant } from "@/lib/data";
+import { RefreshStatusButton } from "@/components/payouts/refresh-status-button";
+
+const FAILED_STATUSES = new Set(['FAILED', 'RETURNED', 'DENIED', 'BLOCKED']);
 
 export const dynamic = 'force-dynamic';
 
@@ -83,6 +86,22 @@ export default async function ViewPayoutPage(props: { params: Promise<{ id: stri
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Note</label>
                 <p className="text-sm whitespace-pre-wrap">{payment.note}</p>
+              </div>
+            )}
+            {payment.method === 'venmo' && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">PayPal Status</label>
+                <div className="mt-1 flex items-center gap-2">
+                  <Badge variant={payment.paypalTransactionStatus && FAILED_STATUSES.has(payment.paypalTransactionStatus) ? 'destructive' : 'secondary'}>
+                    {payment.paypalTransactionStatus || 'UNKNOWN'}
+                  </Badge>
+                  {payment.paypalItemId && <RefreshStatusButton paymentId={payment._id.toString()} />}
+                </div>
+                {payment.paypalReceiver && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Sent to phone {payment.paypalReceiver}
+                  </p>
+                )}
               </div>
             )}
           </CardContent>

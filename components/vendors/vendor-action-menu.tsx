@@ -33,10 +33,11 @@ interface VendorActionMenuProps {
     vendor: Vendor;
     isAdmin?: boolean;
     payout?: PayoutSummary | null;
+    paypalConfigured?: boolean;
     onVendorChange?: (vendor: Vendor) => void;
 }
 
-export function VendorActionMenu({ vendor, isAdmin = false, payout = null, onVendorChange }: VendorActionMenuProps) {
+export function VendorActionMenu({ vendor, isAdmin = false, payout = null, paypalConfigured = false, onVendorChange }: VendorActionMenuProps) {
     const router = useRouter();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showInviteDialog, setShowInviteDialog] = useState(false);
@@ -134,6 +135,9 @@ export function VendorActionMenu({ vendor, isAdmin = false, payout = null, onVen
                 <PayoutDialog
                     vendorId={vendor._id.toString()}
                     vendorName={`${vendor.firstName} ${vendor.lastName}`}
+                    vendorVenmoAlias={vendor.venmoAlias}
+                    vendorPhone={vendor.phone}
+                    paypalConfigured={paypalConfigured}
                     payout={payout}
                     open={showPayoutDialog}
                     onOpenChange={setShowPayoutDialog}

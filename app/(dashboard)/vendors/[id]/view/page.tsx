@@ -8,6 +8,7 @@ import { fetchVendorById, fetchTenant, fetchTimeEntries, fetchUnpaidApprovedEntr
 import type { PayoutSummary } from "@/components/vendors/payout-dialog";
 import { notFound } from 'next/navigation';
 import { auth } from "@/auth";
+import { loadTenantPaypalConfig, isFullyConfigured } from "@/lib/paypal/client";
 
 const VALID_STATUSES = ['Pending', 'Approved', 'Rejected', 'Paid'];
 
@@ -48,7 +49,9 @@ export default async function ViewVendorPage(props: {
 
     // Payout summary: everything approved but not yet paid out
     let payout: PayoutSummary | null = null;
+    let paypalConfigured = false;
     if (isAdmin && timeEnabled) {
+        paypalConfigured = isFullyConfigured(await loadTenantPaypalConfig(tenant._id.toString()));
         const unpaid = await fetchUnpaidApprovedEntries(vendor._id.toString());
         const timeEntries = unpaid.filter((e: any) => (e.entryType ?? 'time') === 'time');
         const expenses = unpaid.filter((e: any) => e.entryType === 'expense');
@@ -75,6 +78,7 @@ export default async function ViewVendorPage(props: {
                 vendor={JSON.parse(JSON.stringify(vendor))}
                 isAdmin={isAdmin}
                 payout={payout}
+                paypalConfigured={paypalConfigured}
             />
             {entryData && payoutData && (
                 <div className="mt-8">

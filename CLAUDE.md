@@ -93,6 +93,11 @@ Uses NextAuth.js with Auth0 provider. Session includes:
 
 - Environment variables required: `MONGODB_URI`, Auth0 config, AWS credentials, `CREDENTIALS_ENCRYPTION_KEY` (32-byte base64; AES-256-GCM key used to encrypt per-tenant secrets such as Stripe restricted keys and AvaTax license keys at rest)
 - AvaTax credentials are per-tenant (Profile → AvaTax). There are no `AVATAX_*` env vars.
+- PayPal credentials are per-tenant (Profile → PayPal Payments). There are no `PAYPAL_*` env vars.
+  Used only to send Venmo vendor payouts via PayPal's Payouts API (`lib/paypal/`); direct
+  PayPal-account payouts are not implemented. Payouts are asynchronous — initial status is
+  `PENDING`; use the "Refresh status" button on a payout's detail page (`/payouts/[id]/view`) to
+  check the current status.
 - Uses MongoDB connection caching to prevent connection exhaustion in development
 - Hardcoded tenant ID in layout.tsx for demo purposes
 - Mixed JS/TS files (legacy JavaScript models being gradually migrated to TypeScript)

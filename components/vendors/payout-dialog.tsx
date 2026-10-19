@@ -40,6 +40,9 @@ export interface PayoutSummary {
 interface PayoutDialogProps {
     vendorId: string;
     vendorName: string;
+    vendorVenmoAlias?: string;
+    vendorPhone?: string;
+    paypalConfigured: boolean;
     payout: PayoutSummary;
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -47,7 +50,7 @@ interface PayoutDialogProps {
 
 const fmt = (n: number) => `$${n.toFixed(2)}`;
 
-export function PayoutDialog({ vendorId, vendorName, payout, open, onOpenChange }: PayoutDialogProps) {
+export function PayoutDialog({ vendorId, vendorName, vendorVenmoAlias, vendorPhone, paypalConfigured, payout, open, onOpenChange }: PayoutDialogProps) {
     const router = useRouter();
     const [method, setMethod] = useState<'check' | 'venmo' | 'other'>('check');
     const [checkNumber, setCheckNumber] = useState('');
@@ -55,7 +58,11 @@ export function PayoutDialog({ vendorId, vendorName, payout, open, onOpenChange 
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const canSubmit = !payout.needsHourlyRate && !(method === 'check' && !checkNumber.trim());
+    const venmoReady = paypalConfigured && !!vendorVenmoAlias && !!vendorPhone;
+
+    const canSubmit = !payout.needsHourlyRate
+        && !(method === 'check' && !checkNumber.trim())
+        && !(method === 'venmo' && !venmoReady);
 
     async function handleSubmit() {
         setError(null);
@@ -74,7 +81,11 @@ export function PayoutDialog({ vendorId, vendorName, payout, open, onOpenChange 
                 setError(result.error || 'Failed to complete payout');
                 return;
             }
-            toast.success(`Payout of ${fmt(result.data?.totalAmount ?? payout.total)} recorded`);
+            toast.success(
+                method === 'venmo'
+                    ? `Payout of ${fmt(result.data?.totalAmount ?? payout.total)} sent via Venmo`
+                    : `Payout of ${fmt(result.data?.totalAmount ?? payout.total)} recorded`
+            );
             onOpenChange(false);
             router.refresh();
         } catch (err) {
@@ -135,11 +146,27 @@ export function PayoutDialog({ vendorId, vendorName, payout, open, onOpenChange 
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="check">Check</SelectItem>
-                                <SelectItem value="venmo">Venmo</SelectItem>
+                                <SelectItem value="venmo" disabled={!venmoReady}>Venmo</SelectItem>
                                 <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                         </Select>
+                        {!venmoReady && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {!paypalConfigured
+                                    ? "Configure PayPal API keys in Profile → PayPal Payments to enable Venmo payouts."
+                                    : "Add a Venmo alias and phone number to this vendor to enable Venmo payouts."}
+                            </p>
+                        )}
                     </div>
+
+                    {method === 'venmo' && venmoReady && (
+                        <Alert>
+                            <AlertDescription>
+                                Paying <strong>{fmt(payout.total)}</strong> via Venmo to phone <strong>{vendorPhone}</strong> (alias {vendorVenmoAlias}).
+                                Double-check this is correct — PayPal cannot verify the recipient&apos;s identity before sending.
+                            </AlertDescription>
+                        </Alert>
+                    )}
 
                     {method === 'check' && (
                         <div>
@@ -180,7 +207,9 @@ export function PayoutDialog({ vendorId, vendorName, payout, open, onOpenChange 
                         Cancel
                     </Button>
                     <Button onClick={handleSubmit} disabled={isSubmitting || !canSubmit}>
-                        {isSubmitting ? "Recording..." : `Complete Payout${payout.needsHourlyRate ? '' : ` (${fmt(payout.total)})`}`}
+                        {isSubmitting
+                            ? (method === 'venmo' ? "Sending..." : "Recording...")
+                            : `${method === 'venmo' ? 'Send Payout' : 'Complete Payout'}${payout.needsHourlyRate ? '' : ` (${fmt(payout.total)})`}`}
                     </Button>
                 </DialogFooter>
             </DialogContent>
