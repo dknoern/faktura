@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=18.14.0",
+    "node": ">=20.9.0",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -11,7 +11,7 @@
     "debug": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -64,7 +64,7 @@
     "react-hook-form": "^7.54.2",
     "react-hot-toast": "^2.5.2",
     "recharts": "^3.0.2",
-    "sharp": "^0.34.0",
+    "sharp": "^0.35.5",
     "stripe": "^22.2.0",
     "swagger-ui-react": "^5.32.6",
     "tailwind-merge": "^2.5.4",
@@ -82,7 +82,7 @@
     "@types/swagger-ui-react": "^5.18.0",
     "baseline-browser-mapping": "^2.9.19",
     "eslint": "^9.13.0",
-    "eslint-config-next": "15.0.2",
+    "eslint-config-next": "^16.4.2",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
     "postcss": "^8.4.47",
@@ -91,6 +91,7 @@
     "typescript": "^5.6.3"
   },
   "overrides": {
+    "argparse": "^2.0.1",
     "glob": "^10.0.0",
     "inflight": "npm:@file-size/inflight@^1.0.4",
     "nodemailer": "^7.0.11"
