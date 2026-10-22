@@ -109,6 +109,40 @@ Uses NextAuth.js with Auth0 provider. Session includes:
 
 - Use server actions rather than APIs when possible
 
+### Dependency audits
+
+**Do not run `npm audit fix --force` in this repo.** It resolves the remaining
+advisories by *downgrading* — it rewrites `eslint-config-next` to `14.x` (we are
+on Next 16, which breaks the flat ESLint config) and jumps `tailwindcss` to `4.x`
+(a major rewrite). It has also previously downgraded `jest` to `24.x`, which drags
+in vulnerable `request`/`tough-cookie`/`node-notifier` and *raises* the vuln count.
+If it has already run, recover with:
+
+```bash
+git checkout -- package.json package-lock.json && npm ci
+```
+
+`npm audit` reports **9 vulnerabilities (2 moderate, 7 high)** and that is the
+expected floor. All 9 are duplicate reports of two advisories, both dev/build-time
+only and neither fixable by upgrading:
+
+- **`braces`** — the advisory covers `<=3.0.3` and 3.0.3 is the latest published
+  release, so no patched version exists. Reaches us only via tailwind 3's
+  `chokidar`/`micromatch`.
+- **`postcss-selector-parser`** — a false positive. We ship 6.1.5, which backported
+  the fix specifically for the Tailwind 3 `^6.1.2` installed base; the advisory
+  range (`<7.1.6`) just doesn't carve out the backport. Tailwind 3 requires `^6`,
+  so forcing 7.x would break the build.
+
+npm's only remedy for both is `tailwindcss@4` — a full styling migration for zero
+real security gain. Do that on its own merits, not as an audit fix.
+
+Real fixes already applied (keep them): `sharp` pinned `^0.35.5` (it runs on live
+upload paths, so the libvips/libheif/librsvg CVEs were genuinely reachable), and an
+`argparse: ^2.0.1` override that removes `sprintf-js` — vulnerable at every
+published version — from the tree entirely. `argparse` is CLI-only in both
+`remarkable` and `js-yaml`, never on the import path.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
