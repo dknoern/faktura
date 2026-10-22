@@ -114,6 +114,42 @@ export async function getPaymentTotalsForInvoices(
   return totals;
 }
 
+/**
+ * The distinct payment methods recorded against each invoice, so the invoice
+ * list can show *how* an invoice was paid rather than just that it was. An
+ * invoice can be settled with more than one method (part cash, part card),
+ * hence an array per invoice.
+ */
+export async function getPaymentMethodsForInvoices(
+  invoiceIds: string[]
+): Promise<Record<string, PaymentRecord["method"][]>> {
+  if (invoiceIds.length === 0) return {};
+
+  await dbConnect();
+  const tenantObjectId = await getTenantObjectId();
+
+  const results = await Payment.aggregate([
+    {
+      $match: {
+        tenantId: tenantObjectId,
+        invoiceId: { $in: invoiceIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      },
+    },
+    {
+      $group: {
+        _id: "$invoiceId",
+        methods: { $addToSet: "$method" },
+      },
+    },
+  ]);
+
+  const methods: Record<string, PaymentRecord["method"][]> = {};
+  for (const r of results) {
+    methods[r._id.toString()] = r.methods;
+  }
+  return methods;
+}
+
 export async function deletePayment(
   paymentId: string
 ): Promise<{ success: boolean; error?: string }> {

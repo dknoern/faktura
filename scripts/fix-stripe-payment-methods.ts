@@ -1,11 +1,13 @@
 import { config } from 'dotenv';
 import path from 'path';
 
-// Load environment variables from .env.local FIRST
+// Load env the way Next.js does: .env.local takes precedence over .env, and an
+// already-exported shell variable beats both (dotenv never overrides).
 config({ path: path.resolve(process.cwd(), '.env.local') });
+config({ path: path.resolve(process.cwd(), '.env') });
 
 import mongoose from 'mongoose';
-import { getStripeForTenant } from '../lib/stripe/client';
+import { getStripeForTenant, loadTenantStripeConfig } from '../lib/stripe/client';
 import { resolvePaymentMethod } from '../lib/stripe/payment-method';
 
 /**
@@ -49,9 +51,13 @@ async function fixStripePaymentMethods() {
   }
 
   await mongoose.connect(process.env.MONGODB_URI);
-  console.log('✅ Connected to database');
 
-  const payments = mongoose.connection.collection('payments');
+  // Say exactly which database we are looking at — a "found 0" against the
+  // wrong database looks identical to a clean bill of health otherwise.
+  const conn = mongoose.connection;
+  console.log(`✅ Connected to ${conn.host}:${conn.port}/${conn.name}`);
+
+  const payments = conn.collection('payments');
 
   const docs = (await payments
     .find({ stripeSessionId: { $exists: true, $ne: null } })
@@ -60,15 +66,47 @@ async function fixStripePaymentMethods() {
   console.log(`📊 Found ${docs.length} payment(s) recorded from Stripe sessions\n`);
 
   if (docs.length === 0) {
-    console.log('ℹ️ Nothing to check');
+    // Distinguish "no Stripe payments here" from "wrong database".
+    const total = await payments.countDocuments();
+    console.log(`ℹ️ The payments collection holds ${total} document(s) in total.`);
+    if (total === 0) {
+      const names = (await conn.db!.listCollections().toArray()).map((c) => c.name).sort();
+      console.log(`   Collections in this database: ${names.join(', ') || '(none)'}`);
+      console.log('   If that does not look like your data, MONGODB_URI is pointing elsewhere.');
+    } else {
+      const byMethod = await payments
+        .aggregate([{ $group: { _id: '$method', n: { $sum: 1 } } }])
+        .toArray();
+      console.log(
+        `   By method: ${byMethod.map((m) => `${m._id}=${m.n}`).join(', ')} — none carry a stripeSessionId.`
+      );
+    }
     return;
   }
 
-  // Cache one Stripe client per tenant
+  // Cache one Stripe client per tenant. `getStripeForTenant` returns null both
+  // when Stripe is genuinely unconfigured and when the stored key fails to
+  // decrypt, so disambiguate once per tenant — a CREDENTIALS_ENCRYPTION_KEY
+  // that does not match the one used to encrypt the key in this database is by
+  // far the likeliest cause when running a script against a remote database.
   const clients = new Map<string, Awaited<ReturnType<typeof getStripeForTenant>>>();
   async function clientFor(tenantId: string) {
     if (!clients.has(tenantId)) {
-      clients.set(tenantId, await getStripeForTenant(tenantId));
+      const client = await getStripeForTenant(tenantId);
+      if (!client) {
+        const cfg = await loadTenantStripeConfig(tenantId);
+        if (cfg?.enabled && cfg.secretKeyCiphertext) {
+          console.error(
+            `\n❌ Tenant ${tenantId} has a Stripe key stored, but it could not be decrypted.\n` +
+              `   CREDENTIALS_ENCRYPTION_KEY does not match the key this database was encrypted with.\n` +
+              `   Re-run with the value used by the environment that owns this data, e.g.\n` +
+              `     MONGODB_URI='...' CREDENTIALS_ENCRYPTION_KEY='...' npx tsx scripts/fix-stripe-payment-methods.ts\n`
+          );
+        } else {
+          console.error(`\n⚠️  Tenant ${tenantId} has no Stripe configuration.\n`);
+        }
+      }
+      clients.set(tenantId, client);
     }
     return clients.get(tenantId)!;
   }
@@ -83,7 +121,7 @@ async function fixStripePaymentMethods() {
 
     const stripe = await clientFor(tenantId);
     if (!stripe) {
-      console.log(`⚠️  ${sessionId}: Stripe not configured for tenant ${tenantId}, skipping`);
+      // Cause already reported once per tenant by clientFor().
       skipped++;
       continue;
     }

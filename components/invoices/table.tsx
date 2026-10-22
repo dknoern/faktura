@@ -15,7 +15,15 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { CustomerSelectModalWrapper } from "@/components/customers/select-modal-wrapper";
 import { customerSchema } from "@/lib/models/customer";
-import { PlusCircle } from "lucide-react";
+import {
+    PlusCircle,
+    Banknote,
+    CreditCard,
+    Landmark,
+    FileText,
+    Coins,
+    type LucideIcon,
+} from "lucide-react";
 
 interface PaginationProps {
     total: number;
@@ -41,15 +49,51 @@ interface Invoice {
     invoiceType: string;
 }
 
-function PaymentBadge({ total, paid }: { total: number; paid: number }) {
+type PaymentMethod = "cash" | "check" | "credit_card" | "ach";
+
+const METHOD_DISPLAY: Record<PaymentMethod, { label: string; Icon: LucideIcon }> = {
+    cash: { label: "Cash", Icon: Banknote },
+    check: { label: "Check", Icon: FileText },
+    credit_card: { label: "Card", Icon: CreditCard },
+    ach: { label: "ACH", Icon: Landmark },
+};
+
+function PaymentBadge({
+    total,
+    paid,
+    methods = [],
+}: {
+    total: number;
+    paid: number;
+    methods?: PaymentMethod[];
+}) {
     if (paid <= 0) return null;
+
     if (paid >= total) {
+        // Show *how* it was paid rather than just "Paid". An invoice settled
+        // with more than one method collapses to "Split".
+        const known = methods.filter((m) => m in METHOD_DISPLAY);
+        const display =
+            known.length === 1
+                ? METHOD_DISPLAY[known[0]]
+                : known.length > 1
+                  ? { label: "Split", Icon: Coins }
+                  : null;
+
         return (
-            <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                Paid
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                {display ? (
+                    <>
+                        <display.Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        {display.label}
+                    </>
+                ) : (
+                    "Paid"
+                )}
             </span>
         );
     }
+
     return (
         <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
             Partial
@@ -62,11 +106,13 @@ export function InvoicesTable({
     pagination,
     paymentsEnabled = false,
     paymentTotals = {},
+    paymentMethods = {},
 }: {
     invoices: Invoice[],
     pagination: PaginationProps,
     paymentsEnabled?: boolean,
     paymentTotals?: Record<string, number>,
+    paymentMethods?: Record<string, PaymentMethod[]>,
 }) {
     const router = useRouter();
     const pathname = usePathname();
@@ -263,6 +309,7 @@ export function InvoicesTable({
                                         <PaymentBadge
                                             total={invoice.total ?? 0}
                                             paid={paymentTotals[invoice._id] ?? 0}
+                                            methods={paymentMethods[invoice._id] ?? []}
                                         />
                                     </TableCell>
                                 )}

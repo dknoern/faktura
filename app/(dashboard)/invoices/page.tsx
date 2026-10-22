@@ -2,7 +2,10 @@ import { InvoicesTable } from "@/components/invoices/table";
 import { SkeletonTable } from "@/components/skeletons";
 import { fetchInvoices, fetchTenant } from "@/lib/data";
 import { Suspense } from "react";
-import { getPaymentTotalsForInvoices } from "@/lib/actions/payment-actions";
+import {
+  getPaymentTotalsForInvoices,
+  getPaymentMethodsForInvoices,
+} from "@/lib/actions/payment-actions";
 
 type SearchParams = Promise<{ page: string, search?: string }>
 
@@ -20,9 +23,13 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
 
   const paymentsEnabled = tenant?.features?.payments === true;
 
-  const paymentTotals = paymentsEnabled
-    ? await getPaymentTotalsForInvoices(invoices.map((inv: any) => inv._id))
-    : {};
+  const invoiceIds = invoices.map((inv: any) => inv._id);
+  const [paymentTotals, paymentMethods] = paymentsEnabled
+    ? await Promise.all([
+        getPaymentTotalsForInvoices(invoiceIds),
+        getPaymentMethodsForInvoices(invoiceIds),
+      ])
+    : [{}, {}];
 
   return (
     <div>
@@ -33,6 +40,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
             pagination={pagination}
             paymentsEnabled={paymentsEnabled}
             paymentTotals={paymentTotals}
+            paymentMethods={paymentMethods}
           />
         </Suspense>
       </div>
