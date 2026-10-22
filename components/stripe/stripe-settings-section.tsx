@@ -174,8 +174,24 @@ export function StripeSettingsSection({ tenantId }: StripeSettingsSectionProps) 
               {webhookUrl}
             </div>
             <p className="text-xs text-muted-foreground">
-              Register the URL above as a webhook endpoint in your Stripe dashboard (listen for{" "}
-              <code className="font-mono">checkout.session.completed</code>), then paste the signing secret here.
+              Register the URL above as a webhook endpoint in your Stripe dashboard, then paste the
+              signing secret here. Listen for all three of these events:
+            </p>
+            <ul className="text-xs text-muted-foreground list-disc pl-5 space-y-0.5">
+              <li>
+                <code className="font-mono">checkout.session.completed</code>
+              </li>
+              <li>
+                <code className="font-mono">checkout.session.async_payment_succeeded</code>
+              </li>
+              <li>
+                <code className="font-mono">checkout.session.async_payment_failed</code>
+              </li>
+            </ul>
+            <p className="text-xs text-muted-foreground">
+              The two <code className="font-mono">async_payment</code> events are required for ACH
+              bank payments, which settle several days after checkout. Without them ACH payments
+              never get recorded.
             </p>
           </div>
 
